@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dona" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#05070d" />
+<link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22Dona%20%E2%80%94%20PM%20Command%20Center%22%2C%22short_name%22%3A%22Dona%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305070d%22%2C%22theme_color%22%3A%22%2305070d%22%2C%22start_url%22%3A%22.%22%7D' />
+<title>Dona · PM Command Center</title>
+<style>
+  :root{
+    --bg:#05070d; --panel:#080b14; --cyan:#38e6dc; --cyan2:#6ea8ff;
+    --violet:#7c5cff; --amber:#ffb454; --amber2:#ff8636;
+    --txt:#e6eefc; --dim:#7f8fb0; --line:rgba(120,150,210,.14);
+    --ok:#33e08a; --live:#ff5b8b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI",Inter,system-ui,-apple-system,Arial,sans-serif;overflow:hidden}
+  svg.ic{width:1em;height:1em;display:block;stroke:currentColor;fill:none;
+    stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  #space{position:fixed;inset:0;background:
+    radial-gradient(1100px 820px at 42% 40%,#0b1424 0%,#05080f 60%,#03050b 100%)}
+  .stars{position:fixed;inset:0;opacity:.35;
+    background-image:radial-gradient(1px 1px at 20% 30%,#cfe0ff,transparent),
+      radial-gradient(1px 1px at 70% 60%,#9fb6e0,transparent),
+      radial-gradient(1px 1px at 40% 80%,#8aa0c8,transparent),
+      radial-gradient(2px 2px at 85% 20%,#e8f2ff,transparent);
+    animation:drift 80s linear infinite}
+  @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-38px)}}
+  @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.45}}
+  @keyframes breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.04)}}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes flow{to{stroke-dashoffset:-30}}
+
+  /* ---------- logowanie ---------- */
+  .gate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(800px 640px at 50% 42%,#0c1526 0%,#05080f 72%);padding:20px}
+  .gate .box{width:min(92vw,350px);background:rgba(10,14,24,.92);border:1px solid var(--line);
+    border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 0 50px rgba(56,230,220,.12)}
+  .gate .mk{width:52px;height:52px;border-radius:14px;margin:0 auto 16px;
+    background:radial-gradient(circle at 40% 35%,#eafffd,var(--cyan) 46%,var(--violet));
+    box-shadow:0 0 24px rgba(56,230,220,.5)}
+  .gate h1{font-size:15px;letter-spacing:3px;margin:0 0 4px}
+  .gate p{color:var(--dim);font-size:12px;margin:0 0 18px}
+  .gate input[type=password]{width:100%;border-radius:12px;border:1px solid var(--line);
+    background:rgba(5,8,15,.9);color:var(--txt);padding:13px 14px;font-size:16px;outline:none}
+  .gate input[type=password]:focus{border-color:var(--cyan)}
+  .gate label{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--dim);
+    font-size:12px;margin-top:14px;cursor:pointer}
+  .gate button{width:100%;margin-top:14px;border:none;border-radius:12px;padding:13px;
+    cursor:pointer;color:#04121a;font-weight:600;letter-spacing:1px;
+    background:linear-gradient(135deg,var(--cyan),var(--cyan2))}
+  .gate .err{color:#ff8098;font-size:12px;margin-top:12px;min-height:16px}
+
+  /* ---------- pasek gorny (desktop) ---------- */
+  .topbar{position:fixed;top:0;left:0;right:0;height:54px;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+    border-bottom:1px solid var(--line);background:rgba(6,9,16,.82);backdrop-filter:blur(8px)}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .brand .mk{width:24px;height:24px;border-radius:7px;flex:none;
+    background:radial-gradient(circle at 40% 35%,#eafffd,var(--cyan) 46%,var(--violet));
+    box-shadow:0 0 14px rgba(56,230,220,.5)}
+  .brand h1{font-size:14px;margin:0;letter-spacing:3px;font-weight:600;white-space:nowrap}
+  .brand h1 i{color:var(--cyan);font-style:normal}
+  .status{display:flex;align-items:center;gap:16px;font-size:11px;color:var(--dim);letter-spacing:1px}
+  .status .pill{display:flex;align-items:center;gap:7px}
+  .status .sdot{width:8px;height:8px;border-radius:50%;background:var(--ok);
+    box-shadow:0 0 9px var(--ok);animation:pulse2 2.4s infinite}
+  .status .clock{color:var(--txt);font-variant-numeric:tabular-nums;font-size:12px}
+
+  .wrap{position:relative;height:100%;display:flex;padding-top:54px}
+
+  /* ---------- scena orbity (desktop) ---------- */
+  .stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center}
+  .orbit{position:relative;width:min(70vmin,560px);height:min(70vmin,560px)}
+  .wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+  .wire{stroke:url(#wg);stroke-width:1.1;stroke-dasharray:3 9;animation:flow 1.6s linear infinite;opacity:.4}
+  .ring{position:absolute;border:1px solid var(--line);border-radius:50%}
+  .ring.r1{inset:2%}.ring.r2{inset:20%;border-color:rgba(120,150,210,.09)}
+  .nodes{position:absolute;inset:0;z-index:6}
+  .core{position:absolute;left:50%;top:50%;width:150px;height:150px;transform:translate(-50%,-50%);
+    border-radius:50%;cursor:pointer;
+    background:radial-gradient(circle at 50% 38%,#eafffd 0%,var(--cyan) 30%,var(--violet) 74%,#241a5e 100%);
+    box-shadow:0 0 46px rgba(56,230,220,.5),0 0 110px rgba(124,92,255,.34),inset 0 0 40px rgba(255,255,255,.28);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    animation:breathe 4.6s ease-in-out infinite;z-index:5}
+  .core b{font-size:26px;letter-spacing:5px;color:#04121a;text-shadow:0 1px 0 rgba(255,255,255,.4)}
+  .core span{font-size:8px;letter-spacing:3px;color:#0a1c26;opacity:.75;margin-top:3px}
+  .core.think{animation:breathe 1.5s ease-in-out infinite}
+  .core.speak{box-shadow:0 0 70px rgba(56,230,220,.8),0 0 150px rgba(124,92,255,.55),inset 0 0 50px rgba(255,255,255,.45)}
+  .node{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;
+    cursor:pointer;white-space:nowrap;transition:.16s;color:#9db0d6}
+  .node.lf{flex-direction:row-reverse}
+  .node .dot{width:13px;height:13px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 40% 35%,#eafcff,var(--cyan2) 62%,#2a5a9c);
+    box-shadow:0 0 8px rgba(110,168,255,.6)}
+  .node .lb{font-size:12px;letter-spacing:.5px}
+  .node:hover{color:#fff}
+  .node:hover .dot{transform:scale(1.3);box-shadow:0 0 14px rgba(56,230,220,.9)}
+
+  /* ---------- panel czatu ---------- */
+  .panel{width:min(42vw,460px);min-width:340px;height:100%;background:var(--panel);
+    border-left:1px solid var(--line);display:flex;flex-direction:column;z-index:10}
+  .phead{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px}
+  .phead .av{width:40px;height:40px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 40% 35%,#eafffd,var(--cyan) 46%,var(--violet));
+    box-shadow:0 0 14px rgba(56,230,220,.5);animation:breathe 4.2s ease-in-out infinite}
+  .phead .who h2{font-size:15px;margin:0;letter-spacing:1px}
+  .phead .who small{display:flex;align-items:center;gap:6px;color:var(--dim);font-size:11px;margin-top:3px}
+  .phead .who small .g{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .phead .tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .iconbtn{min-width:34px;height:34px;padding:0 8px;border-radius:9px;border:1px solid var(--line);
+    background:rgba(5,8,15,.5);color:var(--dim);cursor:pointer;font-size:13px;
+    display:flex;align-items:center;justify-content:center;gap:5px;transition:.15s}
+  .iconbtn .ic{font-size:16px}
+  .iconbtn:hover{color:var(--txt);border-color:var(--cyan)}
+  .iconbtn.on{color:#04121a;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border-color:transparent}
+
+  .welcome{padding:16px 16px 4px}
+  .welcome .msg{background:rgba(56,230,220,.06);border:1px solid rgba(56,230,220,.18);
+    border-radius:14px;border-bottom-left-radius:4px;padding:12px 14px;font-size:14px;line-height:1.55}
+
+  /* szybkie akcje: przewijany pasek z marginesami */
+  .quick{display:flex;gap:9px;overflow-x:auto;padding:12px 16px 4px;scroll-padding:16px;
+    -webkit-overflow-scrolling:touch}
+  .quick::-webkit-scrollbar{display:none}
+  .quick{scrollbar-width:none}
+  .qpill{flex:none;display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:22px;
+    border:1px solid var(--line);background:rgba(12,17,30,.7);color:var(--dim);
+    cursor:pointer;white-space:nowrap;font-size:12.5px;transition:.15s}
+  .qpill .ic{font-size:16px;color:var(--cyan)}
+  .qpill:hover,.qpill:active{color:var(--txt);border-color:var(--cyan)}
+
+  .log{flex:1;overflow-y:auto;padding:12px 16px 6px;display:flex;flex-direction:column;gap:11px}
+  .log::-webkit-scrollbar{width:7px}
+  .log::-webkit-scrollbar-thumb{background:rgba(120,150,210,.25);border-radius:8px}
+  .msg{max-width:88%;padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.55;
+    white-space:pre-wrap;word-wrap:break-word;animation:rise .22s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  .me{align-self:flex-end;background:linear-gradient(135deg,#2a2170,#3b2fa0);color:#fff;border-bottom-right-radius:4px}
+  .dona{align-self:flex-start;background:rgba(56,230,220,.07);border:1px solid rgba(56,230,220,.2);border-bottom-left-radius:4px}
+  .voice{align-self:flex-start;background:rgba(255,134,54,.08);border:1px solid rgba(255,134,54,.28)}
+  .sys{align-self:center;color:var(--dim);font-size:12.5px;font-style:italic;text-align:center;max-width:92%}
+  .sys .retry{display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-style:normal;
+    border:1px solid var(--line);border-radius:16px;padding:4px 10px;color:var(--cyan);cursor:pointer}
+  .sys .retry:hover{border-color:var(--cyan)}
+  .typing span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;
+    background:var(--cyan);animation:blink 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+  /* stopka: akcje glosowe + pole wpisywania */
+  .footer{border-top:1px solid var(--line);padding:8px 12px 12px;background:var(--panel)}
+  .vrow{display:flex;gap:9px;padding:2px 2px 9px}
+  .vbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;border-radius:12px;
+    border:1px solid var(--line);background:rgba(5,8,15,.55);color:var(--dim);cursor:pointer;font-size:12.5px;transition:.15s}
+  .vbtn .ic{font-size:17px}
+  .vbtn:hover{color:var(--txt);border-color:var(--cyan)}
+  .vbtn.dict.rec{color:#fff;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border-color:transparent}
+  .vbtn.golive{color:#ffd6b0;border-color:rgba(255,134,54,.4)}
+  .vbtn.golive .ic{color:var(--amber)}
+  .vbtn.golive:hover{color:#fff;border-color:var(--amber)}
+  .composer{display:flex;gap:9px;align-items:flex-end}
+  .composer textarea{flex:1;resize:none;height:48px;max-height:130px;border-radius:13px;
+    border:1px solid var(--line);background:rgba(5,8,15,.9);color:var(--txt);
+    padding:13px 14px;font-size:16px;font-family:inherit;outline:none}
+  .composer textarea:focus{border-color:var(--cyan)}
+  .send{width:48px;height:48px;flex:none;border:none;border-radius:13px;cursor:pointer;color:#04121a;font-size:18px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--cyan),var(--cyan2))}
+  .send:disabled{opacity:.5;cursor:default}
+
+  /* ---------- pelnoekranowy tryb ROZMOWA NA ZYWO (Apex) ---------- */
+  .live{position:fixed;inset:0;z-index:70;display:none;flex-direction:column;
+    background:radial-gradient(1000px 800px at 50% 44%,#170f08 0%,#0a0704 60%,#040303 100%)}
+  .live.show{display:flex}
+  .live .lhead{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+    color:#ffd9ac;font-size:12px;letter-spacing:2px}
+  .live .lhead .st{display:flex;align-items:center;gap:9px}
+  .live .lhead .st i{width:9px;height:9px;border-radius:50%;background:var(--live);box-shadow:0 0 12px var(--live);animation:pulse2 1.2s infinite}
+  .live .xbtn{width:38px;height:38px;border-radius:11px;border:1px solid rgba(255,180,110,.3);
+    background:rgba(20,12,6,.6);color:#ffd9ac;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
+  .lstage{flex:1;position:relative;display:flex;align-items:center;justify-content:center}
+  .lorbit{position:relative;width:min(86vmin,620px);height:min(86vmin,620px)}
+  .lwires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .lwire{stroke:url(#awg);stroke-width:1.2;stroke-dasharray:4 10;animation:flow 1.3s linear infinite;opacity:.55}
+  .lring{position:absolute;border:1px solid rgba(255,180,110,.14);border-radius:50%}
+  .lring.a{inset:0}.lring.b{inset:16%}.lring.c{inset:32%;border-color:rgba(255,180,110,.08)}
+  .lcore{position:absolute;left:50%;top:50%;width:min(46vmin,300px);height:min(46vmin,300px);
+    transform:translate(-50%,-50%);border-radius:50%;overflow:visible;cursor:pointer;
+    background:radial-gradient(circle at 50% 50%,rgba(255,200,140,.14) 0%,rgba(255,150,70,.12) 46%,rgba(255,140,60,.3) 74%,rgba(255,150,60,.6) 90%,rgba(255,120,40,0) 100%);
+    box-shadow:0 0 80px rgba(255,150,70,.4),0 0 180px rgba(255,130,60,.24);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;animation:breathe 4.4s ease-in-out infinite;z-index:5}
+  .lcore .globe{position:absolute;inset:0;border-radius:50%;overflow:hidden;
+    -webkit-mask:radial-gradient(circle at 50% 50%,#000 72%,transparent 100%);mask:radial-gradient(circle at 50% 50%,#000 72%,transparent 100%)}
+  .lcore .globe svg{position:absolute;inset:0;width:100%;height:100%}
+  .lcore .globe .ln{stroke:rgba(255,185,115,.28);fill:none;stroke-width:1}
+  .lcore .globe .rot{transform-origin:150px 150px;animation:spin 30s linear infinite}
+  .lcore .halo{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 70px rgba(255,160,80,.35),inset 0 0 14px rgba(255,225,180,.5)}
+  .lcore b{position:relative;z-index:2;font-size:min(6vmin,34px);letter-spacing:7px;color:#fff;text-shadow:0 0 20px rgba(255,180,110,.9)}
+  .lcore span{position:relative;z-index:2;font-size:9px;letter-spacing:4px;color:#ffd9ac;opacity:.85;margin-top:5px}
+  .lcore.speak{box-shadow:0 0 110px rgba(255,160,80,.65),0 0 230px rgba(255,130,60,.42)}
+  .lcore.think{animation:breathe 1.4s ease-in-out infinite}
+  .lnode{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;
+    white-space:nowrap;color:#e7c49a;font-size:13px;letter-spacing:1px}
+  .lnode.lf{flex-direction:row-reverse}
+  .lnode .d{width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff0dc,var(--amber) 60%,var(--amber2));box-shadow:0 0 10px rgba(255,180,84,.8)}
+  .live .lfoot{padding:14px 20px 26px;text-align:center}
+  .live .ltrans{color:#ffe3c4;font-size:15px;line-height:1.5;min-height:44px;max-width:640px;margin:0 auto 14px}
+  .live .lhint{color:#b98f63;font-size:12px;letter-spacing:2px;margin-bottom:14px}
+  .live .lstop{border:none;border-radius:14px;padding:12px 26px;cursor:pointer;font-size:14px;font-weight:600;color:#fff;
+    background:linear-gradient(135deg,#ff5b8b,#b23bff)}
+
+  /* ---------- mobile ---------- */
+  @media(max-width:900px){
+    .topbar{display:none}
+    .wrap{padding-top:0}
+    .stage{display:none}
+    .panel{width:100%;min-width:0;border-left:none}
+    .phead{padding-top:calc(12px + env(safe-area-inset-top))}
+    .footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  }
+</style>
+</head>
+<body>
+<div id="space"><div class="stars"></div></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38e6dc"/><stop offset="1" stop-color="#6ea8ff"/></linearGradient>
+    <linearGradient id="awg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffce8a"/><stop offset="1" stop-color="#ff8636"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="gate" id="gate">
+  <div class="box">
+    <div class="mk"></div>
+    <h1>PM COMMAND CENTER</h1>
+    <p>Podaj hasło dostępu</p>
+    <input id="pw" type="password" placeholder="Hasło" autocomplete="current-password" />
+    <label><input type="checkbox" id="remember" checked /> Zapamiętaj mnie na tym urządzeniu</label>
+    <button id="pwBtn">WEJDŹ</button>
+    <div class="err" id="pwErr"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand"><div class="mk"></div><h1>PM <i>COMMAND CENTER</i></h1></div>
+  <div class="status">
+    <span class="pill clock" id="clock"></span>
+    <span class="pill"><span class="sdot"></span>ONLINE</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stage">
+    <div class="orbit" id="orbit">
+      <svg class="wires" id="wires" preserveAspectRatio="none"></svg>
+      <div class="ring r1"></div><div class="ring r2"></div>
+      <div class="nodes" id="nodes"></div>
+      <div class="core" id="core" title="Porozmawiaj z Doną"><b>DONA</b><span>PM AGENT OS</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead">
+      <div class="av"></div>
+      <div class="who"><h2>Dona</h2><small><span class="g"></span> Online · koordynatorka</small></div>
+      <div class="tools">
+        <button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button>
+        <button class="iconbtn on" id="voiceBtn" title="Głos Dony">SPK</button>
+      </div>
+    </div>
+
+    <div class="welcome">
+      <div class="msg">Cześć, tu Dona. Ja to ogarniam. Napisz śmiało, wybierz agenta albo podyktuj wiadomość. Rozmowę na żywo uruchomisz przyciskiem obok.</div>
+    </div>
+
+    <div class="quick" id="quick"></div>
+
+    <div class="log" id="log"></div>
+
+    <div class="footer">
+      <div class="vrow">
+        <button class="vbtn dict" id="dictBtn"><span class="ic" id="dictIc"></span> Dyktuj</button>
+        <button class="vbtn golive" id="golive"><span class="ic" id="liveIc"></span> Na żywo</button>
+      </div>
+      <div class="composer">
+        <textarea id="inp" placeholder="Napisz do Dony..."></textarea>
+        <button class="send" id="btn" title="Wyślij"><span class="ic" id="sendIc"></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- pelnoekranowy tryb na zywo -->
+<div class="live" id="live">
+  <div class="lhead">
+    <div class="st"><i></i> ROZMOWA NA ŻYWO</div>
+    <button class="xbtn" id="lclose"><span class="ic" id="closeIc"></span></button>
+  </div>
+  <div class="lstage">
+    <div class="lorbit" id="lorbit">
+      <svg class="lwires" id="lwires" preserveAspectRatio="none"></svg>
+      <div class="lring a"></div><div class="lring b"></div><div class="lring c"></div>
+      <div class="nodes" id="lnodes"></div>
+      <div class="lcore" id="lcore">
+        <div class="globe"><svg viewBox="0 0 300 300"><g class="rot">
+          <ellipse class="ln" cx="150" cy="150" rx="135" ry="135"/>
+          <ellipse class="ln" cx="150" cy="150" rx="135" ry="102"/>
+          <ellipse class="ln" cx="150" cy="150" rx="135" ry="58"/>
+          <line class="ln" x1="15" y1="150" x2="285" y2="150"/>
+          <ellipse class="ln" cx="150" cy="150" rx="102" ry="135"/>
+          <ellipse class="ln" cx="150" cy="150" rx="58" ry="135"/>
+          <line class="ln" x1="150" y1="15" x2="150" y2="285"/>
+        </g></svg></div>
+        <div class="halo"></div>
+        <b>DONA</b><span>PM AGENT OS</span>
+      </div>
+    </div>
+  </div>
+  <div class="lfoot">
+    <div class="ltrans" id="ltrans"></div>
+    <div class="lhint" id="lhint">Mów śmiało — możesz przerywać</div>
+    <button class="lstop" id="lstop">Zakończ rozmowę</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var API="https://pmresearch.app.n8n.cloud/webhook";
+  var CHAT_URL=API+"/dona-panel";
+  var TOKEN_URL=API+"/dona-realtime-token";
+
+  // ---- ikony (cienkie, cyan) ----
+  var IC={
+    chart:'<svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>',
+    users:'<svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>',
+    folder:'<svg class="ic" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+    mail:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+    mega:'<svg class="ic" viewBox="0 0 24 24"><path d="M3 10v4l11 4V6L3 10z"/><path d="M14 9a3 3 0 0 1 0 6"/></svg>',
+    globe:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18c-3-3-3-15 0-18z"/></svg>',
+    media:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>',
+    wallet:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.1"/></svg>',
+    gear:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.5-2-3.4-2.3 1a7.5 7.5 0 0 0-1.7-1L14.9 3H9.1l-.5 2.6a7.5 7.5 0 0 0-1.7 1l-2.3-1-2 3.4L2.6 11a7.5 7.5 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7.5 7.5 0 0 0 1.7 1l.5 2.6h5.8l.5-2.6a7.5 7.5 0 0 0 1.7-1l2.3 1 2-3.4z"/></svg>',
+    mic:'<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>',
+    headset:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0"/><rect x="2.5" y="13" width="4" height="6" rx="1.3"/><rect x="17.5" y="13" width="4" height="6" rx="1.3"/><path d="M20 19a3 3 0 0 1-3 3h-3"/></svg>',
+    send:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 12l16-7-7 16-2-6-7-3z"/></svg>',
+    close:'<svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  document.getElementById("dictIc").innerHTML=IC.mic;
+  document.getElementById("liveIc").innerHTML=IC.headset;
+  document.getElementById("sendIc").innerHTML=IC.send;
+  document.getElementById("closeIc").innerHTML=IC.close;
+
+  var AGENTS=[
+    {k:"chart",nm:"Sprzedaż",q:"Jak wygląda lejek sprzedaży?"},
+    {k:"users",nm:"Klienci",q:"Co mam dzisiaj i kto czeka na odpowiedź?"},
+    {k:"folder",nm:"Dysk",q:"Znajdź ostatnie dokumenty na dysku."},
+    {k:"mail",nm:"Poczta",q:"Co pilnego jest w skrzynce?"},
+    {k:"mega",nm:"Marketing",q:"Napisz krótki post na LinkedIn."},
+    {k:"globe",nm:"WWW",q:"Jak stoją nasze kampanie i strony?"},
+    {k:"media",nm:"Media",q:"Podsumuj ostatnie nagranie."},
+    {k:"wallet",nm:"Pieniądze",q:"Ile poszło na OpenAI w tym miesiącu?"},
+    {k:"gear",nm:"System",q:"Jacy agenci są w systemie?"}
+  ];
+
+  // ---- localStorage bezpieczny ----
+  var KEY="pm_panel_haslo";
+  function lsGet(k){ try{ return localStorage.getItem(k)||""; }catch(e){ return ""; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  var sessionPw=lsGet(KEY);
+
+  var gate=document.getElementById("gate");
+  var pw=document.getElementById("pw");
+  var remember=document.getElementById("remember");
+  var pwErr=document.getElementById("pwErr");
+  function openGate(){ gate.style.display="flex"; setTimeout(function(){pw.focus();},50); }
+  function closeGate(){ gate.style.display="none"; }
+  if(sessionPw){ closeGate(); } else { openGate(); }
+  function tryLogin(){
+    var v=pw.value.trim(); if(!v) return;
+    pwErr.textContent="Sprawdzam...";
+    ask("Cześć",v,true).then(function(ok){
+      if(ok){ sessionPw=v; if(remember.checked){ lsSet(KEY,v); } closeGate(); pw.value=""; pwErr.textContent=""; }
+      else { pwErr.textContent="Błędne hasło."; }
+    }).catch(function(){ pwErr.textContent="Nie udało się połączyć. Spróbuj ponownie."; });
+  }
+  document.getElementById("pwBtn").addEventListener("click",tryLogin);
+  pw.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); tryLogin(); }});
+
+  // ---- zegar (desktop) ----
+  var clock=document.getElementById("clock");
+  function tick(){ var d=new Date();
+    var hh=("0"+d.getHours()).slice(-2), mm=("0"+d.getMinutes()).slice(-2);
+    clock.textContent=hh+":"+mm; }
+  tick(); setInterval(tick,20000);
+
+  // ---- scena orbity (desktop) ----
+  var orbit=document.getElementById("orbit");
+  var wires=document.getElementById("wires");
+  var nodesBox=document.getElementById("nodes");
+  function buildOrbit(){
+    var W=orbit.clientWidth||520; var R=W/2, radius=R*0.9;
+    wires.setAttribute("viewBox","0 0 "+W+" "+W);
+    wires.innerHTML=""; nodesBox.innerHTML="";
+    for(var i=0;i<AGENTS.length;i++){
+      var a=AGENTS[i];
+      var ang=(i/AGENTS.length)*Math.PI*2 - Math.PI/2;
+      var x=Math.cos(ang)*radius, y=Math.sin(ang)*radius;
+      var ex=R+x, ey=R+y;
+      var mx=(R+ex)/2 + (y*0.14), my=(R+ey)/2 - (x*0.14);
+      var p=document.createElementNS("http://www.w3.org/2000/svg","path");
+      p.setAttribute("class","wire"); p.setAttribute("d","M "+R+" "+R+" Q "+mx+" "+my+" "+ex+" "+ey);
+      p.style.animationDelay=(i*0.14)+"s"; wires.appendChild(p);
+      var side=(x<-1)?"lf":"rt";
+      var el=document.createElement("div"); el.className="node "+side;
+      el.style.left=ex+"px"; el.style.top=ey+"px";
+      el.innerHTML='<span class="dot"></span><span class="lb">'+a.nm+'</span>';
+      (function(q){ el.addEventListener("click",function(){ setInput(q); }); })(a.q);
+      nodesBox.appendChild(el);
+    }
+  }
+  buildOrbit();
+  var rz; window.addEventListener("resize",function(){ clearTimeout(rz); rz=setTimeout(function(){ buildOrbit(); buildLiveOrbit(); },200); });
+
+  // ---- szybkie akcje (pasek) ----
+  var quick=document.getElementById("quick");
+  for(var i=0;i<AGENTS.length;i++){ (function(a){
+    var el=document.createElement("div"); el.className="qpill";
+    el.innerHTML='<span class="ic">'+IC[a.k]+'</span><span>'+a.nm+'</span>';
+    el.addEventListener("click",function(){ setInput(a.q); });
+    quick.appendChild(el);
+  })(AGENTS[i]); }
+
+  // ---- czat ----
+  var log=document.getElementById("log");
+  var inp=document.getElementById("inp");
+  var btn=document.getElementById("btn");
+  var core=document.getElementById("core");
+  var lcore=document.getElementById("lcore");
+  function think(on){ core.classList.toggle("think",on); lcore.classList.toggle("think",on); }
+  function speakAnim(on){ core.classList.toggle("speak",on); lcore.classList.toggle("speak",on); }
+  var busy=false, lastText="";
+  function setInput(t){ inp.value=t; inp.focus(); }
+
+  function add(cls,text){
+    var d=document.createElement("div"); d.className="msg "+cls; d.textContent=text;
+    log.appendChild(d); log.scrollTop=log.scrollHeight; return d;
+  }
+  function addRetry(text,onRetry){
+    var d=document.createElement("div"); d.className="msg sys";
+    d.textContent=text+" ";
+    var b=document.createElement("span"); b.className="retry"; b.textContent="Ponów";
+    b.addEventListener("click",function(){ d.remove(); onRetry(); });
+    d.appendChild(b); log.appendChild(d); log.scrollTop=log.scrollHeight; return d;
+  }
+
+  // ---- glos Dony (TTS, naturalne tempo) ----
+  var voiceOn=(lsGet("pm_glos")!=="off");
+  var voiceBtn=document.getElementById("voiceBtn");
+  function paintVoice(){ voiceBtn.classList.toggle("on",voiceOn); voiceBtn.textContent=voiceOn?"SPK":"OFF"; }
+  paintVoice();
+  var synth=window.speechSynthesis||null, plVoice=null;
+  function pickVoice(){ if(!synth)return; var vs=synth.getVoices()||[];
+    var pref=["zosia","paulina","google","microsoft"], best=null;
+    for(var p=0;p<pref.length&&!best;p++){ for(var i=0;i<vs.length;i++){ var v=vs[i];
+      if((v.lang||"").toLowerCase().indexOf("pl")===0 && (v.name||"").toLowerCase().indexOf(pref[p])>=0){ best=v; break; } } }
+    if(!best){ for(var j=0;j<vs.length;j++){ if((vs[j].lang||"").toLowerCase().indexOf("pl")===0){ best=vs[j]; break; } } }
+    if(best) plVoice=best;
+  }
+  if(synth){ pickVoice(); if(synth.onvoiceschanged!==undefined){ synth.onvoiceschanged=pickVoice; } }
+  var RATES=[0.9,1.0,1.1]; var rateIdx=parseInt(lsGet("pm_tempo"),10);
+  if(isNaN(rateIdx)||rateIdx<0||rateIdx>=RATES.length){ rateIdx=1; }
+  var rateBtn=document.getElementById("rateBtn");
+  function paintRate(){ rateBtn.textContent=RATES[rateIdx]+"×"; }
+  paintRate();
+  rateBtn.addEventListener("click",function(){ rateIdx=(rateIdx+1)%RATES.length; lsSet("pm_tempo",String(rateIdx)); paintRate(); });
+  function speak(text){ if(!voiceOn||!synth||!text||liveOn) return;
+    try{ synth.cancel(); var u=new SpeechSynthesisUtterance(text);
+      u.lang="pl-PL"; if(plVoice)u.voice=plVoice; u.rate=RATES[rateIdx]; u.pitch=1.0;
+      u.onstart=function(){speakAnim(true);}; u.onend=function(){speakAnim(false);}; u.onerror=function(){speakAnim(false);};
+      synth.speak(u);
+    }catch(e){}
+  }
+  voiceBtn.addEventListener("click",function(){ voiceOn=!voiceOn; lsSet("pm_glos",voiceOn?"on":"off"); paintVoice();
+    if(!voiceOn&&synth){ try{synth.cancel();}catch(e){} speakAnim(false); } });
+
+  // ---- rozmowa tekstowa z prawdziwa Dona ----
+  function ask(text,pwOverride,probe){
+    return fetch(CHAT_URL,{ method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({wiadomosc:text,haslo:(pwOverride!==undefined?pwOverride:sessionPw),probe:!!probe}) })
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(j&&j.error==="auth"){ if(!probe){ lsDel(KEY); sessionPw=""; openGate(); } return probe?false:null; }
+        if(probe) return true;
+        return (j&&j.answer)?j.answer:"";
+      });
+  }
+
+  function send(text){
+    text=(text!==undefined?text:inp.value).trim(); if(!text||busy) return;
+    lastText=text; busy=true; btn.disabled=true; think(true); add("me",text); inp.value="";
+    var tip=document.createElement("div"); tip.className="msg dona typing";
+    tip.innerHTML="<span></span><span></span><span></span>"; log.appendChild(tip); log.scrollTop=log.scrollHeight;
+    ask(text).then(function(ans){ tip.remove();
+      if(ans===null){ addRetry("Sesja wygasła — zaloguj się ponownie.",function(){}); }
+      else if(!ans){ add("dona","Nie dostałam teraz odpowiedzi. Spróbuj jeszcze raz."); }
+      else { add("dona",ans); speak(ans); }
+    }).catch(function(){ tip.remove();
+      addRetry("Nie udało się połączyć.",function(){ send(text); });
+    }).finally(function(){ busy=false; btn.disabled=false; think(false); });
+  }
+  btn.addEventListener("click",function(){ send(); });
+  core.addEventListener("click",function(){ if(!liveOn) inp.focus(); });
+  inp.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); }});
+
+  // ---- DYKTOWANIE (darmowe) ----
+  var dictBtn=document.getElementById("dictBtn");
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+  if(!SR){ dictBtn.style.display="none"; }
+  else{
+    var rec=new SR(); rec.lang="pl-PL"; rec.interimResults=false; rec.maxAlternatives=1;
+    var recording=false;
+    rec.onresult=function(e){ var t=""; for(var i=0;i<e.results.length;i++){ t+=e.results[i][0].transcript; } inp.value=t.trim(); };
+    rec.onerror=function(e){ recording=false; dictBtn.classList.remove("rec");
+      if(e&&(e.error==="not-allowed"||e.error==="service-not-allowed")){ add("sys","Mikrofon zablokowany przez przeglądarkę. Możesz pisać tekstem."); } };
+    rec.onend=function(){ recording=false; dictBtn.classList.remove("rec"); if(inp.value.trim()){ send(); } };
+    dictBtn.addEventListener("click",function(){
+      if(liveOn) return;
+      if(recording){ try{rec.stop();}catch(e){} return; }
+      try{ recording=true; dictBtn.classList.add("rec"); inp.value=""; rec.start(); }
+      catch(e){ recording=false; dictBtn.classList.remove("rec"); }
+    });
+  }
+
+  // ======================================================================
+  // TRYB "ROZMOWA NA ZYWO" (Apex, pelny ekran) + OpenAI Realtime
+  // ======================================================================
+  var liveEl=document.getElementById("live");
+  var golive=document.getElementById("golive");
+  var lstop=document.getElementById("lstop");
+  var lclose=document.getElementById("lclose");
+  var ltrans=document.getElementById("ltrans");
+  var lhint=document.getElementById("lhint");
+  var lwires=document.getElementById("lwires");
+  var lnodes=document.getElementById("lnodes");
+  var liveOn=false, pc=null, dc=null, micStream=null, audioEl=null;
+
+  function buildLiveOrbit(){
+    var box=document.getElementById("lorbit"); if(!box) return;
+    var W=box.clientWidth||560; var R=W/2, radius=R*0.9;
+    lwires.setAttribute("viewBox","0 0 "+W+" "+W);
+    lwires.innerHTML=""; lnodes.innerHTML="";
+    for(var i=0;i<AGENTS.length;i++){
+      var a=AGENTS[i];
+      var ang=(i/AGENTS.length)*Math.PI*2 - Math.PI/2;
+      var x=Math.cos(ang)*radius, y=Math.sin(ang)*radius, ex=R+x, ey=R+y;
+      var mx=(R+ex)/2 + (y*0.14), my=(R+ey)/2 - (x*0.14);
+      var p=document.createElementNS("http://www.w3.org/2000/svg","path");
+      p.setAttribute("class","lwire"); p.setAttribute("d","M "+R+" "+R+" Q "+mx+" "+my+" "+ex+" "+ey);
+      p.style.animationDelay=(i*0.13)+"s"; lwires.appendChild(p);
+      var side=(x<-1)?"lf":"rt";
+      var el=document.createElement("div"); el.className="lnode "+side;
+      el.style.left=ex+"px"; el.style.top=ey+"px";
+      el.innerHTML='<span class="d"></span><span>'+a.nm+'</span>';
+      lnodes.appendChild(el);
+    }
+  }
+  buildLiveOrbit();
+
+  function showLive(on){ liveEl.classList.toggle("show",on); }
+  function endLive(silent){
+    liveOn=false; showLive(false); speakAnim(false);
+    try{ if(dc) dc.close(); }catch(e){} dc=null;
+    try{ if(pc) pc.close(); }catch(e){} pc=null;
+    try{ if(micStream){ var tr=micStream.getTracks(); for(var i=0;i<tr.length;i++){ tr[i].stop(); } } }catch(e){} micStream=null;
+    try{ if(audioEl){ audioEl.srcObject=null; audioEl.remove(); } }catch(e){} audioEl=null;
+    if(!silent){ add("sys","Rozmowa na żywo zakończona."); }
+  }
+  lstop.addEventListener("click",function(){ endLive(false); });
+  lclose.addEventListener("click",function(){ endLive(false); });
+
+  golive.addEventListener("click",function(){
+    if(liveOn){ endLive(false); return; }
+    if(!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      add("sys","Rozmowa na żywo działa w pełnej wersji panelu (poza n8n). Na razie pisz tekstem lub dyktuj.");
+      return;
+    }
+    if(!confirm("Włączyć rozmowę na żywo z Doną?\n\nTo tryb głosowy Realtime — płatny według czasu rozmowy. Świetny na pokaz; w codziennej pracy pisz tekstem.")) return;
+    startLive();
+  });
+
+  function startLive(){
+    showLive(true); liveOn=true; ltrans.textContent=""; lhint.textContent="Łączę z Doną...";
+    fetch(TOKEN_URL,{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({haslo:sessionPw}) })
+      .then(function(r){ return r.json(); })
+      .then(function(tok){
+        if(tok&&tok.error==="auth"){ lsDel(KEY); sessionPw=""; openGate(); throw new Error("auth"); }
+        var EK=tok&&(tok.value||(tok.client_secret&&tok.client_secret.value));
+        if(!EK){ throw new Error("token"); }
+        return startWebRTC(EK);
+      })
+      .then(function(){ lhint.textContent="Mów śmiało — możesz przerywać"; })
+      .catch(function(e){
+        endLive(true);
+        if((e&&e.message)!=="auth"){ add("sys","Nie udało się włączyć rozmowy na żywo. Spróbuj ponownie za chwilę."); }
+      });
+  }
+
+  function startWebRTC(EK){
+    pc=new RTCPeerConnection();
+    audioEl=document.createElement("audio"); audioEl.autoplay=true;
+    pc.ontrack=function(e){ audioEl.srcObject=e.streams[0]; speakAnim(true); };
+    return navigator.mediaDevices.getUserMedia({audio:true}).then(function(ms){
+      micStream=ms; pc.addTrack(ms.getTracks()[0]);
+      dc=pc.createDataChannel("oai-events"); dc.addEventListener("message",onRealtimeEvent);
+      return pc.createOffer();
+    }).then(function(offer){ return pc.setLocalDescription(offer).then(function(){ return offer; }); })
+      .then(function(offer){
+        return fetch("https://api.openai.com/v1/realtime/calls",{ method:"POST", body:offer.sdp,
+          headers:{ "Authorization":"Bearer "+EK, "Content-Type":"application/sdp" } });
+      }).then(function(r){ return r.text(); })
+      .then(function(sdp){ return pc.setRemoteDescription({type:"answer",sdp:sdp}); });
+  }
+  function rtSend(o){ try{ if(dc&&dc.readyState==="open"){ dc.send(JSON.stringify(o)); } }catch(e){} }
+
+  function onRealtimeEvent(ev){
+    var m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+    var t=m.type||"";
+    if(t==="conversation.item.input_audio_transcription.completed" && m.transcript){ ltrans.textContent="„"+m.transcript+"”"; }
+    if(t==="response.output_audio_transcript.done" && m.transcript){ ltrans.textContent=m.transcript; add("voice",m.transcript); }
+    if(t==="response.function_call_arguments.done" && m.name==="ask_dona"){
+      var callId=m.call_id, args={}; try{ args=JSON.parse(m.arguments||"{}"); }catch(e){}
+      var pytanie=args.pytanie||args.question||args.text||"";
+      ask(pytanie).then(function(ans){
+        rtSend({ type:"conversation.item.create", item:{ type:"function_call_output", call_id:callId, output:JSON.stringify({odpowiedz:ans||""}) } });
+        rtSend({ type:"response.create" });
+      }).catch(function(){
+        rtSend({ type:"conversation.item.create", item:{ type:"function_call_output", call_id:callId, output:JSON.stringify({odpowiedz:"Nie udało się połączyć z systemem Dony."}) } });
+        rtSend({ type:"response.create" });
+      });
+    }
+    if(t==="output_audio_buffer.stopped" || t==="response.done"){ speakAnim(false); }
+  }
+})();
+</script>
+</body>
+</html>
