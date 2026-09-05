@@ -223,6 +223,13 @@
     .panel{width:100%;min-width:0;border-left:none}
     .phead{padding-top:calc(12px + env(safe-area-inset-top))}
     .footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    /* mobile: przypnij pasek agentow tuz pod naglowek, powitanie schowaj do logu */
+    .phead{order:0}
+    .quick{order:1;padding:10px 12px;border-bottom:1px solid var(--line)}
+    .welcome{order:2;padding:12px 14px 0}
+    .welcome .msg{font-size:13px}
+    .log{order:3}
+    .footer{order:4}
   }
 </style>
 </head>
