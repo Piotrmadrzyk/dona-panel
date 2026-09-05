@@ -290,6 +290,8 @@
         <button class="vbtn golive" id="golive"><span class="ic" id="liveIc"></span> Na żywo</button>
       </div>
       <div class="composer">
+        <button class="send" id="clipBtn" title="Zalacz plik" style="background:linear-gradient(135deg,var(--violet),var(--cyan2))"><span style="font-size:20px">&#128206;</span></button>
+        <input type="file" id="fileInp" accept="image/*,application/pdf,video/*" style="display:none" />
         <textarea id="inp" placeholder="Napisz do Dony..."></textarea>
         <button class="send" id="btn" title="Wyślij"><span class="ic" id="sendIc"></span></button>
       </div>
@@ -334,6 +336,7 @@
 (function(){
   var API="https://pmresearch.app.n8n.cloud/webhook";
   var CHAT_URL=API+"/dona-panel";
+  var FILE_URL=API+"/dona-panel-plik";
   var TOKEN_URL=API+"/dona-realtime-token";
 
   // ---- ikony (cienkie, cyan) ----
@@ -517,6 +520,34 @@
     }).finally(function(){ busy=false; btn.disabled=false; think(false); });
   }
   btn.addEventListener("click",function(){ send(); });
+  var clipBtn=document.getElementById("clipBtn");
+  var fileInp=document.getElementById("fileInp");
+  if(clipBtn&&fileInp){
+    clipBtn.addEventListener("click",function(){ if(!busy) fileInp.click(); });
+    fileInp.addEventListener("change",function(){
+      var f=fileInp.files&&fileInp.files[0]; if(!f||busy){ return; }
+      var komentarz=(inp.value||"").trim();
+      busy=true; btn.disabled=true; clipBtn.disabled=true; think(true);
+      add("me","📎 "+f.name+(komentarz?(" — "+komentarz):""));
+      inp.value="";
+      var tip=document.createElement("div"); tip.className="msg dona typing";
+      tip.innerHTML="<span></span><span></span><span></span>"; log.appendChild(tip); log.scrollTop=log.scrollHeight;
+      var reader=new FileReader();
+      reader.onload=function(){
+        var b64=String(reader.result||"");
+        fetch(FILE_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({haslo:sessionPw,nazwa:f.name,typ:(f.type||""),dane_base64:b64,komentarz:komentarz})})
+          .then(function(r){ return r.json(); })
+          .then(function(j){ tip.remove();
+            if(j&&j.error==="auth"){ lsDel(KEY); sessionPw=""; openGate(); add("sys","Sesja wygasla - zaloguj sie ponownie."); }
+            else { var ans=(j&&j.answer)?j.answer:"Plik dotarl."; add("dona",ans); speak(ans); }
+          })
+          .catch(function(){ tip.remove(); add("sys","Nie udalo sie wyslac pliku. Sprobuj jeszcze raz."); })
+          .finally(function(){ busy=false; btn.disabled=false; clipBtn.disabled=false; think(false); fileInp.value=""; });
+      };
+      reader.onerror=function(){ tip.remove(); add("sys","Nie udalo sie odczytac pliku."); busy=false; btn.disabled=false; clipBtn.disabled=false; think(false); fileInp.value=""; };
+      reader.readAsDataURL(f);
+    });
+  }
   core.addEventListener("click",function(){ if(!liveOn) inp.focus(); });
   inp.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); }});
 
