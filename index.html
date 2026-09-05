@@ -344,6 +344,7 @@
   var API="https://pmresearch.app.n8n.cloud/webhook";
   var CHAT_URL=API+"/dona-panel";
   var FILE_URL=API+"/dona-panel-plik";
+  var TTS_URL=API+"/dona-tts";
   var TOKEN_URL=API+"/dona-realtime-token";
 
   // ---- ikony (cienkie, cyan) ----
@@ -491,12 +492,24 @@
   function paintRate(){ rateBtn.textContent=RATES[rateIdx]+"×"; }
   paintRate();
   rateBtn.addEventListener("click",function(){ rateIdx=(rateIdx+1)%RATES.length; lsSet("pm_tempo",String(rateIdx)); paintRate(); });
-  function speak(text){ if(!voiceOn||!synth||!text||liveOn) return;
+  function speakBrowser(text){ if(!synth) return;
     try{ synth.cancel(); var u=new SpeechSynthesisUtterance(text);
       u.lang="pl-PL"; if(plVoice)u.voice=plVoice; u.rate=RATES[rateIdx]; u.pitch=1.0;
       u.onstart=function(){speakAnim(true);}; u.onend=function(){speakAnim(false);}; u.onerror=function(){speakAnim(false);};
       synth.speak(u);
     }catch(e){}
+  }
+  var ttsAudio=null;
+  function speak(text){ if(!voiceOn||!text||liveOn) return;
+    try{ if(synth) synth.cancel(); }catch(e){}
+    try{ if(ttsAudio){ ttsAudio.pause(); ttsAudio=null; } }catch(e){}
+    fetch(TTS_URL,{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({haslo:sessionPw,tekst:text}) })
+      .then(function(r){ if(!r.ok) throw new Error("tts"); return r.blob(); })
+      .then(function(b){ var url=URL.createObjectURL(b); ttsAudio=new Audio(url);
+        ttsAudio.onplay=function(){speakAnim(true);}; ttsAudio.onended=function(){speakAnim(false); URL.revokeObjectURL(url);}; ttsAudio.onerror=function(){speakAnim(false);};
+        var p=ttsAudio.play(); if(p&&p.catch){ p.catch(function(){ speakBrowser(text); }); }
+      })
+      .catch(function(){ speakBrowser(text); });
   }
   voiceBtn.addEventListener("click",function(){ voiceOn=!voiceOn; lsSet("pm_glos",voiceOn?"on":"off"); paintVoice();
     if(!voiceOn&&synth){ try{synth.cancel();}catch(e){} speakAnim(false); } });
