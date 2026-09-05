@@ -298,6 +298,7 @@
       </div>
       <div class="composer">
         <button class="send" id="clipBtn" title="Zalacz plik" style="background:linear-gradient(135deg,var(--violet),var(--cyan2))"><span style="font-size:20px">&#128206;</span></button>
+        <button class="send" id="memBtn" title="Zapamietaj notatke w drugim mozgu" style="background:linear-gradient(135deg,var(--amber),var(--amber2))"><span style="font-size:20px">&#129504;</span></button>
         <input type="file" id="fileInp" accept="image/*,application/pdf,video/*" style="display:none" />
         <textarea id="inp" placeholder="Napisz do Dony..."></textarea>
         <button class="send" id="btn" title="Wyślij"><span class="ic" id="sendIc"></span></button>
@@ -344,6 +345,7 @@
   var API="https://pmresearch.app.n8n.cloud/webhook";
   var CHAT_URL=API+"/dona-panel";
   var FILE_URL=API+"/dona-panel-plik";
+  var MEM_URL=API+"/dona-panel-zapamietaj";
   var TTS_URL=API+"/dona-tts";
   var HIST_URL=API+"/dona-historia";
   var histWczytana=false;
@@ -549,6 +551,20 @@
     }).finally(function(){ busy=false; btn.disabled=false; think(false); });
   }
   btn.addEventListener("click",function(){ send(); });
+  var memBtn=document.getElementById("memBtn");
+  if(memBtn){
+    memBtn.addEventListener("click",function(){
+      var t=(inp.value||"").trim();
+      if(!t||busy){ if(!t){ add("sys","Wpisz najpierw tresc do zapamietania."); } return; }
+      busy=true; btn.disabled=true; memBtn.disabled=true; think(true);
+      add("me","🧠 zapamietaj: "+t); inp.value="";
+      fetch(MEM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({haslo:sessionPw,tresc:t,typ:"notatka"})})
+        .then(function(r){ return r.json(); })
+        .then(function(j){ if(j&&j.error==="auth"){ lsDel(KEY); sessionPw=""; openGate(); add("sys","Sesja wygasla - zaloguj sie ponownie."); return; } var a=(j&&j.answer)?j.answer:"Zapamietane."; add("dona",a); if(typeof zapiszHist==="function"){ zapiszHist("dona",a); } })
+        .catch(function(){ add("sys","Nie udalo sie zapisac notatki."); })
+        .finally(function(){ busy=false; btn.disabled=false; memBtn.disabled=false; think(false); });
+    });
+  }
   var clipBtn=document.getElementById("clipBtn");
   var fileInp=document.getElementById("fileInp");
   if(clipBtn&&fileInp){
