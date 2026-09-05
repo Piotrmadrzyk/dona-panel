@@ -345,6 +345,15 @@
   var CHAT_URL=API+"/dona-panel";
   var FILE_URL=API+"/dona-panel-plik";
   var TTS_URL=API+"/dona-tts";
+  var HIST_URL=API+"/dona-historia";
+  var histWczytana=false;
+  function zapiszHist(rola,tresc){ try{ fetch(HIST_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({haslo:sessionPw,operacja:"zapisz",sesja:"PM",rola:rola,tresc:tresc})}); }catch(e){} }
+  function wczytajHist(){ if(histWczytana||!sessionPw) return; histWczytana=true;
+    fetch(HIST_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({haslo:sessionPw,operacja:"wczytaj",sesja:"PM"})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ if(j&&j.historia&&j.historia.length){ for(var i=0;i<j.historia.length;i++){ var h=j.historia[i]; add(h.rola==="user"?"me":"dona", h.tresc); } log.scrollTop=log.scrollHeight; } })
+      .catch(function(){});
+  }
   var TOKEN_URL=API+"/dona-realtime-token";
 
   // ---- ikony (cienkie, cyan) ----
@@ -393,12 +402,12 @@
   var pwErr=document.getElementById("pwErr");
   function openGate(){ gate.style.display="flex"; setTimeout(function(){pw.focus();},50); }
   function closeGate(){ gate.style.display="none"; }
-  if(sessionPw){ closeGate(); } else { openGate(); }
+  if(sessionPw){ closeGate(); setTimeout(wczytajHist,300); } else { openGate(); }
   function tryLogin(){
     var v=pw.value.trim(); if(!v) return;
     pwErr.textContent="Sprawdzam...";
     ask("Cześć",v,true).then(function(ok){
-      if(ok){ sessionPw=v; if(remember.checked){ lsSet(KEY,v); } closeGate(); pw.value=""; pwErr.textContent=""; }
+      if(ok){ sessionPw=v; if(remember.checked){ lsSet(KEY,v); } closeGate(); pw.value=""; pwErr.textContent=""; setTimeout(wczytajHist,300); }
       else { pwErr.textContent="Błędne hasło."; }
     }).catch(function(){ pwErr.textContent="Nie udało się połączyć. Spróbuj ponownie."; });
   }
@@ -528,13 +537,13 @@
 
   function send(text){
     text=(text!==undefined?text:inp.value).trim(); if(!text||busy) return;
-    lastText=text; busy=true; btn.disabled=true; think(true); add("me",text); inp.value="";
+    lastText=text; busy=true; btn.disabled=true; think(true); add("me",text); zapiszHist("user",text); inp.value="";
     var tip=document.createElement("div"); tip.className="msg dona typing";
     tip.innerHTML="<span></span><span></span><span></span>"; log.appendChild(tip); log.scrollTop=log.scrollHeight;
     ask(text).then(function(ans){ tip.remove();
       if(ans===null){ addRetry("Sesja wygasła — zaloguj się ponownie.",function(){}); }
       else if(!ans){ add("dona","Nie dostałam teraz odpowiedzi. Spróbuj jeszcze raz."); }
-      else { add("dona",ans); speak(ans); }
+      else { add("dona",ans); speak(ans); zapiszHist("dona",ans); }
     }).catch(function(){ tip.remove();
       addRetry("Nie udało się połączyć.",function(){ send(text); });
     }).finally(function(){ busy=false; btn.disabled=false; think(false); });
