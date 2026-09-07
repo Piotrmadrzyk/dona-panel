@@ -11,7 +11,7 @@ def add(var, name, kind, version, params, **settings):
 def table(var,name,table_id,field,value,limit=251):
     add(var,name,'dataTable',1.1,{'resource':'row','operation':'get','dataTableId':{'__rl':True,'mode':'id','value':table_id},'matchType':'allConditions','filters':{'conditions':[{'keyName':field,'condition':'eq','keyValue':value}]},'returnAll':False,'limit':limit,'orderBy':True,'orderByColumn':'createdAt','orderByDirection':'DESC'},executeOnce=True,alwaysOutputData=True,notes='Empty results are intentionally passed to the explicit empty-array handling in Build Snapshot, or fail-closed authentication. No writes.')
 
-add('request','Workspace Request','webhook',2.1,{'httpMethod':'POST','path':'dona-workspace','responseMode':'responseNode','options':{'allowedOrigins':'https://piotrmadrzyk.github.io'}})
+add('request','Workspace Request','webhook',2.1,{'httpMethod':'POST','path':'dona-workspace','responseMode':'responseNode','options':{'allowedOrigins':'https://piotrmadrzyk.github.io,https://dona.probatum.pl'}})
 table('secret','Panel Credential','gtb2O8mzxTu0Wd2l','nazwa','panel_haslo',2)
 add('auth','Validate Access','code',2,{'mode':'runOnceForAllItems','language':'javaScript','jsCode':(ROOT/'backend/workspace-auth.js').read_text()})
 add('gate','Authorized','if',2.3,{'conditions':{'options':{'caseSensitive':True,'leftValue':'','typeValidation':'strict','version':2},'conditions':[{'leftValue':'={{ $json.authorized }}','operator':{'type':'boolean','operation':'true'}}],'combinator':'and'}})
