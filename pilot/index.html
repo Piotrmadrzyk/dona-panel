@@ -7,9 +7,12 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>DONA — Twój dzień</title>
-  <link rel="stylesheet" href="./workspace.css?v=4.0.1">
-  <script defer src="./chat.js?v=4.0.1"></script>
-  <script defer src="./workspace.js?v=4.0.1"></script>
+  <link rel="stylesheet" href="./workspace.css?v=4.1.0">
+  <link rel="stylesheet" href="./voice.css?v=4.1.0">
+  <script defer src="./voice-audio.js?v=4.1.0"></script>
+  <script defer src="./chat.js?v=4.1.0"></script>
+  <script defer src="./workspace.js?v=4.1.0"></script>
+  <script defer src="./voice.js?v=4.1.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Przejdź do treści</a>
@@ -50,17 +53,48 @@
       <div class="sidebar-bottom"><a href="#settings" data-view="settings"><span data-icon="settings"></span>Ustawienia</a><div class="profile"><span class="avatar">PM</span><span><strong>Piotr</strong><small>Właściciel</small></span><button id="logoutBtn" class="icon-button" aria-label="Wyloguj" title="Wyloguj"><span data-icon="logout"></span></button></div></div>
     </aside>
     <div class="workspace">
-      <header class="topbar"><div class="breadcrumb"><button id="menuToggle" class="icon-button mobile-only" aria-label="Otwórz menu" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button><span class="muted">Pulpit</span><span class="slash">/</span><strong id="breadcrumbTitle">Dzisiaj</strong></div><div class="top-actions"><span class="pilot-label" id="modeLabel">PILOTAŻ</span><button class="icon-button" id="refreshBtn" title="Odśwież dane" aria-label="Odśwież dane"><span data-icon="refresh"></span></button><span class="clock" id="clock"></span><button class="icon-button chat-toggle" id="chatToggle" aria-label="Otwórz rozmowę z DONĄ" aria-expanded="false"><span data-icon="message"></span></button></div></header>
+      <header class="topbar">
+        <div class="breadcrumb"><button id="menuToggle" class="icon-button mobile-only" aria-label="Otwórz menu" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button><span class="muted">Pulpit</span><span class="slash">/</span><strong id="breadcrumbTitle">Dzisiaj</strong></div>
+        <div class="top-actions">
+          <span class="pilot-label" id="modeLabel">PILOTAŻ</span>
+          <button class="secondary chat-toggle" id="chatToggle" aria-label="Czat z DONĄ" aria-expanded="false" aria-controls="assistant"><span data-icon="message"></span><span>Czat z DONĄ</span></button>
+          <button class="primary live-start" id="liveTopBtn" data-live aria-controls="live"><span data-icon="headset"></span><span>Rozmawiaj na żywo</span></button>
+          <button class="icon-button" id="refreshBtn" title="Odśwież dane" aria-label="Odśwież dane"><span data-icon="refresh"></span></button><span class="clock" id="clock"></span>
+        </div>
+      </header>
       <main id="main" tabindex="-1"><div class="page-heading"><span class="eyebrow" id="pageEyebrow"></span><div class="title-row"><h1 id="pageTitle">Dzień dobry, Piotrze.</h1><div id="pageAction"></div></div><p id="pageSubtitle">Twoje sprawy w jednym miejscu.</p></div><div id="connectionBanner" role="status" aria-live="polite"></div><div id="viewContent"></div><footer class="page-footer"><span id="dataStamp">Dane pojawią się po zalogowaniu.</span><a href="../">Obecny panel <span aria-hidden="true">↗</span></a></footer></main>
     </div>
     <aside class="assistant panel" id="assistant" aria-label="Rozmowa z DONĄ">
       <div class="phead"><button class="assistant-mark" id="core" title="Rozmowa na żywo z DONĄ" aria-label="Rozpocznij rozmowę na żywo"></button><div class="who"><h2>DONA</h2><small id="assistantStatus">Gotowa do rozmowy</small></div><button class="icon-button" id="chatClose" title="Zwiń rozmowę" aria-label="Zwiń rozmowę"><span data-icon="chevrons"></span></button></div>
       <div class="welcome" id="chatWelcome"><span class="eyebrow">ZACZNIJMY OD NAJWAŻNIEJSZEGO</span><h2>Co dziś załatwimy?</h2><p>Napisz, czym mam się zająć. Możesz też przekazać plik lub porozmawiać ze mną.</p><div class="suggestions"><button data-prompt="Sprawdź, jakie mam pilne sprawy do załatwienia. Tylko odczyt i podsumowanie, bez wysyłek ani zmian."><span data-icon="list"></span>Pokaż pilne sprawy<span aria-hidden="true">›</span></button><button data-prompt="Pomóż mi przygotować ofertę dla klienta. Zacznij od ustalenia klienta i zakresu; bez wysyłania ani publikowania."><span data-icon="file"></span>Przygotuj ofertę<span aria-hidden="true">›</span></button></div></div>
       <div class="log" id="log" role="log" aria-label="Wiadomości" aria-live="polite" aria-relevant="additions text"></div>
-      <div class="footer"><div id="operationStatus" role="status" aria-live="polite"></div><div class="voice-toolbar"><button class="text-button" id="dictBtn"><span id="dictIc"></span><span>Dyktuj</span></button><button class="text-button" id="golive"><span id="liveIc"></span><span>Rozmawiaj</span></button><div class="voice-controls"><button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button><button class="iconbtn" id="voiceBtn" title="Odczytywanie odpowiedzi">Głos</button></div></div><div class="composer"><label class="sr-only" for="inp">Wiadomość do DONY</label><textarea id="inp" placeholder="Napisz lub powiedz, czego potrzebujesz…" rows="2"></textarea><div class="composer-bottom"><div><button class="icon-button" id="clipBtn" title="Dołącz plik, do 3,5 MB" aria-label="Dołącz plik"><span data-icon="paperclip"></span></button><button class="icon-button" id="memBtn" title="Zapamiętaj wpisaną notatkę" aria-label="Zapisz tekst w pamięci DONY"><span data-icon="bookmark"></span></button></div><input type="file" id="fileInp" accept="image/*,application/pdf,video/*" hidden><button class="send" id="btn" title="Wyślij wiadomość" aria-label="Wyślij wiadomość"><span id="sendIc"></span></button></div></div><p class="composer-hint">Enter — wyślij · Shift + Enter — nowy wiersz</p></div>
+      <div class="footer"><div id="operationStatus" role="status" aria-live="polite"></div><div class="voice-toolbar"><button class="text-button" id="dictBtn"><span id="dictIc"></span><span>Dyktuj</span></button><button class="text-button" id="golive"><span id="liveIc"></span><span>Rozmawiaj na żywo</span></button><div class="voice-controls"><button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button><button class="iconbtn" id="voiceBtn" title="Odczytywanie odpowiedzi">Głos</button></div></div><div class="composer"><label class="sr-only" for="inp">Wiadomość do DONY</label><textarea id="inp" placeholder="Napisz lub powiedz, czego potrzebujesz…" rows="2"></textarea><div class="composer-bottom"><div><button class="icon-button" id="clipBtn" title="Dołącz plik, do 3,5 MB" aria-label="Dołącz plik"><span data-icon="paperclip"></span></button><button class="icon-button" id="memBtn" title="Zapamiętaj wpisaną notatkę" aria-label="Zapisz tekst w pamięci DONY"><span data-icon="bookmark"></span></button></div><input type="file" id="fileInp" accept="image/*,application/pdf,video/*" hidden><button class="send" id="btn" title="Wyślij wiadomość" aria-label="Wyślij wiadomość"><span id="sendIc"></span></button></div></div><p class="composer-hint">Enter — wyślij · Shift + Enter — nowy wiersz</p></div>
     </aside>
   </div>
-  <div class="live" id="live" role="dialog" aria-modal="true" aria-label="Rozmowa głosowa z DONĄ"><div class="lhead"><span>DONA · ROZMOWA NA ŻYWO</span><button id="lclose" class="icon-button" aria-label="Zakończ rozmowę"><span id="closeIc"></span></button></div><div class="lstage"><div class="lcore" id="lcore"><span>D</span></div><h2>Jestem tutaj.</h2><div id="lhint">Łączę…</div></div><div class="lfoot"><div id="liveSteps"><span data-step="listen">Słucham</span><span data-step="think">Rozmowa</span><span data-step="work">Zadanie</span><span data-step="result">Odpowiedź</span></div><div id="ltrans" class="ltrans" aria-live="polite"></div><div class="liveActions"><button id="muteLive" class="secondary">Wycisz mikrofon</button><button id="resumeAudio" class="secondary" hidden>Włącz dźwięk</button><button id="lstop" class="primary">Zakończ rozmowę</button></div></div></div>
+  <div class="live" id="live" role="dialog" aria-modal="true" aria-labelledby="voiceTitle" data-state="connect">
+    <div class="voice-atmosphere" aria-hidden="true"></div>
+    <header class="lhead">
+      <div class="voice-brand"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c0 9-5 14-14 14 9 0 14 5 14 14 0-9 5-14 14-14-9 0-14-5-14-14Z"/></svg><span>DONA<small>Twoja przestrzeń do rozmowy</small></span></div>
+      <div class="voice-session"><span class="voice-connection"><i aria-hidden="true"></i><span id="voiceSessionLabel">Łączenie</span></span><time id="voiceTimer" aria-label="Czas rozmowy">00:00</time><button id="lclose" class="icon-button" aria-label="Zakończ rozmowę i wróć do panelu"><span id="closeIc"></span></button></div>
+    </header>
+    <div class="lstage">
+      <div class="voice-visual" aria-hidden="true"><div class="voice-aura"></div><div class="lcore" id="lcore"><canvas id="voiceCanvas"></canvas><div class="voice-fallback"></div></div><div class="voice-reflection"></div></div>
+      <div class="voice-status"><span class="voice-kicker" id="voiceKicker">DONA LIVE</span><h2 id="voiceTitle">Za chwilę porozmawiamy.</h2><div id="lhint">Łączę z DONĄ…</div></div>
+    </div>
+    <div class="lfoot">
+      <div id="liveSteps" class="sr-only"><span data-step="listen">Słucham</span><span data-step="think">Myślę</span><span data-step="work">Pracuję nad zadaniem</span><span data-step="result">Mam wynik</span></div>
+      <div class="voice-caption" id="voiceCaption"><span id="captionSpeaker" class="caption-speaker">DONA</span><div id="ltrans" class="ltrans" aria-live="polite"></div></div>
+      <div class="voice-preview-controls" id="voicePreviewControls" hidden><span>Sprawdź animację:</span><button data-preview-state="listen" aria-pressed="true">Słuchanie</button><button data-preview-state="think" aria-pressed="false">Myślenie</button><button data-preview-state="speak" aria-pressed="false">Odpowiedź</button></div>
+      <div class="voice-control-dock">
+        <button id="muteLive" class="voice-control" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/><path class="mic-slash" d="m3 3 18 18"/></svg><span id="muteLiveLabel">Wycisz mikrofon</span></button>
+        <button id="captionToggle" class="voice-control" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 10h3m-3 4h5m2-4h3m-3 4h3"/></svg><span>Napisy</span></button>
+        <span class="voice-control-divider" aria-hidden="true"></span>
+        <button id="lstop" class="voice-control voice-end"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11c5-4 13-4 18 0v5l-5-1v-4M3 11v5l5-1v-4"/></svg><span id="voiceEndLabel">Zakończ rozmowę</span></button>
+      </div>
+      <button id="resumeAudio" class="voice-resume" hidden>Włącz dźwięk</button>
+      <p class="voice-tip" id="voiceTip">Możesz przerwać odpowiedź, po prostu zaczynając mówić.</p>
+    </div>
+  </div>
   <dialog id="branchDialog" aria-labelledby="branchTitle"><div class="dialog-heading"><span class="eyebrow">ZLEĆ ZADANIE</span><h2 id="branchTitle">W czym pomóc?</h2><p>Opisz oczekiwany rezultat. DONA przekaże zadanie właściwemu narzędziu.</p></div><textarea id="branchText" aria-label="Opis zadania" placeholder="Co ma zostać przygotowane?"></textarea><div class="actions"><button id="branchCancel" class="secondary" type="button">Anuluj</button><button id="branchRun" class="primary" type="button">Zleć zadanie</button></div></dialog>
   <dialog id="detailDialog" aria-labelledby="detailTitle"><div class="detail-top"><span class="eyebrow" id="detailType"></span><button class="icon-button" id="detailClose" aria-label="Zamknij szczegóły"><span data-icon="close"></span></button></div><h2 id="detailTitle"></h2><div id="detailBody"></div><div class="actions" id="detailActions"></div></dialog>
   <div class="legacy-geometry" hidden aria-hidden="true"><div id="orbit"><svg id="wires"></svg><div id="nodes"></div></div><div id="lorbit"><svg id="lwires"></svg><div id="lnodes"></div></div><div id="quick"></div></div>

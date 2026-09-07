@@ -2,6 +2,7 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
   const iconPaths = {
+    headset: '<path d="M4 13a8 8 0 0 1 16 0"/><rect x="2" y="12" width="4" height="7" rx="2"/><rect x="18" y="12" width="4" height="7" rx="2"/><path d="M20 19a3 3 0 0 1-3 3h-3"/>',
     home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
     file: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h6"/>',
@@ -134,10 +135,12 @@
   $('loginForm').onsubmit=e=>{e.preventDefault();$('pwBtn').click();};
   $('menuToggle').onclick=()=>{const open=$('app').classList.toggle('nav-open');$('navScrim').hidden=!open;$('menuToggle').setAttribute('aria-expanded',String(open));};
   $('navScrim').onclick=()=>{$('app').classList.remove('nav-open');$('navScrim').hidden=true;$('menuToggle').setAttribute('aria-expanded','false');};
-  $('chatToggle').onclick=openChat;$('chatClose').onclick=closeChat;$('refreshBtn').onclick=loadData;$('detailClose').onclick=()=>$('detailDialog').close();
+  $('chatToggle').onclick=()=>{openChat();$('inp').focus();};$('chatClose').onclick=closeChat;$('refreshBtn').onclick=loadData;$('detailClose').onclick=()=>$('detailDialog').close();
   document.addEventListener('click',e=>{const n=e.target.closest('[data-prompt],[data-tool],[data-detail],[data-discuss],[data-refresh],[data-chat],[data-live],[data-logout],[data-history-refresh]');if(!n)return;
     if(n.hasAttribute('data-prompt'))draft(n.dataset.prompt);else if(n.hasAttribute('data-tool')){window.Dona.branch(n.dataset.tool);openChat();}else if(n.hasAttribute('data-detail'))showDetail(n.dataset.detail,n.dataset.id);else if(n.hasAttribute('data-discuss'))discuss(n.dataset.discuss,n.dataset.id);else if(n.hasAttribute('data-refresh'))loadData();else if(n.hasAttribute('data-chat'))openChat();else if(n.hasAttribute('data-live'))$('golive').click();else if(n.hasAttribute('data-logout')){if(state.demo)location.href='./';else window.Dona.logout();}else if(n.hasAttribute('data-history-refresh')){if(state.demo)toast('Historia jest dostępna po zalogowaniu.');else{window.Dona.refreshHistory();renderHistory();}}});
   document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('tr[data-detail]'))e.target.click();if(e.key==='Escape'){$('app').classList.remove('nav-open');$('navScrim').hidden=true;$('menuToggle').setAttribute('aria-expanded','false');}});
+  function syncChatButton(){const visible=innerWidth>1140?!$('app').classList.contains('chat-collapsed'):$('app').classList.contains('chat-open');$('chatToggle').setAttribute('aria-expanded',String(visible));}
+  window.addEventListener('resize',syncChatButton);syncChatButton();
   window.addEventListener('hashchange',navigate);
   window.addEventListener('dona:open-chat',openChat);
   window.addEventListener('dona:notice',e=>toast(e.detail));

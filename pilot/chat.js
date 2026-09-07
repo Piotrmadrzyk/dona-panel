@@ -312,7 +312,7 @@
   }
   buildLiveOrbit();
 
-  function showLive(on){ liveEl.classList.toggle("show",on); }
+  function showLive(on){ liveEl.classList.toggle("show",on); emit("voice-visibility",{open:on}); }
   function endLive(silent){
     liveOn=false; showLive(false); speakAnim(false);
     try{ if(dc) dc.close(); }catch(e){} dc=null;
@@ -325,13 +325,12 @@
   lclose.addEventListener("click",function(){ endLive(false); });
 
   golive.addEventListener("click",function(){
-    if(isDemo){demoNotice();return;}
+    if(isDemo){emit("voice-preview");return;}
     if(liveOn){ endLive(false); return; }
     if(!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       add("sys","Rozmowa na żywo działa w pełnej wersji panelu (poza n8n). Na razie pisz tekstem lub dyktuj.");
       return;
     }
-    if(!confirm("Włączyć rozmowę na żywo z Doną?\n\nTo tryb głosowy Realtime — płatny według czasu rozmowy. Świetny na pokaz; w codziennej pracy pisz tekstem.")) return;
     startLive();
   });
 
@@ -488,10 +487,13 @@ document.getElementById('branchText').onkeydown=function(e){if((e.ctrlKey||e.met
 document.querySelectorAll('.node,.qpill').forEach(function(n){var label=(n.textContent||'').trim();if(branchMap[label])n.dataset.branch=branchMap[label];n.setAttribute('role','button');n.tabIndex=0;n.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();n.click();}});});
 document.getElementById('logoutBtn').onclick=function(){if(busy)return;endLive(true);stopAllSpeech();sessionPw='';lsDel(KEY);log.textContent='';histWczytana=false;authenticated=false;openGate();phase('Wylogowano');};
 function stopAllSpeech(){try{if(synth)synth.cancel();}catch(e){}try{if(ttsAudio){ttsAudio.pause();ttsAudio.src='';ttsAudio=null;}}catch(e){}speakAnim(false);}
+function liveCaption(text,speaker){ltrans.textContent=text;emit('voice-caption',{speaker:speaker||'DONA'});}
 function liveState(s,text){
+  if(s==='listen'&&rtSession&&rtSession.micMuted){s='mute';text='MIKROFON WYCISZONY';}
   if(lhint)lhint.textContent=text||s;
   if(lcore){lcore.classList.toggle('think',s==='work'||s==='think');lcore.classList.toggle('speak',s==='speak');}
   document.querySelectorAll('#liveSteps [data-step]').forEach(function(n){n.classList.toggle('active',n.dataset.step===s);});
+  emit('voice-state',{state:s,text:text});
 }
 function isCurrent(s){return !!s&&!s.closed&&rtSession===s&&liveOn;}
 function closeTransport(s){
@@ -503,6 +505,7 @@ function closeTransport(s){
   try{if(s.audio){s.audio.pause();s.audio.srcObject=null;s.audio.remove();}}catch(e){}
 }
 function endLive(silent){
+  if(isDemo){showLive(false);return;}
   var s=rtSession;rtSession=null;liveOn=false;closeTransport(s);pc=dc=micStream=audioEl=null;
   showLive(false);speakAnim(false);if(lcore)lcore.classList.remove('think');
   if(!silent){add('sys',s&&s.pending?'Rozmowa zakończona. Wysłane zlecenie może nadal pracować — zakończenie Live go nie anuluje.':'Rozmowa na żywo zakończona. Mikrofon wyłączony.');}
@@ -534,7 +537,7 @@ async function runLiveTool(s,it){
     add('dona',answer);zapiszHist('dona',answer);phase('Wynik systemu otrzymany — sprawdź odpowiedź');
     if(isCurrent(s)){
       sendRT(s,{type:'conversation.item.create',item:{type:'function_call_output',call_id:id,output:JSON.stringify({odpowiedz:answer})}});
-      ltrans.textContent=answer;liveState('result','ODPOWIEDŹ SYSTEMU OTRZYMANA');s.replyDue=true;scheduleReply(s);
+      liveCaption(answer,'DONA');liveState('result','ODPOWIEDŹ SYSTEMU OTRZYMANA');s.replyDue=true;scheduleReply(s);
     }
   }catch(e){
     var msg=requestError(e);add('sys',msg);phase('Wynik zadania niepotwierdzony');
@@ -544,17 +547,17 @@ async function runLiveTool(s,it){
 function onRealtimeEvent(ev,session){
   var s=session||rtSession;if(!isCurrent(s))return;
   var m;try{m=JSON.parse(ev.data);}catch(e){return;}var t=m.type||'';
-  if(t==='input_audio_buffer.speech_started'){s.userSpeaking=true;touchLive(s);liveState('listen','SŁUCHAM');s.text='';ltrans.textContent='Słucham…';}
+  if(t==='input_audio_buffer.speech_started'){s.userSpeaking=true;touchLive(s);liveState('listen','SŁUCHAM');s.text='';liveCaption('','Ty');}
   if(t==='input_audio_buffer.speech_stopped'){s.userSpeaking=false;liveState('think','ROZUMIEM…');}
   if(t==='response.created'){s.responding=true;s.text='';liveState(s.pending?'work':'think',s.pending?'ZADANIE W TOKU':'DONA ODPOWIADA…');}
-  if(t==='response.output_audio_transcript.delta'||t==='response.audio_transcript.delta'){s.text+=m.delta||'';ltrans.textContent=s.text;}
+  if(t==='response.output_audio_transcript.delta'||t==='response.audio_transcript.delta'){s.text+=m.delta||'';liveCaption(s.text,'DONA');}
   if(t==='output_audio_buffer.started'){liveState('speak','DONA MÓWI');}
   if(t==='output_audio_buffer.stopped'||t==='output_audio_buffer.cleared'){liveState(s.pending?'work':'listen',s.pending?'ZADANIE W TOKU — MOŻESZ DALEJ ROZMAWIAĆ':'SŁUCHAM');touchLive(s);}
   if(t==='conversation.item.input_audio_transcription.completed'&&m.transcript){
-    var key='u:'+(m.item_id||m.event_id);if(!s.seenText.has(key)){s.seenText.add(key);add('me',m.transcript);zapiszHist('user',m.transcript);}
+    var key='u:'+(m.item_id||m.event_id);if(!s.seenText.has(key)){s.seenText.add(key);add('me',m.transcript);zapiszHist('user',m.transcript);liveCaption(m.transcript,'Ty');}
   }
   if((t==='response.output_audio_transcript.done'||t==='response.audio_transcript.done')&&m.transcript){
-    var ak='a:'+(m.item_id||m.response_id||m.event_id);if(!s.seenText.has(ak)){s.seenText.add(ak);add('voice',m.transcript);zapiszHist('dona',m.transcript);}ltrans.textContent=m.transcript;
+    var ak='a:'+(m.item_id||m.response_id||m.event_id);if(!s.seenText.has(ak)){s.seenText.add(ak);add('voice',m.transcript);zapiszHist('dona',m.transcript);}liveCaption(m.transcript,'DONA');
   }
   if(t==='response.function_call_arguments.done')runLiveTool(s,m);
   if(t==='response.done'){
@@ -578,16 +581,16 @@ async function startLive(){
   var s={id:++rtSequence,closed:false,pc:null,dc:null,stream:null,audio:null,abort:new AbortController(),seenCalls:new Set(),seenText:new Set(),pending:0,responding:false,userSpeaking:false,replyDue:false,text:''};
   rtSession=s;liveOn=true;stopAllSpeech();
   try{if(typeof recording!=='undefined'&&recording&&rec)rec.abort();}catch(e){}
-  document.getElementById('muteLive').textContent='Wycisz mikrofon';document.getElementById('resumeAudio').hidden=true;
-  showLive(true);buildLiveOrbit();liveState('connect','ŁĄCZĘ…');ltrans.textContent='Zezwól na mikrofon. Live jest usługą płatną.';
+  document.getElementById('muteLiveLabel').textContent='Wycisz mikrofon';document.getElementById('muteLive').setAttribute('aria-pressed','false');document.getElementById('resumeAudio').hidden=true;
+  showLive(true);buildLiveOrbit();liveState('connect','ŁĄCZĘ…');liveCaption('Zezwól na użycie mikrofonu, aby rozpocząć rozmowę.','');
   s.connectionTimer=setTimeout(function(){failLive(s,'Połączenie Live nie zostało zestawione w 30 sekund. Mikrofon wyłączony.');},30000);
   try{
     var stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-    if(!isCurrent(s)){stream.getTracks().forEach(function(t){t.stop();});return;}s.stream=stream;micStream=stream;
+    if(!isCurrent(s)){stream.getTracks().forEach(function(t){t.stop();});return;}s.stream=stream;micStream=stream;emit('voice-stream',{kind:'input',stream:stream});
     var tok=await panelPost(TOKEN_URL,{haslo:sessionPw},20000);if(!isCurrent(s))return;
     var key=tok.value||(tok.client_secret&&tok.client_secret.value);if(typeof key!=='string'||!key)throw new Error('TOKEN');
     s.pc=new RTCPeerConnection();pc=s.pc;s.audio=document.createElement('audio');audioEl=s.audio;s.audio.autoplay=true;s.audio.setAttribute('playsinline','');document.body.appendChild(s.audio);
-    s.pc.ontrack=function(e){if(!isCurrent(s))return;s.audio.srcObject=e.streams[0]||new MediaStream([e.track]);s.audio.play().catch(function(){if(isCurrent(s)){document.getElementById('resumeAudio').hidden=false;liveState('error','KLIKNIJ „WŁĄCZ DŹWIĘK”');}});};
+    s.pc.ontrack=function(e){if(!isCurrent(s))return;s.audio.srcObject=e.streams[0]||new MediaStream([e.track]);emit('voice-stream',{kind:'output',stream:s.audio.srcObject});s.audio.play().catch(function(){if(isCurrent(s)){document.getElementById('resumeAudio').hidden=false;liveState('error','KLIKNIJ „WŁĄCZ DŹWIĘK”');}});};
     s.pc.onconnectionstatechange=function(){
       if(!isCurrent(s))return;var st=s.pc.connectionState;
       if(st==='failed'||st==='closed')failLive(s,'Połączenie Live przerwane. Mikrofon wyłączony.');
@@ -598,7 +601,7 @@ async function startLive(){
     s.dc=s.pc.createDataChannel('oai-events');dc=s.dc;s.dc.onmessage=function(e){onRealtimeEvent(e,s);};
     s.dc.onclose=function(){if(isCurrent(s))failLive(s,'Kanał Live został zamknięty. Mikrofon wyłączony.');};
     s.dc.onopen=function(){
-      if(!isCurrent(s))return;clearTimeout(s.connectionTimer);liveState('listen','SŁUCHAM — MÓW NORMALNIE');ltrans.textContent='Możesz rozmawiać i zlecać zadania. Aby przerwać odpowiedź, zacznij mówić.';touchLive(s);
+      if(!isCurrent(s))return;clearTimeout(s.connectionTimer);emit('voice-ready');liveState('listen','SŁUCHAM — MÓW NORMALNIE');liveCaption('','DONA');touchLive(s);
       s.maxTimer=setTimeout(function(){failLive(s,'Sesja Live zakończona po 15 minutach. Możesz uruchomić kolejną.');},900000);
     };
     var offer=await s.pc.createOffer();if(!isCurrent(s))return;await s.pc.setLocalDescription(offer);
@@ -608,7 +611,7 @@ async function startLive(){
   }catch(e){if(isCurrent(s))failLive(s,e&&e.name==='NotAllowedError'?'Mikrofon zablokowany. Zezwól na mikrofon w ustawieniach tej witryny.':'Nie udało się uruchomić Live. Mikrofon wyłączony; sesja nie jest ponawiana automatycznie.');}
 }
 document.getElementById('resumeAudio').onclick=function(){var s=rtSession;if(isCurrent(s)&&s.audio)s.audio.play().then(function(){document.getElementById('resumeAudio').hidden=true;}).catch(function(){});};
-document.getElementById('muteLive').onclick=function(){var s=rtSession;if(!isCurrent(s)||!s.stream)return;var tracks=s.stream.getAudioTracks();var enabled=!tracks[0].enabled;tracks.forEach(function(t){t.enabled=enabled;});this.textContent=enabled?'Wycisz mikrofon':'Włącz mikrofon';liveState(enabled?'listen':'mute',enabled?'SŁUCHAM':'MIKROFON WYCISZONY');};
+document.getElementById('muteLive').onclick=function(){var s=rtSession;if(!isCurrent(s)||!s.stream)return;var tracks=s.stream.getAudioTracks();var enabled=!tracks[0].enabled;tracks.forEach(function(t){t.enabled=enabled;});s.micMuted=!enabled;document.getElementById('muteLiveLabel').textContent=enabled?'Wycisz mikrofon':'Włącz mikrofon';this.setAttribute('aria-pressed',String(!enabled));liveState(enabled?'listen':'mute',enabled?'SŁUCHAM':'MIKROFON WYCISZONY');};
 window.addEventListener('pagehide',function(){endLive(true);stopAllSpeech();});
 phase('');
 window.Dona={

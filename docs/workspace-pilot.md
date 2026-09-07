@@ -39,3 +39,11 @@ Oddzielne konta, sesje i przestrzenie firmowe, kontrola uprawnień po stronie se
 Siedem testów automatycznych przeszło: hasło, odrzucanie tożsamości z przeglądarki, puste tabele, izolacja danych, dozwolone pola, bezpieczne linki/kwoty, ograniczenie list i nietypowy podgląd zgody. Test na działającym n8n potwierdził snapshot HTTP 200, błędne hasło 401, obcą firmę 403, CORS i strukturę kolekcji. Tymczasowy endpoint kontrolny wyłączono i usunięto.
 
 W opublikowanej wersji przeglądarkowej sprawdzono pulpit demo, szczegóły zgody, przygotowanie wiadomości bez automatycznego wysyłania, blokadę wykonywania działań w demo, nawigację, wyszukiwanie i łączenie go z filtrem statusu. Funkcje mikrofonu, rozmowy na żywo, faktyczny zapis notatki i wysłanie pliku wymagają testu właściciela; podczas weryfikacji nie wykonywano tych działań.
+
+## DONA Live 4.1
+
+Ekran rozmowy ma odrębny ciemny interfejs, animowaną świetlną formę, napisy, czas połączenia oraz przyciski mikrofonu i zakończenia. Górny pasek panelu zawiera jawne wejścia „Czat z DONĄ” i „Rozmawiaj na żywo”.
+
+`voice-audio.js` analizuje już istniejące strumienie mikrofonu i odpowiedzi, bez nowego żądania dostępu do mikrofonu, bez dodatkowej transmisji i bez połączenia z wyjściem głośnikowym. Warstwa rozmowy nadal odpowiada za zatrzymanie swoich ścieżek; warstwa wizualna zwalnia analizatory i AudioContext. Animacja działa maksymalnie około 30 klatek/s, zatrzymuje się w ukrytej karcie i respektuje ograniczenie ruchu w systemie. Referencje: [AnalyserNode](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode), [createMediaStreamSource](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createMediaStreamSource).
+
+Podgląd `?demo=1&voice=1` nie uruchamia mikrofonu, sesji Realtime ani zleceń. Ma oznaczone przykładowe stany słuchania, myślenia i odpowiedzi. Testy `node --test tests/voice-audio.test.cjs` sprawdzają ciszę, ograniczenie amplitudy, wyciszenie/koniec ścieżki, wymianę strumienia, brak dodatkowego odsłuchu i zwalnianie zasobów. Rzeczywista reakcja na mikrofon wymaga sprawdzenia na urządzeniu właściciela.
