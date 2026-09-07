@@ -33,3 +33,9 @@ Zapisywanie danych wykonań workflow jest wyłączone dla sukcesów, błędów i
 ## Kolejny etap po testach właściciela
 
 Oddzielne konta, sesje i przestrzenie firmowe, kontrola uprawnień po stronie serwera dla każdej operacji, izolowana historia, pełny obieg decyzji w interfejsie, paginacja, monitoring i pomiar kosztów. Dopiero dalej onboarding klientów i rozliczenia SaaS.
+
+## Weryfikacja 7 września 2026
+
+Siedem testów automatycznych przeszło: hasło, odrzucanie tożsamości z przeglądarki, puste tabele, izolacja danych, dozwolone pola, bezpieczne linki/kwoty, ograniczenie list i nietypowy podgląd zgody. Test na działającym n8n potwierdził snapshot HTTP 200, błędne hasło 401, obcą firmę 403, CORS i strukturę kolekcji. Tymczasowy endpoint kontrolny wyłączono i usunięto.
+
+W opublikowanej wersji przeglądarkowej sprawdzono pulpit demo, szczegóły zgody, przygotowanie wiadomości bez automatycznego wysyłania, blokadę wykonywania działań w demo, nawigację, wyszukiwanie i łączenie go z filtrem statusu. Funkcje mikrofonu, rozmowy na żywo, faktyczny zapis notatki i wysłanie pliku wymagają testu właściciela; podczas weryfikacji nie wykonywano tych działań.
