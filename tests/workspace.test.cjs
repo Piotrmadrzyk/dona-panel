@@ -13,7 +13,7 @@ function run(source, records, input=[]) {
 function auth(body, secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}]) {
   return run(authSource,{'Workspace Request':[{body}]},secrets);
 }
-function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Documents','Events'].map(n=>['Read '+n,[{}]]))};}
+function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Documents','Events','Brain','Social Profiles','Social Posts'].map(n=>['Read '+n,[{}]]))};}
 test('only the correct password can authorize snapshot',()=>{
   for(const body of [undefined,null,[],{}, {operation:'snapshot',haslo:'wrong'}, {operation:'snapshot',haslo:{}}])assert.equal(auth(body).statusCode,401);
   assert.equal(auth({operation:'snapshot',haslo:'test-only-password'}).authorized,true);
@@ -43,4 +43,10 @@ test('large collections honestly signal truncated results',()=>{
 });
 test('malformed approval payloads cannot break the snapshot',()=>{
   for(const payload_preview of ['null','[]','123','not json',null]){const f=fixture();f['Read Approvals']=[{id:1,tenant_id:'PM',approval_id:'one',payload_preview}];assert.equal(run(snapshotSource,f).approvals.length,1);}
+});
+test('brain and Facebook rows remain owner scoped with no extra raw fields',()=>{
+ const f=fixture();f['Read Brain']=[{id:1,tenant_id:'OTHER',tresc:'FOREIGN'},{id:2,tenant_id:'PM',wpis_id:'own',tresc:'Own memory',zrodlo_kanal:'panel',apiKey:'HIDDEN'}];
+ f['Read Social Profiles']=[{id:1,profile_key:'edwardjanusz',fb_page_id:'WRONG',brand_name:'FOREIGN'},{id:2,profile_key:'edwardjanusz',fb_page_id:'61594093026807',brand_name:'Janusz',posting_enabled:false,connection_status:'META_NOT_CONNECTED'}];
+ f['Read Social Posts']=[{id:1,profile_key:'edwardjanusz',fb_page_id:'61594093026807',post_key:'draft',caption:'Draft',status:'DRAFT',image_url:'javascript:bad',access_token:'HIDDEN'}];
+ const r=run(snapshotSource,f);assert.equal(r.memory.length,1);assert.equal(r.socialProfiles.length,1);assert.equal(r.socialPosts[0].image,'');assert.equal(r.connections.find(c=>c.id==='edwardjanusz').status,'NOT_CONNECTED');assert.doesNotMatch(JSON.stringify(r),/FOREIGN|HIDDEN/);
 });

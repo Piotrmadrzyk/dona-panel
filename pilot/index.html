@@ -9,10 +9,13 @@
   <title>DONA — Twój dzień</title>
   <link rel="stylesheet" href="./workspace.css?v=4.1.0">
   <link rel="stylesheet" href="./voice.css?v=4.1.0">
+  <link rel="stylesheet" href="./centre.css?v=4.2.0">
   <script defer src="./voice-audio.js?v=4.1.0"></script>
-  <script defer src="./chat.js?v=4.1.1"></script>
-  <script defer src="./workspace.js?v=4.1.1"></script>
-  <script defer src="./voice.js?v=4.1.0"></script>
+  <script defer src="./chat.js?v=4.2.0"></script>
+  <script defer src="./particles.js?v=4.2.0"></script>
+  <script defer src="./centre.js?v=4.2.0"></script>
+  <script defer src="./workspace.js?v=4.2.0"></script>
+  <script defer src="./voice.js?v=4.2.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Przejdź do treści</a>
@@ -38,6 +41,7 @@
       <a class="brand" href="#today" aria-label="DONA — strona główna"><span class="brand-mark" aria-hidden="true">D</span><span><strong>DONA</strong><small>Twój asystent biznesowy</small></span></a>
       <div class="company"><span class="company-monogram">P</span><span><strong id="companyName">Probatum</strong><small>Przestrzeń firmowa</small></span><span class="company-lock" data-icon="lock"></span></div>
       <nav id="mainNav">
+        <a href="#dona" data-view="dona"><span data-icon="headset"></span>Przestrzeń Dony</a>
         <a href="#today" data-view="today" aria-current="page"><span data-icon="home"></span>Dzisiaj</a>
         <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Do zatwierdzenia <span class="nav-count" id="approvalCount" hidden></span></a>
         <a href="#inquiries" data-view="inquiries"><span data-icon="mail"></span>Zapytania <span class="nav-count" id="inquiryCount" hidden></span></a>
@@ -45,6 +49,11 @@
         <a href="#clients" data-view="clients"><span data-icon="users"></span>Klienci</a>
         <a href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Kalendarz</a>
         <a href="#files" data-view="files"><span data-icon="folder"></span>Pliki</a>
+        <div class="nav-label">DONA I JEJ PRACA</div>
+        <a href="#knowledge" data-view="knowledge"><span data-icon="bookmark"></span>Co Dona wie</a>
+        <a href="#connections" data-view="connections"><span data-icon="globe"></span>Połączenia</a>
+        <a href="#social" data-view="social"><span data-icon="media"></span>Posty Facebook</a>
+        <a href="#activity" data-view="activity"><span data-icon="list"></span>Przebieg pracy</a>
         <div class="nav-label">TWOJE NARZĘDZIA</div>
         <a href="#marketing" data-view="marketing"><span data-icon="chart"></span>Marketing i WWW</a>
         <a href="#tools" data-view="tools"><span data-icon="grid"></span>Wszystkie narzędzia</a>
@@ -77,6 +86,7 @@
       <div class="voice-brand"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c0 9-5 14-14 14 9 0 14 5 14 14 0-9 5-14 14-14-9 0-14-5-14-14Z"/></svg><span>DONA<small>Twoja przestrzeń do rozmowy</small></span></div>
       <div class="voice-session"><span class="voice-connection"><i aria-hidden="true"></i><span id="voiceSessionLabel">Łączenie</span></span><time id="voiceTimer" aria-label="Czas rozmowy">00:00</time><button id="lclose" class="icon-button" aria-label="Zakończ rozmowę i wróć do panelu"><span id="closeIc"></span></button></div>
     </header>
+    <details class="live-results"><summary>Wyniki i przebieg rozmowy</summary><div data-result-feed><p>Tu pojawią się odpowiedzi na Twoje polecenia.</p></div></details>
     <div class="lstage">
       <div class="voice-visual" aria-hidden="true"><div class="voice-aura"></div><div class="lcore" id="lcore"><canvas id="voiceCanvas"></canvas><div class="voice-fallback"></div></div><div class="voice-reflection"></div></div>
       <div class="voice-status"><span class="voice-kicker" id="voiceKicker">DONA LIVE</span><h2 id="voiceTitle">Za chwilę porozmawiamy.</h2><div id="lhint">Łączę z DONĄ…</div></div>

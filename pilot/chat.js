@@ -386,7 +386,7 @@
   }
 
 
-var panelVersion = '4.0-pilot';
+var panelVersion = '4.2.0';
 var panelConversationId = lsGet('pm_panel_conversation_id') || 'panel-owner';
 var panelBusyCount = 0, rtSession = null, rtSequence = 0;
 var BRANCH_URL = API + '/dona-panel-branch';
@@ -434,6 +434,9 @@ function add(cls,text){
 async function panelPost(url,body,timeout){
   if(isDemo)throw new Error("DEMO");
   var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort();},timeout||165000);
+  var tracked=!body.probe&&((url===CHAT_URL&&body.wiadomosc)||url===BRANCH_URL);
+  var operationId=tracked?'op-'+Date.now()+'-'+Math.random().toString(36).slice(2):null;
+  if(tracked)emit('operation',{id:operationId,status:'pending',label:body.galaz?'Gałąź: '+body.galaz:'Dona'});
   try{
     var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal,cache:'no-store'});
     var raw=await r.text(),j;try{j=JSON.parse(raw);}catch(e){throw new Error('INVALID_RESPONSE');}
@@ -442,8 +445,9 @@ async function panelPost(url,body,timeout){
     }
     if(!r.ok)throw new Error('HTTP '+r.status);
     if(j.error)throw new Error('BACKEND_ERROR');
+    if(tracked)emit('operation',{id:operationId,status:j.ok===false?'error':'response',answer:String(j.answer||'Brak treści odpowiedzi').slice(0,12000)});
     return j;
-  }finally{clearTimeout(timer);}
+  }catch(e){if(tracked)emit('operation',{id:operationId,status:'error',error:e.message==='AUTH'?'Sesja wygasła. Zaloguj się ponownie.':'Nie potwierdzono wyniku. Sprawdź stan przed ponowieniem polecenia.'});throw e;}finally{clearTimeout(timer);}
 }
 async function ask(text,pwOverride,probe,live){
   var j=await panelPost(CHAT_URL,{wiadomosc:String(text||''),haslo:pwOverride!==undefined?pwOverride:sessionPw,probe:!!probe,conversation_id:panelConversationId,kanal:live?'panel_live':'panel'});

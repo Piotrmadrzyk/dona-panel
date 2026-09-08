@@ -28,7 +28,7 @@ for(const file of ['index.html','pilot/chat.js']){
   const ctx=boot(blocked);assert.equal(ctx.lsSet(KEY,'test-only'),false);assert.equal(ctx.lsGet(KEY),'test-only');ctx.lsDel(KEY);assert.equal(ctx.lsGet(KEY),'');
  });
  test(file+': backend auth rejection clears remembered access; network error retains it',async()=>{
-  const ctx=boot();Object.assign(ctx,{KEY,sessionPw:'test-only',rtSession:null,isDemo:false,setTimeout,clearTimeout,AbortController,openGate(){ctx.gateOpened=true}});
+  const ctx=boot();Object.assign(ctx,{KEY,CHAT_URL:'chat',BRANCH_URL:'branch',emit(){},sessionPw:'test-only',rtSession:null,isDemo:false,setTimeout,clearTimeout,AbortController,openGate(){ctx.gateOpened=true}});
   vm.runInContext(src.slice(src.indexOf('async function panelPost('),src.indexOf('async function ask(',src.indexOf('async function panelPost('))),ctx);
   ctx.lsSet(KEY,'test-only');ctx.fetch=async()=>{throw Error('offline')};
   await assert.rejects(ctx.panelPost('test',{}),/offline/);assert.equal(ctx.lsGet(KEY),'test-only');
