@@ -21,7 +21,7 @@ if (b.kind==='social') {
   const digest=hash(JSON.stringify([r.profile_key,r.fb_page_id,r.source_url,r.image_url,r.image_sha256,r.caption]));
   if(r.status!=='DRAFT'||r.caption_hash!==b.revision||digest!==b.revision)return deny('stale_content');
   if(!r.source_url.startsWith(page.host)||!r.image_url.startsWith(page.host)||!/^[a-f0-9]{64}$/.test(r.image_sha256||''))return deny('invalid_material');
-  return [{json:{ok:true,kind:'social',rowId:r.id,id:r.post_key,brandId:r.profile_key,previousStatus:r.status,captionHash:digest,caption:r.caption,imageHash:r.image_sha256,now,status:b.action==='approve'?'APPROVED':'REJECTED',title:b.action==='approve'?'Zatwierdzono post: '+String(r.source_title||r.post_key).slice(0,180):'Odrzucono szkic posta',approvedHash:b.action==='approve'?digest:''}}];
+  return [{json:{ok:true,kind:'social',rowId:r.id,id:r.post_key,brandId:r.profile_key,previousStatus:r.status,profileKey:r.profile_key,pageId:r.fb_page_id,sourceUrl:r.source_url,imageUrl:r.image_url,captionHash:digest,caption:r.caption,imageHash:r.image_sha256,now,status:b.action==='approve'?'APPROVED':'REJECTED',title:b.action==='approve'?'Zatwierdzono post: '+String(r.source_title||r.post_key).slice(0,180):'Odrzucono szkic posta',approvedHash:b.action==='approve'?digest:''}}];
 }
 const rows=$('Read Approval Target').all().map(i=>i.json).filter(r=>r.approval_id===b.id&&r.tenant_id==='PM');
 if(rows.length!==1)return deny('not_found',404);
@@ -31,4 +31,4 @@ if(!r.expires_at||!Number.isFinite(Date.parse(r.expires_at))||Date.parse(r.expir
 let payload;try{payload=JSON.parse(r.payload_preview);}catch{return deny('invalid_payload');}
 const fields=['do','temat','tresc','konto','to','subject','body','sendTo','recipient','thread_id','message_id','in_reply_to','references'];
 if(b.action==='approve'&&(!/^send_email(?:_reply_recepcja_poczty)?$/i.test(r.action_type||'')||!payload||typeof payload!=='object'||Array.isArray(payload)||!(payload.do||payload.to||payload.sendTo||payload.recipient)||!(payload.tresc||payload.body)||!Object.keys(payload).every(k=>fields.includes(k)&&typeof payload[k]==='string'&&payload[k].length<=30000)))return deny('unsupported_action',400);
-return [{json:{ok:true,kind:'approval',rowId:r.id,id:r.approval_id,brandId:'',previousStatus:'REQUESTED',payloadPreview:r.payload_preview,payloadHash:r.payload_hash,expiresAt:r.expires_at,now,status:b.action==='approve'?'APPROVED':'REJECTED',title:b.action==='approve'?'Zatwierdzono przygotowaną wiadomość':'Odrzucono prośbę o zgodę'}}];
+return [{json:{ok:true,kind:'approval',rowId:r.id,id:r.approval_id,brandId:'',previousStatus:'REQUESTED',actionType:r.action_type,payloadPreview:r.payload_preview,payloadHash:r.payload_hash,expiresAt:r.expires_at,now,status:b.action==='approve'?'APPROVED':'REJECTED',title:b.action==='approve'?'Zatwierdzono przygotowaną wiadomość':'Odrzucono prośbę o zgodę'}}];
