@@ -1,0 +1,30 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+
+const js=fs.readFileSync('pilot/trace.js','utf8');
+const css=fs.readFileSync('pilot/trace.css','utf8');
+const html=fs.readFileSync('pilot/index.html','utf8');
+
+test('webinar stage distinguishes simulations from live operations',()=>{
+  assert.match(js,/SYMULACJA · DANE PRZYKŁADOWE/);
+  assert.match(js,/OPERACJA NA ŻYWO/);
+  assert.match(js,/TRYB DEMO · NIC NIE URUCHOMIONO/);
+  assert.match(js,/Nie połączyła się z pocztą, kalendarzem ani Facebookiem/);
+  assert.doesNotMatch(js,/fetch\s*\(|XMLHttpRequest|Dona\.request\s*\(/);
+});
+
+test('webinar mode exposes agents, evidence and approval control in one stage',()=>{
+  for(const marker of ['trace-stage','trace-proof','trace-result','trace-progress','Bramka decyzji','Bramka publikacji'])assert.match(js,new RegExp(marker));
+  assert.match(js,/Wysyłki i publikacje wymagają osobnej zgody/);
+  assert.match(css,/body\.webinar-mode \.app\{grid-template-columns:76px minmax\(0,1fr\) 360px\}/);
+  assert.match(css,/body\.webinar-mode \.thread-rail\{display:none\}/);
+});
+
+test('webinar assets are cache-busted together',()=>{
+  assert.match(html,/trace\.css\?v=5\.2\.0/);
+  assert.match(html,/trace\.js\?v=5\.2\.0/);
+  assert.match(html,/centre\.css\?v=5\.2\.0/);
+  assert.match(html,/centre\.js\?v=5\.2\.0/);
+  assert.match(html,/workspace\.js\?v=5\.2\.0/);
+});

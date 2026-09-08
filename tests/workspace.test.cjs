@@ -50,3 +50,13 @@ test('brain and Facebook rows remain owner scoped with no extra raw fields',()=>
  f['Read Social Posts']=[{id:1,profile_key:'edwardjanusz',fb_page_id:'61594093026807',post_key:'draft',caption:'Draft',status:'DRAFT',image_url:'javascript:bad',access_token:'HIDDEN'}];
  const r=run(snapshotSource,f);assert.equal(r.memory.length,1);assert.equal(r.socialProfiles.length,1);assert.equal(r.socialPosts[0].image,'');assert.equal(r.connections.find(c=>c.id==='edwardjanusz').status,'NOT_CONNECTED');assert.doesNotMatch(JSON.stringify(r),/FOREIGN|HIDDEN/);
 });
+test('Buffer channel read is visible without enabling Facebook publishing',()=>{
+ const f=fixture();
+ f['Read Social Profiles']=[{id:1,profile_key:'silverandglass',fb_page_id:'61593755021660',brand_name:'Silver & Glass',posting_enabled:false,connection_status:'BUFFER_CONNECTED',buffer_channel_id:'buffer-silver',buffer_checked_at:'2026-09-08T23:29:10.782Z'}];
+ const r=run(snapshotSource,f),profile=r.socialProfiles[0],connection=r.connections.find(c=>c.id==='silverandglass');
+ assert.equal(profile.bufferChannelId,'buffer-silver');
+ assert.equal(profile.bufferCheckedAt,'2026-09-08T23:29:10.782Z');
+ assert.equal(profile.enabled,false);
+ assert.equal(connection.status,'READ_OK');
+ assert.match(connection.detail,/Automatyczna publikacja pozostaje wyłączona/);
+});
