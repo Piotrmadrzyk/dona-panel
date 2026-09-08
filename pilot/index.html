@@ -9,13 +9,16 @@
   <title>DONA — Twój dzień</title>
   <link rel="stylesheet" href="./workspace.css?v=4.1.0">
   <link rel="stylesheet" href="./voice.css?v=4.1.0">
-  <link rel="stylesheet" href="./centre.css?v=4.2.0">
+  <link rel="stylesheet" href="./centre.css?v=4.3.0">
+  <link rel="stylesheet" href="./command.css?v=4.3.0">
   <script defer src="./voice-audio.js?v=4.1.0"></script>
-  <script defer src="./chat.js?v=4.2.0"></script>
-  <script defer src="./particles.js?v=4.2.0"></script>
-  <script defer src="./centre.js?v=4.2.0"></script>
-  <script defer src="./workspace.js?v=4.2.0"></script>
-  <script defer src="./voice.js?v=4.2.0"></script>
+  <script defer src="./chat.js?v=4.3.0"></script>
+  <script defer src="./particles.js?v=4.3.0"></script>
+  <script defer src="./centre.js?v=4.3.0"></script>
+  <script defer src="./command-model.js?v=4.3.0"></script>
+  <script defer src="./command.js?v=4.3.0"></script>
+  <script defer src="./workspace.js?v=4.3.0"></script>
+  <script defer src="./voice.js?v=4.3.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Przejdź do treści</a>
@@ -40,20 +43,23 @@
     <aside class="sidebar" id="sidebar" aria-label="Menu główne">
       <a class="brand" href="#today" aria-label="DONA — strona główna"><span class="brand-mark" aria-hidden="true">D</span><span><strong>DONA</strong><small>Twój asystent biznesowy</small></span></a>
       <div class="company"><span class="company-monogram">P</span><span><strong id="companyName">Probatum</strong><small>Przestrzeń firmowa</small></span><span class="company-lock" data-icon="lock"></span></div>
+      <label class="workspace-select"><span>Przestrzeń</span><select id="workspaceBrand" aria-label="Wybierz markę"></select></label>
       <nav id="mainNav">
         <a href="#dona" data-view="dona"><span data-icon="headset"></span>Przestrzeń Dony</a>
-        <a href="#today" data-view="today" aria-current="page"><span data-icon="home"></span>Dzisiaj</a>
-        <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Do zatwierdzenia <span class="nav-count" id="approvalCount" hidden></span></a>
+        <a href="#today" data-view="today" aria-current="page"><span data-icon="home"></span>Poranny brief</a>
+        <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Skrzynka decyzji <span class="nav-count" id="approvalCount" hidden></span></a>
         <a href="#inquiries" data-view="inquiries"><span data-icon="mail"></span>Zapytania <span class="nav-count" id="inquiryCount" hidden></span></a>
         <a href="#offers" data-view="offers"><span data-icon="file"></span>Oferty</a>
         <a href="#clients" data-view="clients"><span data-icon="users"></span>Klienci</a>
-        <a href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Kalendarz</a>
+        <a href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Kalendarz spotkań</a>
         <a href="#files" data-view="files"><span data-icon="folder"></span>Pliki</a>
         <div class="nav-label">DONA I JEJ PRACA</div>
+        <a href="#spaces" data-view="spaces"><span data-icon="grid"></span>Twoje marki</a>
+        <a href="#health" data-view="health"><span data-icon="shield"></span>Centrum usterek</a>
         <a href="#knowledge" data-view="knowledge"><span data-icon="bookmark"></span>Co Dona wie</a>
         <a href="#connections" data-view="connections"><span data-icon="globe"></span>Połączenia</a>
         <a href="#social" data-view="social"><span data-icon="media"></span>Posty Facebook</a>
-        <a href="#activity" data-view="activity"><span data-icon="list"></span>Przebieg pracy</a>
+        <a href="#activity" data-view="activity"><span data-icon="list"></span>Historia działań</a>
         <div class="nav-label">TWOJE NARZĘDZIA</div>
         <a href="#marketing" data-view="marketing"><span data-icon="chart"></span>Marketing i WWW</a>
         <a href="#tools" data-view="tools"><span data-icon="grid"></span>Wszystkie narzędzia</a>

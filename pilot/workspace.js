@@ -38,7 +38,7 @@
   const safeUrl = (value) => { try { const u = new URL(String(value)); return u.protocol === 'https:' ? u.href : ''; } catch { return ''; } };
   const el = (tag, text, className) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (className) n.className = className; return n; };
   const labels = {today:'Dzisiaj',approvals:'Do zatwierdzenia',inquiries:'Zapytania',offers:'Oferty',clients:'Klienci',calendar:'Kalendarz',files:'Pliki',marketing:'Marketing i WWW',tools:'Wszystkie narzędzia',history:'Historia rozmowy',settings:'Ustawienia'};
-  Object.assign(labels,window.DonaCentre.views);
+  Object.assign(labels,window.DonaCentre.views,window.DonaCommand.views);
   const descriptions = {approvals:'Przejrzyj przygotowane materiały i zdecyduj o kolejnym kroku.',inquiries:'Zapytania zapisane przez Twoje formularze i procesy sprzedażowe.',offers:'Oferty, kwoty i aktualny etap pracy z klientem.',clients:'Historia kontaktu i następny krok dla każdej relacji.',calendar:'Spotkania zapisane przez DONĘ. Pełny kalendarz sprawdzisz w rozmowie.',files:'Dokumenty zarejestrowane w systemie. Pozostałych plików poszuka DONA.',marketing:'Przygotuj treści, materiały i strony z narzędziami, które już masz.',tools:'Wybierz obszar, opisz zadanie i odbierz rezultat w rozmowie.',history:'Twoja dotychczasowa rozmowa z panelu — dostępna także tutaj.',settings:'Twoja przestrzeń, głos i połączenia z obecną DONĄ.'};
   const statusNames = {REQUESTED:'Czeka na decyzję',APPROVED:'Zatwierdzone',REJECTED:'Odrzucone',EXPIRED:'Wygasłe',DRAFT:'Szkic',SENT:'Wysłana',ACCEPTED:'Zaakceptowana',WON:'Wygrana',LOST:'Przegrana',NEW:'Nowe',NOWY:'Nowe',NOWA:'Nowa',QUALIFIED:'Zakwalifikowane',CONFIRMED:'Potwierdzone',CANCELLED:'Odwołane',CANCELED:'Odwołane',DONE:'Zakończone',COMPLETED:'Zakończone',ACTIVE:'Aktywny',AKTYWNY:'Aktywny',OPEN:'Otwarte',TODO:'Do wykonania',DO_ZROBIENIA:'Do wykonania',IN_PROGRESS:'W trakcie',W_TRAKCIE:'W trakcie',WYSLANA:'Wysłana',GOTOWA:'Gotowa',ODPOWIEDZIAL:'Odpowiedział',SCHEDULED:'Zaplanowane',PENDING:'Oczekujące',ERROR:'Błąd',FAILED:'Błąd',NURTURING:'Dalszy kontakt'};
   const state = {view:'today',data:null,loading:false,error:'',filter:'',search:'',demo:window.Dona.isDemo,request:0};
@@ -50,7 +50,7 @@
   const dayKey = (s) => { const d = new Date(s); return Number.isNaN(+d) ? '' : d.toLocaleDateString('sv-SE',{timeZone:'Europe/Warsaw'}); };
   const badge = (s) => '<span class="status-badge '+(/^(REQUESTED|DRAFT|NEW|NOWY|PENDING)$/i.test(s)?'pending':/^(DONE|COMPLETED|APPROVED|ACCEPTED|CONFIRMED|WON)$/i.test(s)?'done':/^(ERROR|FAILED)$/i.test(s)?'problem':'')+'">'+escape(statusText(s))+'</span>';
   const money = (r) => { if(r.amount === null || r.amount === undefined || r.amount === '') return '—'; const n = Number(r.amount); if(!Number.isFinite(n))return '—'; try{return new Intl.NumberFormat('pl-PL',{style:'currency',currency:r.currency||'PLN',maximumFractionDigits:0}).format(n);}catch{return n.toLocaleString('pl-PL');} };
-  const rows = (name) => state.data?.[name] || [];
+  const rows = (name) => window.DonaModel.rows(state.data,name,window.DonaCommand.brand());
   const pluralRules = new Intl.PluralRules('pl-PL');
   const plural = (n, one, few, many) => ({one, few, many}[pluralRules.select(n)] || many);
   const pending = () => rows('approvals').filter(r => r.status === 'REQUESTED' && (!r.expiresAt || +new Date(r.expiresAt) > Date.now()));
@@ -73,7 +73,7 @@
   }
   async function loadData(){
     if(state.loading)return;
-    if(state.demo){state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:new Date().toISOString()}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-connection',name:'Przykładowa strona Facebook',status:'NOT_CONNECTED',detail:'Przykład brakującego połączenia. To nie jest odczyt Twojego konta.',source:'Dane demonstracyjne'}]});render();return;}
+    if(state.demo){state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:new Date().toISOString()}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-connection',name:'Przykładowa strona Facebook',status:'NOT_CONNECTED',detail:'Przykład brakującego połączenia. To nie jest odczyt Twojego konta.',source:'Dane demonstracyjne'}]});state.data.calendar={provider:'zoho',status:'CONFIGURED',calendars:[{id:'demo-zoho',name:'Przykładowy kalendarz Zoho',status:'READ_OK',checkedAt:new Date().toISOString(),events:state.data.meetings.map(m=>({...m,provider:'zoho',brandId:'probatum'}))}]};state.data.mails=[{id:'demo-mail',title:'Materiały do nowej strony',sender:'klient@example.com',snippet:'Przykładowa wiadomość oczekująca na odpowiedź.',status:'NEW',brandId:'probatum',date:new Date().toISOString()}];state.data.memory[0].brandId='probatum';state.data.socialProfiles=[{id:'silverandglass',name:'Silver & Glass',connection:'META_NOT_CONNECTED',enabled:false,perDay:1,hour:10}];state.data.socialPosts=[{id:'demo-post',title:'Przykładowy post do sprawdzenia',text:'To przykładowa treść pokazująca skrzynkę decyzji. Nie zostanie opublikowana.',profileId:'silverandglass',brandId:'silverandglass',status:'DRAFT'}];render();return;}
     if(!window.Dona.isAuthenticated())return;
     const request=++state.request;state.loading=true;state.error='';$('refreshBtn').disabled=true;render();
     try{const result=await window.Dona.request('dona-workspace',{operation:'snapshot'},45000);if(request!==state.request)return;if(result.ok!==true||!result.context||!Array.isArray(result.approvals))throw new Error('INVALID_RESPONSE');state.data=result;}
@@ -86,9 +86,9 @@
     const v=state.view;document.title='DONA — '+labels[v];$('breadcrumbTitle').textContent=labels[v];$('pageTitle').textContent=v==='today'?'Dzień dobry, Piotrze.':labels[v];$('pageEyebrow').textContent=v==='today'?new Date().toLocaleDateString('pl-PL',{timeZone:'Europe/Warsaw',weekday:'long',day:'numeric',month:'long'}).toUpperCase():'TWOJA PRZESTRZEŃ';
     $('pageSubtitle').textContent=v==='today'?(state.data?(pending().length?'Sprawdź przygotowane materiały i zaplanuj kolejny krok.':'Zobacz aktualne sprawy i wybierz, czym dziś zajmie się DONA.'):'Twoje sprawy w jednym miejscu.'):descriptions[v]||'Rozmowa, wiedza i potwierdzone wyniki Twojej Dony.';
     document.querySelectorAll('[data-view]').forEach(n=>{if(n.dataset.view===v)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});
-    $('companyName').textContent=state.demo?'Przykładowa firma':state.data?.context?.name||'Probatum';
+    $('companyName').textContent=state.demo?'Podgląd demonstracyjny':window.DonaCommand.brandName();
     $('modeLabel').textContent=state.demo?'DANE PRZYKŁADOWE':'PILOTAŻ';
-    ['approvalCount','inquiryCount'].forEach((id,i)=>{$(id).hidden=!state.data;$(id).textContent=String(i?rows('leads').length:pending().length);});
+    ['approvalCount','inquiryCount'].forEach((id,i)=>{$(id).hidden=!state.data;$(id).textContent=String(i?rows('leads').length:pending().length+rows('socialPosts').filter(p=>p.status==='DRAFT').length);});
     $('pageAction').innerHTML=v==='offers'?'<button class="primary" data-prompt="Pomóż mi przygotować nową ofertę. Najpierw ustal klienta, zakres i cennik. Bez wysyłania.">Nowa oferta '+icon('arrow')+'</button>':v==='clients'?'<button class="secondary" data-prompt="Chcę dodać klienta do systemu. Pomóż mi ustalić wymagane dane i sprawdź, czy klient już istnieje.">Dodaj klienta</button>':'';
     let banner=state.demo?'<div class="notice demo-bar">To podgląd na przykładowych danych. <a href="./">Zaloguj się do DONY →</a></div>':'';
     if(state.error)banner+='<div class="notice error">'+escape(state.error)+'<button class="link-button" data-refresh>Ponów odczyt</button></div>';
@@ -96,7 +96,9 @@
     if(state.data?.meta?.truncated?.length)banner+='<div class="notice">Widok obejmuje najnowsze rekordy. Pełnego zakresu poszukaj z DONĄ.</div>';
     $('connectionBanner').innerHTML=banner;
     $('dataStamp').textContent=state.demo?'Dane demonstracyjne':state.data?'Ostatni odczyt: '+formatDate(state.data.generatedAt,true):'Brak potwierdzonego odczytu danych.';
-    if(window.DonaCentre.views[v]){window.DonaCentre.render(v,state.data,state.demo);return;}
+    window.DonaCentre.setSnapshot(state.data);
+    if(window.DonaCommand.views[v]){window.DonaCommand.render(v,state.data,state.demo);return;}
+    if(window.DonaCentre.views[v]){window.DonaCentre.render(v,window.DonaCommand.scoped(state.data),state.demo);return;}
     const independent=['tools','marketing','settings','history'].includes(v);
     if(!state.data&&!independent){$('viewContent').innerHTML=state.loading?'<div class="skeleton hero" aria-label="Wczytywanie danych"></div><div class="skeleton"></div><div class="skeleton"></div>':empty('Dane czekają na połączenie','Odśwież widok, aby pobrać informacje z DONY. Możesz też rozpocząć rozmowę.','refresh','Sprawdź moje bieżące sprawy. Tylko odczyt, bez zmian.');return;}
     if(v==='today')renderToday();else if(v==='approvals')renderApprovals();else if(v==='tools'||v==='marketing')renderTools(v);else if(v==='settings')renderSettings();else if(v==='history')renderHistory();else renderList();
@@ -150,6 +152,8 @@
   window.addEventListener('dona:notice',e=>toast(e.detail));
   window.addEventListener('dona:message',()=>{$('assistant').classList.toggle('has-messages',window.Dona.history().length>0);if(state.view==='history')renderHistory();});
   window.addEventListener('dona:phase',e=>{$('assistantStatus').textContent=state.demo?'Podgląd interfejsu':/czekam|zlecenie|prac/i.test(e.detail||'')?'Czekam na wynik z systemu':'Rozmowa z DONĄ';});
+  window.addEventListener('dona:refresh',loadData);
+  window.addEventListener('dona:rerender',render);
   window.addEventListener('dona:auth',e=>{if(e.detail.authenticated||e.detail.demo)loadData();else{state.request++;state.data=null;state.loading=false;state.error='';$('refreshBtn').disabled=false;$('detailDialog').close();$('assistant').classList.remove('has-messages');render();}});
   const observer=new MutationObserver(()=>{$('assistant').classList.toggle('has-messages',$('log').children.length>0);if(state.view==='history')renderHistory();});observer.observe($('log'),{childList:true});
   navigate();if(state.demo){$('assistantStatus').textContent='Podgląd interfejsu';loadData();}else if(window.Dona.isAuthenticated())loadData();

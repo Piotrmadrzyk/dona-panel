@@ -218,7 +218,7 @@
       if(!t||busy){ if(!t){ add("sys","Wpisz najpierw tresc do zapamietania."); } return; }
       busy=true; btn.disabled=true; memBtn.disabled=true; think(true);
       add("me","🧠 zapamietaj: "+t); inp.value="";
-      panelPost(MEM_URL,{haslo:sessionPw,tresc:t,typ:"notatka"},60000)
+      panelPost(API+'/dona-panel-actions',{haslo:sessionPw,operation:'save_memory',text:t,brandId:contextBrand,sourceUrl:'',requestId:crypto.randomUUID()},60000)
         .then(function(j){ if(j&&j.error==="auth"){ lsDel(KEY); sessionPw=""; openGate(); add("sys","Sesja wygasla - zaloguj sie ponownie."); return; } var a=(j&&j.answer)?j.answer:"Nie otrzymałam potwierdzenia zapisu notatki."; add("dona",a); if(typeof zapiszHist==="function"){ zapiszHist("dona",a); } })
         .catch(function(e){ add("sys",requestError(e)); })
         .finally(function(){ busy=false; btn.disabled=false; memBtn.disabled=false; think(false); });
@@ -231,7 +231,7 @@
     fileInp.addEventListener("change",function(){
       var f=fileInp.files&&fileInp.files[0]; if(!f||busy){ return; }
       if(f.size>3.5*1024*1024){add("sys","Ten plik przekracza limit panelu 3,5 MB. Użyj mniejszego pliku albo linku do Dysku.");fileInp.value="";return;}
-      var komentarz=(inp.value||"").trim();
+      var komentarz=withBrand((inp.value||"").trim());
       busy=true; btn.disabled=true; clipBtn.disabled=true; think(true);
       add("me","📎 "+f.name+(komentarz?(" — "+komentarz):""));
       inp.value="";
@@ -386,10 +386,12 @@
   }
 
 
-var panelVersion = '4.2.0';
+var panelVersion = '4.3.0';
 var panelConversationId = lsGet('pm_panel_conversation_id') || 'panel-owner';
 var panelBusyCount = 0, rtSession = null, rtSequence = 0;
 var BRANCH_URL = API + '/dona-panel-branch';
+var contextBrand='',contextName='';
+function withBrand(text){return contextBrand?'[Przestrzeń marki: '+contextName+'; identyfikator: '+contextBrand+'. Korzystaj z wiedzy tej marki; nie przenoś ustaleń innych marek.]\n'+text:text;}
 var branchMap = {'Sprzedaż':'sprzedaz','Klienci':'klienci','Dysk':'dysk','Poczta':'poczta','Marketing':'marketing','WWW':'www','Media':'media','Pieniądze':'pieniadze','System':'system','Research':'research','Serwis':'serwis'};
 var branchDialog = document.getElementById('branchDialog');
 var activeBranch = null, previousFocus = null;
@@ -436,7 +438,7 @@ async function panelPost(url,body,timeout){
   var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort();},timeout||165000);
   var tracked=!body.probe&&((url===CHAT_URL&&body.wiadomosc)||url===BRANCH_URL);
   var operationId=tracked?'op-'+Date.now()+'-'+Math.random().toString(36).slice(2):null;
-  if(tracked)emit('operation',{id:operationId,status:'pending',label:body.galaz?'Gałąź: '+body.galaz:'Dona'});
+  if(tracked)emit('operation',{id:operationId,status:'pending',label:body.galaz?'Gałąź: '+body.galaz:'Dona',question:String(body.wiadomosc||body.polecenie||'').slice(0,500)});
   try{
     var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal,cache:'no-store'});
     var raw=await r.text(),j;try{j=JSON.parse(raw);}catch(e){throw new Error('INVALID_RESPONSE');}
@@ -450,7 +452,7 @@ async function panelPost(url,body,timeout){
   }catch(e){if(tracked)emit('operation',{id:operationId,status:'error',error:e.message==='AUTH'?'Sesja wygasła. Zaloguj się ponownie.':'Nie potwierdzono wyniku. Sprawdź stan przed ponowieniem polecenia.'});throw e;}finally{clearTimeout(timer);}
 }
 async function ask(text,pwOverride,probe,live){
-  var j=await panelPost(CHAT_URL,{wiadomosc:String(text||''),haslo:pwOverride!==undefined?pwOverride:sessionPw,probe:!!probe,conversation_id:panelConversationId,kanal:live?'panel_live':'panel'});
+  var j=await panelPost(CHAT_URL,{wiadomosc:probe?'':withBrand(String(text||'')),haslo:pwOverride!==undefined?pwOverride:sessionPw,probe:!!probe,conversation_id:panelConversationId+(contextBrand?':'+contextBrand:''),kanal:live?'panel_live':'panel'});
   if(probe)return j.ok===true;
   if(typeof j.answer!=='string'||!j.answer.trim())throw new Error('EMPTY_RESPONSE');
   return j.answer;
@@ -489,7 +491,7 @@ async function runBranch(){
   var tip=add('sys',selected.name+': czekam na wynik…');
   document.querySelectorAll('[data-branch="'+selected.id+'"]').forEach(function(n){n.classList.add('running');});
   try{
-    var j=await panelPost(BRANCH_URL,{haslo:sessionPw,galaz:selected.id,polecenie:text,tryb:selected.id==='research'?'szybka':''});
+    var j=await panelPost(BRANCH_URL,{haslo:sessionPw,galaz:selected.id,polecenie:withBrand(text),tryb:selected.id==='research'?'szybka':''});
     if(typeof j.answer!=='string'||!j.answer.trim())throw new Error('EMPTY_RESPONSE');
     add('dona','['+selected.name+']\n'+j.answer);zapiszHist('dona','['+selected.name+']\n'+j.answer);
     phase(j.ok===false?'Gałąź zgłosiła problem — sprawdź odpowiedź':'Otrzymano odpowiedź: '+selected.name);
@@ -640,6 +642,7 @@ window.addEventListener('pageshow',checkRememberedLogout);
 phase('');
 window.Dona={
   version:panelVersion,isDemo:isDemo,
+  setContext:function(id,name){contextBrand=['probatum','silverandglass','edwardjanusz'].includes(id)?id:'';contextName=contextBrand?String(name||id):'';},
   isAuthenticated:function(){return authenticated;},
   request:function(path,body,timeout){if(!authenticated||isDemo)return Promise.reject(new Error('AUTH'));return panelPost(API+'/'+path,Object.assign({},body,{haslo:sessionPw}),timeout);},
   draft:function(text){setInput(text);emit('open-chat');},

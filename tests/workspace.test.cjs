@@ -13,7 +13,7 @@ function run(source, records, input=[]) {
 function auth(body, secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}]) {
   return run(authSource,{'Workspace Request':[{body}]},secrets);
 }
-function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Documents','Events','Brain','Social Profiles','Social Posts'].map(n=>['Read '+n,[{}]]))};}
+function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Documents','Events','Brain','Social Profiles','Social Posts','Mail','Mail Sync','Project Memory','Panel Events','Zoho Calendar','Agent Logs'].map(n=>['Read '+n,[{}]]))};}
 test('only the correct password can authorize snapshot',()=>{
   for(const body of [undefined,null,[],{}, {operation:'snapshot',haslo:'wrong'}, {operation:'snapshot',haslo:{}}])assert.equal(auth(body).statusCode,401);
   assert.equal(auth({operation:'snapshot',haslo:'test-only-password'}).authorized,true);
