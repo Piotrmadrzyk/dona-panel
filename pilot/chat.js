@@ -52,25 +52,23 @@
     {k:"gear",nm:"System",q:"Jacy agenci są w systemie?"}
   ];
 
-  // ---- localStorage bezpieczny ----
+  // ---- remembered browser access ----
   var KEY="pm_panel_haslo";
-  function lsGet(k){ try{ return localStorage.getItem(k)||""; }catch(e){ return ""; } }
-  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-  function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
   var sessionPw=isDemo?"":lsGet(KEY);
 
+  var rememberedAtLogin=!!sessionPw;
   var gate=document.getElementById("gate");
   var pw=document.getElementById("pw");
   var remember=document.getElementById("remember");
   var pwErr=document.getElementById("pwErr");
   function openGate(){ authenticated=false; gate.style.display="flex"; document.getElementById("app").inert=true; emit("auth",{authenticated:false,demo:false}); setTimeout(function(){pw.focus();},50); }
   function closeGate(){ authenticated=!isDemo; gate.style.display="none"; document.getElementById("app").inert=false; emit("auth",{authenticated:authenticated,demo:isDemo}); }
-  if(isDemo){setTimeout(closeGate,0);}else if(sessionPw){setTimeout(function(){ask("",undefined,true).then(function(ok){if(ok){closeGate();wczytajHist();}else{sessionPw="";lsDel(KEY);openGate();}}).catch(function(){openGate();pwErr.textContent="Zaloguj się ponownie, aby potwierdzić połączenie.";});},0);}else{openGate();}
+  if(isDemo){setTimeout(closeGate,0);}else if(sessionPw){setTimeout(function(){ask("",undefined,true).then(function(ok){if(ok){closeGate();wczytajHist();}else{sessionPw="";lsDel(KEY);openGate();}}).catch(function(){openGate();pwErr.textContent=sessionPw?"Nie udało się połączyć. Kliknij „Otwórz panel” bez wpisywania hasła, aby ponowić połączenie.":"Zaloguj się ponownie.";});},0);}else{openGate();}
   function tryLogin(){
-    var v=pw.value.trim(); if(!v) return;
+    var v=pw.value.trim()||sessionPw; if(!v) return;
     pwErr.textContent="Sprawdzam...";
     ask("Cześć",v,true).then(function(ok){
-      if(ok){ sessionPw=v; if(remember.checked){ lsSet(KEY,v); }else{lsDel(KEY);} closeGate(); pw.value=""; pwErr.textContent=""; setTimeout(wczytajHist,300); }
+      if(ok){ sessionPw=v; rememberedAtLogin=remember.checked; if(remember.checked){ lsSet(KEY,v); }else{lsDel(KEY);} closeGate(); pw.value=""; pwErr.textContent=""; setTimeout(wczytajHist,300); }
       else { pwErr.textContent="Błędne hasło."; }
     }).catch(function(e){ pwErr.textContent=e.message==='AUTH'?"Błędne hasło.":"Nie udało się połączyć. Spróbuj ponownie."; });
   }
@@ -395,10 +393,24 @@ var BRANCH_URL = API + '/dona-panel-branch';
 var branchMap = {'Sprzedaż':'sprzedaz','Klienci':'klienci','Dysk':'dysk','Poczta':'poczta','Marketing':'marketing','WWW':'www','Media':'media','Pieniądze':'pieniadze','System':'system','Research':'research','Serwis':'serwis'};
 var branchDialog = document.getElementById('branchDialog');
 var activeBranch = null, previousFocus = null;
-try { localStorage.removeItem('pm_panel_haslo'); } catch(e) {}
-function lsGet(k){ try { return (k === 'pm_panel_haslo' ? sessionStorage : localStorage).getItem(k)||''; }catch(e){ return ''; } }
-function lsSet(k,v){ try { (k === 'pm_panel_haslo' ? sessionStorage : localStorage).setItem(k,v); }catch(e){} }
-function lsDel(k){ try { (k === 'pm_panel_haslo' ? sessionStorage : localStorage).removeItem(k); if(k === 'pm_panel_haslo')localStorage.removeItem(k); }catch(e){} }
+// Remembered access is shared by both panels on this browser origin.
+function lsGet(k){
+  try { var v=localStorage.getItem(k); if(v)return v; }catch(e){}
+  // Migrate a previously remembered tab without asking for the password again.
+  if(k==='pm_panel_haslo'){
+    try { var old=sessionStorage.getItem(k)||''; if(old){lsSet(k,old);return old;} }catch(e){}
+  }
+  return '';
+}
+function lsSet(k,v){
+  try { localStorage.setItem(k,v); if(k==='pm_panel_haslo'){try{sessionStorage.removeItem(k);}catch(e){}} return true; }catch(e){}
+  if(k==='pm_panel_haslo'){try{sessionStorage.setItem(k,v);}catch(e){}}
+  return false;
+}
+function lsDel(k){
+  try { localStorage.removeItem(k); }catch(e){}
+  if(k==='pm_panel_haslo'){try{sessionStorage.removeItem(k);}catch(e){}}
+}
 function phase(text){ var n=document.getElementById('operationStatus'); if(n)n.textContent=text;emit('phase',text); }
 function lockPanel(on){
   panelBusyCount=Math.max(0,panelBusyCount+(on?1:-1));busy=panelBusyCount>0;
@@ -613,6 +625,14 @@ async function startLive(){
 document.getElementById('resumeAudio').onclick=function(){var s=rtSession;if(isCurrent(s)&&s.audio)s.audio.play().then(function(){document.getElementById('resumeAudio').hidden=true;}).catch(function(){});};
 document.getElementById('muteLive').onclick=function(){var s=rtSession;if(!isCurrent(s)||!s.stream)return;var tracks=s.stream.getAudioTracks();var enabled=!tracks[0].enabled;tracks.forEach(function(t){t.enabled=enabled;});s.micMuted=!enabled;document.getElementById('muteLiveLabel').textContent=enabled?'Wycisz mikrofon':'Włącz mikrofon';this.setAttribute('aria-pressed',String(!enabled));liveState(enabled?'listen':'mute',enabled?'SŁUCHAM':'MIKROFON WYCISZONY');};
 window.addEventListener('pagehide',function(){endLive(true);stopAllSpeech();});
+function checkRememberedLogout(){
+  if(sessionPw && rememberedAtLogin && !lsGet(KEY)){
+    endLive(true);stopAllSpeech();sessionPw='';log.textContent='';histWczytana=false;openGate();phase('Wylogowano');
+  }
+}
+window.addEventListener('storage',function(e){if(e.key===KEY||e.key===null)checkRememberedLogout();});
+window.addEventListener('pageshow',checkRememberedLogout);
+
 phase('');
 window.Dona={
   version:panelVersion,isDemo:isDemo,
