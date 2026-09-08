@@ -73,7 +73,23 @@
   }
   async function loadData(){
     if(state.loading)return;
-    if(state.demo){state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:new Date().toISOString()}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-connection',name:'Przykładowa strona Facebook',status:'NOT_CONNECTED',detail:'Przykład brakującego połączenia. To nie jest odczyt Twojego konta.',source:'Dane demonstracyjne'}]});state.data.approvals.forEach(a=>{a.canApprove=true;a.actionPayload={do:'klient@example.com',temat:a.title,tresc:a.preview,konto:'glowne'};});state.data.calendar={provider:'zoho',status:'CONFIGURED',calendars:[{id:'demo-zoho',name:'Przykładowy kalendarz Zoho',status:'READ_OK',checkedAt:new Date().toISOString(),events:state.data.meetings.map(m=>({...m,provider:'zoho',brandId:'probatum'}))}]};state.data.mails=[{id:'demo-mail',title:'Materiały do nowej strony',sender:'klient@example.com',snippet:'Przykładowa wiadomość oczekująca na odpowiedź.',status:'NEW',brandId:'probatum',date:new Date().toISOString()}];state.data.memory[0].brandId='probatum';state.data.socialProfiles=[{id:'silverandglass',name:'Silver & Glass',connection:'META_NOT_CONNECTED',enabled:false,perDay:1,hour:10}];state.data.socialPosts=[{id:'demo-post',title:'Przykładowy post do sprawdzenia',text:'To przykładowa treść pokazująca skrzynkę decyzji. Nie zostanie opublikowana.',profileId:'silverandglass',brandId:'silverandglass',status:'DRAFT'}];render();return;}
+    if(state.demo){
+      const checkedAt=new Date().toISOString();
+      state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:checkedAt}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-buffer',name:'Buffer · dwie strony Facebook',status:'READ_OK',detail:'Przykładowy wynik połączenia. Tryb demo nie odpytuje prawdziwego konta Buffer.',source:'Dane demonstracyjne'}]});
+      state.data.approvals.forEach(a=>{a.canApprove=true;a.actionPayload={do:'klient@example.com',temat:a.title,tresc:a.preview,konto:'glowne'};});
+      state.data.calendar={provider:'zoho',status:'CONFIGURED',calendars:[{id:'demo-zoho',name:'Przykładowy kalendarz Zoho',status:'READ_OK',checkedAt,events:state.data.meetings.map(m=>({...m,provider:'zoho',brandId:'probatum'}))}]};
+      state.data.mails=[{id:'demo-mail',title:'Materiały do nowej strony',sender:'klient@example.com',snippet:'Przykładowa wiadomość oczekująca na odpowiedź.',status:'NEW',brandId:'probatum',date:checkedAt}];
+      state.data.memory[0].brandId='probatum';
+      state.data.socialProfiles=[
+        {id:'silverandglass',name:'Silver & Glass',connection:'BUFFER_CONNECTED',bufferChannelId:'demo-silver',bufferCheckedAt:checkedAt,enabled:false,perDay:1,hour:10},
+        {id:'edwardjanusz',name:'Edward Janusz · Dawny Rzeszów',connection:'BUFFER_CONNECTED',bufferChannelId:'demo-edward',bufferCheckedAt:checkedAt,enabled:false,perDay:1,hour:11}
+      ];
+      state.data.socialPosts=[
+        {id:'demo-post-silver',title:'Światło zapisane w szkle',text:'Przykładowy szkic na podstawie materiału marki. Dokładna treść i zdjęcie czekają na Twoją decyzję.',image:new URL('./assets/site-previews/silverandglass.webp',location.href).href,source:'https://www.silverandglass.pl/',profileId:'silverandglass',brandId:'silverandglass',status:'DRAFT'},
+        {id:'demo-post-edward',title:'Rzeszów, którego już nie ma',text:'Przykładowy szkic opowieści o dawnym Rzeszowie. Nic nie zostanie opublikowane w trybie demo.',image:new URL('./assets/site-previews/edwardjanusz.webp',location.href).href,source:'https://www.edwardjanusz.pl/',profileId:'edwardjanusz',brandId:'edwardjanusz',status:'DRAFT'}
+      ];
+      render();return;
+    }
     if(!window.Dona.isAuthenticated())return;
     const request=++state.request;state.loading=true;state.error='';$('refreshBtn').disabled=true;render();
     try{const result=await window.Dona.request('dona-workspace',{operation:'snapshot'},45000);if(request!==state.request)return;if(result.ok!==true||!result.context||!Array.isArray(result.approvals))throw new Error('INVALID_RESPONSE');state.data=result;}
@@ -87,7 +103,7 @@
     $('pageSubtitle').textContent=v==='today'?(state.data?(pending().length?'Sprawdź przygotowane materiały i zaplanuj kolejny krok.':'Zobacz aktualne sprawy i wybierz, czym dziś zajmie się DONA.'):'Twoje sprawy w jednym miejscu.'):descriptions[v]||'Rozmowa, wiedza i potwierdzone wyniki Twojej Dony.';
     document.querySelectorAll('[data-view]').forEach(n=>{if(n.dataset.view===v)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});
     $('companyName').textContent=state.demo?'Podgląd demonstracyjny':window.DonaCommand.brandName();
-    $('modeLabel').textContent=state.demo?'DANE PRZYKŁADOWE':'PILOTAŻ';
+    $('modeLabel').textContent=window.DonaTrace?.isWebinar?.()?(state.demo?'WEBINAR · DEMO':'WEBINAR · LIVE'):(state.demo?'DANE PRZYKŁADOWE':'PILOTAŻ');
     ['approvalCount','inquiryCount'].forEach((id,i)=>{$(id).hidden=!state.data;$(id).textContent=String(i?rows('leads').length:pending().length+rows('socialPosts').filter(p=>p.status==='DRAFT').length);});
     $('pageAction').innerHTML=v==='mail'?'<button class="primary" data-prompt="Sprawdź aktualną pocztę, wskaż pilne wiadomości i przygotuj odpowiedzi. Niczego nie wysyłaj bez mojego zatwierdzenia.">Sprawdź z DONĄ '+icon('arrow')+'</button>':v==='offers'?'<button class="primary" data-prompt="Pomóż mi przygotować nową ofertę. Najpierw ustal klienta, zakres i cennik. Bez wysyłania.">Nowa oferta '+icon('arrow')+'</button>':v==='clients'?'<button class="secondary" data-prompt="Chcę dodać klienta do systemu. Pomóż mi ustalić wymagane dane i sprawdź, czy klient już istnieje.">Dodaj klienta</button>':'';
     let banner=state.demo?'<div class="notice demo-bar">To podgląd na przykładowych danych. <a href="./">Zaloguj się do DONY →</a></div>':'';
