@@ -8,7 +8,7 @@ const owned=[
  {id:'edwardjanusz',name:'Edward Janusz',url:'https://www.edwardjanusz.pl/',kind:'Strona marki',status:'Aktywna',preview:PREVIEW_ROOT+'edwardjanusz.webp',previewAlt:'Aktualny widok strony głównej Edward Janusz',copy:'Serwis poświęcony fotografowi Edwardowi Januszowi i zbiorom archiwalnym.'},
  {id:'probatum',name:'Probatum',url:'https://probatum.pl/',kind:'Serwis firmowy',status:'Aktywny',preview:PREVIEW_ROOT+'probatum.webp',previewAlt:'Aktualny widok strony głównej Probatum',copy:'Główna strona Probatum: marki, strony internetowe, marketing i automatyzacje.'},
  {id:'dona',name:'Panel DONA',url:'https://dona.probatum.pl/pilot/',kind:'System własny',status:'Aktywny',preview:PREVIEW_ROOT+'dona.webp',previewAlt:'Widok demonstracyjny Panelu DONA',copy:'Centrum dowodzenia, rozmów, decyzji i pracy agentów.'},
- {id:'receptury',name:'Receptury',url:'https://receptury-jade.vercel.app/',kind:'System własny',status:'Aktywny',preview:PREVIEW_ROOT+'receptury.webp',previewAlt:'Ekran wejścia do systemu Receptury',copy:'Istniejący system receptur otwierany z poziomu panelu DONY.'}
+ {id:'receptury',name:'Receptury',url:'https://receptury-jade.vercel.app/',kind:'System własny',status:'Aktywny',preview:PREVIEW_ROOT+'receptury-biblioteka.webp',previewAlt:'Widok biblioteki systemu Receptury',copy:'Istniejący system receptur otwierany z poziomu panelu DONY.'}
 ];
 const realizations=[
  {id:'zielona-pergola',name:'Zielona Pergola',url:'https://pergola-demo.probatum.pl/',kind:'Realizacja demonstracyjna',status:'Aktywna',preview:PREVIEW_ROOT+'zielona-pergola.webp',previewAlt:'Widok strony Zielona Pergola',copy:'Strona restauracji z ofertą, wydarzeniami i ścieżką zamówienia.'},
