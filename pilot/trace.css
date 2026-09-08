@@ -1,0 +1,63 @@
+.webinar-toggle{border-color:#d8def0;background:linear-gradient(135deg,#fff,#f1f4ff);color:#445a9c;white-space:nowrap}
+.webinar-toggle>span:first-child{color:#5f72e9;font-size:1rem}
+.webinar-toggle.is-on{background:linear-gradient(135deg,#253559,#384e83);border-color:#455d92;color:#fff;box-shadow:0 7px 24px #29406a24}
+.webinar-toggle.is-on>span:first-child{color:#83f3df}
+.agent-trace{position:relative;isolation:isolate;overflow:hidden;margin:-5px 0 26px;padding:22px 24px 18px;border-radius:18px;color:#f4f7ff;background:radial-gradient(circle at 82% 0,#334b86 0,transparent 34%),linear-gradient(135deg,#10192b,#172640 70%,#142c39);box-shadow:0 17px 45px #13203a20}
+.agent-trace:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 15%,#71f1db0b 48%,transparent 75%);animation:traceSweep 4.5s linear infinite}
+.trace-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.trace-kicker{display:flex;align-items:center;gap:7px;font-size:.65rem;letter-spacing:.16em;color:#9fb0ca}
+.trace-kicker i{width:7px;height:7px;border-radius:50%;background:#66efd3;box-shadow:0 0 13px #66efd3;animation:tracePulse 1.5s infinite}
+.trace-head h2{font-size:1.13rem;letter-spacing:-.02em;margin:7px 0 0}
+.trace-meta{display:flex;align-items:center;gap:8px;color:#aab8ce;font-size:.72rem;font-variant-numeric:tabular-nums}
+.trace-close{width:28px;height:28px;border:1px solid #ffffff1e;border-radius:8px;background:#ffffff08;color:#aab8ce;font-size:1.05rem}
+.trace-track{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0;margin-top:23px}
+.trace-step{position:relative;min-width:0;padding:0 13px 0 0}
+.trace-step:not(:last-child):after{content:"";position:absolute;left:34px;right:0;top:13px;height:1px;background:#ffffff1a}
+.trace-step:not(:last-child).done:after{background:linear-gradient(90deg,#62eed0,#5c81f0);box-shadow:0 0 9px #69e7d055}
+.trace-node{position:relative;width:28px;height:28px;border:1px solid #ffffff2a;border-radius:9px;background:#18253c;display:flex;align-items:center;justify-content:center;color:#8190a9;font-size:.6rem;z-index:1}
+.trace-node i{position:absolute;inset:6px;border-radius:4px;background:#536078}
+.trace-node span{opacity:0}
+.trace-step.done .trace-node{border-color:#62eed077;background:#183849;box-shadow:0 0 0 4px #62eed00b}
+.trace-step.done .trace-node i{background:#62eed0}
+.trace-step.active .trace-node{border-color:#8299ff;background:#243762;box-shadow:0 0 0 5px #748dff18,0 0 22px #748dff55}
+.trace-step.active .trace-node i{background:#91a6ff;animation:tracePulse .9s infinite}
+.trace-step.error .trace-node{border-color:#ff8290;background:#4b2837}
+.trace-step.error .trace-node i{background:#ff8290}
+.trace-copy{padding:11px 8px 0 0;min-width:0}
+.trace-copy strong{display:block;font-size:.75rem;line-height:1.42;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trace-copy small{display:block;color:#9aaac1;font-size:.67rem;line-height:1.45;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trace-step em{display:block;color:#7f90aa;font-style:normal;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;margin-top:7px}
+.trace-step.done em{color:#66cdbb}
+.trace-step.active em{color:#aab8ff}
+.trace-step.error em{color:#ff929e}
+.trace-foot{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-top:17px;margin-top:17px;border-top:1px solid #ffffff12;color:#9baac0;font-size:.66rem;line-height:1.5}
+.trace-foot b{color:#6ee9d1;font-size:.6rem;letter-spacing:.1em;white-space:nowrap}
+.trace-idle{display:flex;align-items:center;gap:22px;margin-top:19px;padding:17px 18px;background:#ffffff07;border:1px solid #ffffff0f;border-radius:13px}
+.trace-idle strong{font-size:.82rem}
+.trace-idle p{font-size:.84rem;color:#e8eeff;margin:6px 0}
+.trace-idle small{display:block;color:#9eacc1;font-size:.7rem;line-height:1.55}
+.trace-orb{position:relative;width:58px;height:58px;border-radius:50%;flex:0 0 58px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#8ff8e5 0 7%,#647ff0 9% 32%,#1a2845 34% 48%,transparent 50%);box-shadow:0 0 30px #6687ed66}
+.trace-orb i{position:absolute;inset:4px;border:1px solid #7ea0ff55;border-radius:50%;animation:traceSpin 5s linear infinite}
+.trace-orb i:nth-child(2){inset:-5px;border-color:#6defd044;animation-direction:reverse;animation-duration:7s}
+.trace-orb i:nth-child(3){inset:-11px;border-style:dashed;border-color:#6688eb33;animation-duration:10s}
+.trace-orb b{font-size:.8rem;color:white;z-index:1}
+.webinar-mode main{background:radial-gradient(circle at 50% 0,#eef3ff 0,transparent 28%)}
+.webinar-mode .page-heading h1{background:linear-gradient(90deg,#17243a,#3857ad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.webinar-mode .agent-trace{padding:27px 29px 22px;box-shadow:0 20px 65px #263e7040}
+.webinar-mode .trace-head h2{font-size:1.35rem}
+.webinar-mode .trace-kicker{font-size:.68rem}
+.webinar-mode .trace-node{width:34px;height:34px;border-radius:10px}
+.webinar-mode .trace-node i{inset:8px}
+.webinar-mode .trace-step:not(:last-child):after{left:40px;top:16px}
+.webinar-mode .trace-copy strong{font-size:.82rem}
+.webinar-mode .trace-copy small{font-size:.7rem}
+.webinar-mode .trace-step em,.webinar-mode .trace-foot{font-size:.66rem}
+.webinar-scenarios{display:flex;gap:8px;margin-top:12px}
+.webinar-scenarios button{border:1px solid #ffffff1a;border-radius:8px;background:#ffffff08;color:#d5ddec;padding:9px 12px;font-size:.7rem}
+.webinar-scenarios button:hover{background:#ffffff12;border-color:#7b93e066;color:#fff}
+@keyframes tracePulse{50%{opacity:.42;transform:scale(.75)}}
+@keyframes traceSpin{to{transform:rotate(360deg)}}
+@keyframes traceSweep{to{transform:translateX(35%)}}
+@media(max-width:1320px){.webinar-toggle span:last-child{display:none}.webinar-toggle{padding:9px 12px}.trace-copy strong{font-size:.72rem}}
+@media(max-width:760px){.webinar-toggle{display:none}.agent-trace{padding:19px 17px 16px;margin-bottom:20px}.trace-head h2{font-size:1rem}.trace-track{display:flex;overflow-x:auto;gap:0;padding-bottom:6px;scrollbar-width:none}.trace-step{flex:0 0 132px}.trace-foot{align-items:flex-start;flex-direction:column}.trace-idle{padding:14px;gap:14px}.trace-idle p{font-size:.76rem}.trace-orb{width:48px;height:48px;flex-basis:48px}.webinar-scenarios{overflow-x:auto}.webinar-scenarios button{flex:0 0 auto}}
+@media(prefers-reduced-motion:reduce){.agent-trace:before,.trace-kicker i,.trace-step.active .trace-node i,.trace-orb i{animation:none!important}}

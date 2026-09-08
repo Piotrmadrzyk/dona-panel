@@ -65,7 +65,7 @@
   function tick(){if(!visible||preview)return;const seconds=startedAt?Math.max(0,Math.floor((Date.now()-startedAt)/1000)):0;$('voiceTimer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');}
   function open(isPreview){
     if(visible)return;visible=true;preview=isPreview;startedAt=0;energy=0;previousFocus=document.activeElement;
-    live.classList.add('show');live.dataset.preview=String(preview);live.dataset.connected='false';$('app').inert=true;
+    live.classList.remove('panel-mode');live.setAttribute('aria-modal','true');live.classList.add('show');live.dataset.preview=String(preview);live.dataset.connected='false';$('app').inert=true;
     $('voicePreviewControls').hidden=!preview;$('muteLive').disabled=preview;$('voiceEndLabel').textContent=preview?'Wróć do panelu':'Zakończ rozmowę';
     $('voiceTip').textContent=preview?'Podgląd animacji. Mikrofon i płatna rozmowa są wyłączone.':'Możesz przerwać odpowiedź, zaczynając mówić. Rozmowa rozliczana według użycia.';
     $('voiceCaption').hidden=!captionOn;$('captionToggle').setAttribute('aria-pressed',String(captionOn));
@@ -73,7 +73,7 @@
     resize();run();tick();clearInterval(timer);timer=setInterval(tick,1000);$('lclose').focus();
   }
   function close(){
-    if(!visible)return;visible=false;live.classList.remove('show');cancelAnimationFrame(frame);frame=0;clearInterval(timer);timer=0;meter.close();
+    if(!visible)return;visible=false;live.classList.remove('show','panel-mode');live.setAttribute('aria-modal','true');cancelAnimationFrame(frame);frame=0;clearInterval(timer);timer=0;meter.close();
     $('app').inert=!(window.Dona.isAuthenticated()||window.Dona.isDemo);$('muteLive').disabled=false;
     if(previousFocus?.isConnected&&!$('app').inert)previousFocus.focus();
   }
@@ -86,6 +86,7 @@
   window.addEventListener('dona:voice-stream',e=>{if(visible&&!preview)meter.attach(e.detail.kind,e.detail.stream);});
   window.addEventListener('dona:voice-ready',()=>{if(visible&&!preview){startedAt=Date.now();live.dataset.connected='true';tick();}});
   window.addEventListener('dona:voice-caption',e=>{$('captionSpeaker').textContent=e.detail.speaker||'DONA';updateCaption();});
+  window.addEventListener('dona:voice-panel-mode',e=>{if(!visible||preview)return;const enabled=e.detail?.enabled!==false;live.classList.toggle('panel-mode',enabled);live.setAttribute('aria-modal',String(!enabled));$('app').inert=!enabled;setTimeout(resize,30);});
   window.addEventListener('resize',resize);window.addEventListener('pagehide',close);document.addEventListener('visibilitychange',run);
   reduced.addEventListener?.('change',run);
   document.addEventListener('keydown',e=>{

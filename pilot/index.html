@@ -7,18 +7,23 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>DONA — Twój dzień</title>
-  <link rel="stylesheet" href="./workspace.css?v=4.1.0">
-  <link rel="stylesheet" href="./voice.css?v=4.1.0">
-  <link rel="stylesheet" href="./centre.css?v=4.3.2">
-  <link rel="stylesheet" href="./command.css?v=4.3.2">
+  <link rel="stylesheet" href="./workspace.css?v=5.1.0">
+  <link rel="stylesheet" href="./voice.css?v=5.1.0">
+  <link rel="stylesheet" href="./centre.css?v=5.0.0">
+  <link rel="stylesheet" href="./command.css?v=5.0.0">
+  <link rel="stylesheet" href="./features.css?v=5.1.0">
+  <link rel="stylesheet" href="./trace.css?v=5.1.0">
   <script defer src="./voice-audio.js?v=4.1.0"></script>
-  <script defer src="./chat.js?v=4.3.2"></script>
-  <script defer src="./particles.js?v=4.3.2"></script>
-  <script defer src="./centre.js?v=4.3.2"></script>
-  <script defer src="./command-model.js?v=4.3.2"></script>
-  <script defer src="./command.js?v=4.3.2"></script>
-  <script defer src="./workspace.js?v=4.3.2"></script>
-  <script defer src="./voice.js?v=4.3.2"></script>
+  <script defer src="./chat.js?v=5.1.0"></script>
+  <script defer src="./particles.js?v=5.0.0"></script>
+  <script defer src="./centre.js?v=5.1.0"></script>
+  <script defer src="./command-model.js?v=5.0.0"></script>
+  <script defer src="./command.js?v=5.1.0"></script>
+  <script defer src="./features.js?v=5.1.0"></script>
+  <script defer src="./panel-actions.js?v=5.1.0"></script>
+  <script defer src="./trace.js?v=5.1.0"></script>
+  <script defer src="./workspace.js?v=5.1.0"></script>
+  <script defer src="./voice.js?v=5.1.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Przejdź do treści</a>
@@ -47,6 +52,7 @@
       <nav id="mainNav">
         <a href="#dona" data-view="dona"><span data-icon="headset"></span>Przestrzeń Dony</a>
         <a href="#today" data-view="today" aria-current="page"><span data-icon="home"></span>Poranny brief</a>
+        <a href="#mail" data-view="mail"><span data-icon="mail"></span>Poczta</a>
         <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Skrzynka decyzji <span class="nav-count" id="approvalCount" hidden></span></a>
         <a href="#inquiries" data-view="inquiries"><span data-icon="mail"></span>Zapytania <span class="nav-count" id="inquiryCount" hidden></span></a>
         <a href="#offers" data-view="offers"><span data-icon="file"></span>Oferty</a>
@@ -61,6 +67,11 @@
         <a href="#social" data-view="social"><span data-icon="media"></span>Posty Facebook</a>
         <a href="#activity" data-view="activity"><span data-icon="list"></span>Historia działań</a>
         <div class="nav-label">TWOJE NARZĘDZIA</div>
+        <a href="#recipes" data-view="recipes"><span data-icon="file"></span>Receptury</a>
+        <a href="#youtube" data-view="youtube"><span data-icon="media"></span>YouTube → wiedza</a>
+        <a href="#drive" data-view="drive"><span data-icon="folder"></span>Dysk Google</a>
+        <a href="#weather" data-view="weather"><span data-icon="globe"></span>Pogoda</a>
+        <a href="#maps" data-view="maps"><span data-icon="globe"></span>Mapy i trasy</a>
         <a href="#marketing" data-view="marketing"><span data-icon="chart"></span>Marketing i WWW</a>
         <a href="#tools" data-view="tools"><span data-icon="grid"></span>Wszystkie narzędzia</a>
         <a href="#history" data-view="history"><span data-icon="history"></span>Historia rozmowy</a>
@@ -72,18 +83,27 @@
         <div class="breadcrumb"><button id="menuToggle" class="icon-button mobile-only" aria-label="Otwórz menu" aria-expanded="false" aria-controls="sidebar"><span data-icon="menu"></span></button><span class="muted">Pulpit</span><span class="slash">/</span><strong id="breadcrumbTitle">Dzisiaj</strong></div>
         <div class="top-actions">
           <span class="pilot-label" id="modeLabel">PILOTAŻ</span>
+          <button class="secondary webinar-toggle" id="webinarBtn" aria-pressed="false" title="Pokaż przebieg pracy agentów"><span aria-hidden="true">✦</span><span>Tryb webinarowy</span></button>
           <button class="secondary chat-toggle" id="chatToggle" aria-label="Czat z DONĄ" aria-expanded="false" aria-controls="assistant"><span data-icon="message"></span><span>Czat z DONĄ</span></button>
           <button class="primary live-start" id="liveTopBtn" data-live aria-controls="live"><span data-icon="headset"></span><span>Rozmawiaj na żywo</span></button>
           <button class="icon-button" id="refreshBtn" title="Odśwież dane" aria-label="Odśwież dane"><span data-icon="refresh"></span></button><span class="clock" id="clock"></span>
         </div>
       </header>
-      <main id="main" tabindex="-1"><div class="page-heading"><span class="eyebrow" id="pageEyebrow"></span><div class="title-row"><h1 id="pageTitle">Dzień dobry, Piotrze.</h1><div id="pageAction"></div></div><p id="pageSubtitle">Twoje sprawy w jednym miejscu.</p></div><div id="connectionBanner" role="status" aria-live="polite"></div><div id="viewContent"></div><footer class="page-footer"><span id="dataStamp">Dane pojawią się po zalogowaniu.</span><a href="../">Obecny panel <span aria-hidden="true">↗</span></a></footer></main>
+      <main id="main" tabindex="-1"><div class="page-heading"><span class="eyebrow" id="pageEyebrow"></span><div class="title-row"><h1 id="pageTitle">Dzień dobry, Piotrze.</h1><div id="pageAction"></div></div><p id="pageSubtitle">Twoje sprawy w jednym miejscu.</p></div><div id="connectionBanner" role="status" aria-live="polite"></div><section class="agent-trace" id="agentTrace" aria-live="polite" aria-label="Przebieg pracy DONY" hidden></section><div id="viewContent"></div><footer class="page-footer"><span id="dataStamp">Dane pojawią się po zalogowaniu.</span><a href="../">Obecny panel <span aria-hidden="true">↗</span></a></footer></main>
     </div>
     <aside class="assistant panel" id="assistant" aria-label="Rozmowa z DONĄ">
-      <div class="phead"><button class="assistant-mark" id="core" title="Rozmowa na żywo z DONĄ" aria-label="Rozpocznij rozmowę na żywo"></button><div class="who"><h2>DONA</h2><small id="assistantStatus">Gotowa do rozmowy</small></div><button class="icon-button" id="chatClose" title="Zwiń rozmowę" aria-label="Zwiń rozmowę"><span data-icon="chevrons"></span></button></div>
-      <div class="welcome" id="chatWelcome"><span class="eyebrow">ZACZNIJMY OD NAJWAŻNIEJSZEGO</span><h2>Co dziś załatwimy?</h2><p>Napisz, czym mam się zająć. Możesz też przekazać plik lub porozmawiać ze mną.</p><div class="suggestions"><button data-prompt="Sprawdź, jakie mam pilne sprawy do załatwienia. Tylko odczyt i podsumowanie, bez wysyłek ani zmian."><span data-icon="list"></span>Pokaż pilne sprawy<span aria-hidden="true">›</span></button><button data-prompt="Pomóż mi przygotować ofertę dla klienta. Zacznij od ustalenia klienta i zakresu; bez wysyłania ani publikowania."><span data-icon="file"></span>Przygotuj ofertę<span aria-hidden="true">›</span></button></div></div>
-      <div class="log" id="log" role="log" aria-label="Wiadomości" aria-live="polite" aria-relevant="additions text"></div>
-      <div class="footer"><div id="operationStatus" role="status" aria-live="polite"></div><div class="voice-toolbar"><button class="text-button" id="dictBtn"><span id="dictIc"></span><span>Dyktuj</span></button><button class="text-button" id="golive"><span id="liveIc"></span><span>Rozmawiaj na żywo</span></button><div class="voice-controls"><button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button><button class="iconbtn" id="voiceBtn" title="Odczytywanie odpowiedzi">Głos</button></div></div><div class="composer"><label class="sr-only" for="inp">Wiadomość do DONY</label><textarea id="inp" placeholder="Napisz lub powiedz, czego potrzebujesz…" rows="2"></textarea><div class="composer-bottom"><div><button class="icon-button" id="clipBtn" title="Dołącz plik, do 3,5 MB" aria-label="Dołącz plik"><span data-icon="paperclip"></span></button><button class="icon-button" id="memBtn" title="Zapamiętaj wpisaną notatkę" aria-label="Zapisz tekst w pamięci DONY"><span data-icon="bookmark"></span></button></div><input type="file" id="fileInp" accept="image/*,application/pdf,video/*" hidden><button class="send" id="btn" title="Wyślij wiadomość" aria-label="Wyślij wiadomość"><span id="sendIc"></span></button></div></div><p class="composer-hint">Enter — wyślij · Shift + Enter — nowy wiersz</p></div>
+      <nav class="thread-rail" id="threadRail" aria-label="Historia rozmów">
+        <div class="thread-rail-head"><strong>Rozmowy</strong><button class="icon-button" id="newThread" title="Nowa rozmowa" aria-label="Nowa rozmowa">＋</button></div>
+        <button class="new-thread-button" id="newThreadWide"><span>＋</span> Nowa rozmowa</button>
+        <div class="thread-list" id="threadList"><p class="thread-empty">Wczytuję rozmowy…</p></div>
+        <small class="thread-sync" id="threadSync">Historia na wszystkich urządzeniach</small>
+      </nav>
+      <section class="assistant-chat">
+        <div class="phead"><button class="icon-button thread-toggle" id="threadToggle" title="Pokaż rozmowy" aria-label="Pokaż historię rozmów" aria-expanded="false">☰</button><button class="assistant-mark" id="core" title="Rozmowa na żywo z DONĄ" aria-label="Rozpocznij rozmowę na żywo"></button><div class="who"><h2 id="threadTitle">DONA</h2><small id="assistantStatus">Gotowa do rozmowy</small></div><button class="icon-button" id="chatClose" title="Zwiń rozmowę" aria-label="Zwiń rozmowę"><span data-icon="chevrons"></span></button></div>
+        <div class="welcome" id="chatWelcome"><span class="eyebrow">ZACZNIJMY OD NAJWAŻNIEJSZEGO</span><h2>Co dziś załatwimy?</h2><p>Napisz, czym mam się zająć. Możesz też przekazać plik lub porozmawiać ze mną.</p><div class="suggestions"><button data-prompt="Sprawdź, jakie mam pilne sprawy do załatwienia. Tylko odczyt i podsumowanie, bez wysyłek ani zmian."><span data-icon="list"></span>Pokaż pilne sprawy<span aria-hidden="true">›</span></button><button data-prompt="Pomóż mi przygotować ofertę dla klienta. Zacznij od ustalenia klienta i zakresu; bez wysyłania ani publikowania."><span data-icon="file"></span>Przygotuj ofertę<span aria-hidden="true">›</span></button></div></div>
+        <div class="log" id="log" role="log" aria-label="Wiadomości" aria-live="polite" aria-relevant="additions text"></div>
+        <div class="footer"><div id="operationStatus" role="status" aria-live="polite"></div><div class="voice-toolbar"><button class="text-button" id="dictBtn"><span id="dictIc"></span><span>Dyktuj</span></button><button class="text-button" id="golive"><span id="liveIc"></span><span>Rozmawiaj na żywo</span></button><div class="voice-controls"><button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button><button class="iconbtn" id="voiceBtn" title="Odczytywanie odpowiedzi">Głos</button></div></div><div class="composer"><label class="sr-only" for="inp">Wiadomość do DONY</label><textarea id="inp" placeholder="Napisz lub powiedz, czego potrzebujesz…" rows="2"></textarea><div class="composer-bottom"><div><button class="icon-button" id="clipBtn" title="Dołącz plik, do 3,5 MB" aria-label="Dołącz plik"><span data-icon="paperclip"></span></button><button class="icon-button" id="memBtn" title="Zapamiętaj wpisaną notatkę" aria-label="Zapisz tekst w pamięci DONY"><span data-icon="bookmark"></span></button></div><input type="file" id="fileInp" accept="image/*,application/pdf,video/*" hidden><button class="send" id="btn" title="Wyślij wiadomość" aria-label="Wyślij wiadomość"><span id="sendIc"></span></button></div></div><p class="composer-hint">Enter — wyślij · Shift + Enter — nowy wiersz</p></div>
+      </section>
     </aside>
   </div>
   <div class="live" id="live" role="dialog" aria-modal="true" aria-labelledby="voiceTitle" data-state="connect">
