@@ -19,7 +19,7 @@ def field(name, kind='string'):
     return {'id':name,'displayName':name,'required':False,'defaultMatch':False,'display':True,'canBeUsedToMatch':True,'type':kind}
 
 
-def execute(var, name, workflow_id, values, declared):
+def execute(var, name, workflow_id, values, declared, **settings):
     add(var,name,'executeWorkflow',1.2,{
         'mode':'once','source':'database',
         'workflowId':{'__rl':True,'mode':'id','value':workflow_id},
@@ -29,7 +29,7 @@ def execute(var, name, workflow_id, values, declared):
             'attemptToConvertTypes':False,'convertFieldsToString':True,
         },
         'options':{'waitForSubWorkflow':True},
-    })
+    }, **settings)
 
 
 add('request','Panel Tools Request','webhook',2.1,{'httpMethod':'POST','path':'dona-panel-tools','responseMode':'responseNode','options':{'allowedOrigins':'https://piotrmadrzyk.github.io,https://dona.probatum.pl'}})
@@ -55,14 +55,14 @@ execute('media','Run Media Intelligence','NOVrc2bJvF8s4oQa',{
     'zapytanie':"={{ 'Przeanalizuj film YouTube: ' + $('Validate Panel Tools Access').first().json.url }}",
     'typ_zrodla':'youtube','tenant_id':'PM','projekt_id':'','tryb':'','w_folderze':'','od_daty':'',
     'material_uid':'','transcript_revision_id':'','mapping_json':'','mapping_wersja':'',
-},media_declared)
+},media_declared,onError='continueRegularOutput')
 
 add('result','Normalize Panel Tool Result','code',2,{'mode':'runOnceForAllItems','language':'javaScript','jsCode':(ROOT/'backend/tools-result.js').read_text()})
 headers={'entries':[{'name':'Cache-Control','value':'no-store'},{'name':'X-Content-Type-Options','value':'nosniff'}]}
 add('respond','Return Panel Tool Result','respondToWebhook',1.5,{'respondWith':'json','responseBody':'={{ $json }}','options':{'responseCode':'={{ $json.statusCode || 200 }}','responseHeaders':headers}})
 add('deny','Return Panel Tool Error','respondToWebhook',1.5,{'respondWith':'json','responseBody':'={{ {ok:false,error:$json.error} }}','options':{'responseCode':'={{ $json.statusCode || 400 }}','responseHeaders':headers}})
 
-settings={'executionOrder':'v1','executionTimeout':900,'saveDataErrorExecution':'all','saveDataSuccessExecution':'none','saveExecutionProgress':False,'saveManualExecutions':False,'timezone':'Europe/Warsaw','callerPolicy':'workflowsFromSameOwner'}
+settings={'executionOrder':'v1','executionTimeout':900,'saveDataErrorExecution':'none','saveDataSuccessExecution':'none','saveExecutionProgress':False,'saveManualExecutions':False,'timezone':'Europe/Warsaw','callerPolicy':'workflowsFromSameOwner'}
 graph="""
 export default workflow('dona-panel-tools','DONA Panel — Media i Dysk',SETTINGS)
   .add(request).to(secret).to(auth).to(access)
