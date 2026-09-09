@@ -516,8 +516,13 @@ async function panelPost(url,body,timeout){
     if(r.status===401||j.error==='auth'){
       lsDel(KEY);sessionPw='';if(rtSession)endLive(true);openGate();throw new Error('AUTH');
     }
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    if(j.error)throw new Error('BACKEND_ERROR');
+    if(!r.ok||j.error){
+      var backendError=new Error(String(j.message||j.error||('HTTP '+r.status)));
+      backendError.code=String(j.error||('HTTP_'+r.status));
+      backendError.status=r.status;
+      backendError.payload=j;
+      throw backendError;
+    }
     if(tracked)emit('operation',{id:operationId,status:j.ok===false?'error':'response',label:operationLabel,answer:String(j.answer||'Brak treści odpowiedzi').slice(0,12000),trace:Array.isArray(j.trace)?j.trace.slice(0,14):[]});
     return j;
   }catch(e){if(tracked)emit('operation',{id:operationId,status:'error',label:operationLabel,error:e.message==='AUTH'?'Sesja wygasła. Zaloguj się ponownie.':'Nie potwierdzono wyniku. Sprawdź stan przed ponowieniem polecenia.'});throw e;}finally{clearTimeout(timer);}

@@ -12,7 +12,7 @@ const result = node({"type": "n8n-nodes-base.code", "version": 2, "config": {"na
 const respond = node({"type": "n8n-nodes-base.respondToWebhook", "version": 1.5, "config": {"name": "Return Panel Tool Result", "parameters": {"respondWith": "json", "responseBody": "={{ $json }}", "options": {"responseCode": "={{ $json.statusCode || 200 }}", "responseHeaders": {"entries": [{"name": "Cache-Control", "value": "no-store"}, {"name": "X-Content-Type-Options", "value": "nosniff"}]}}}}});
 const deny = node({"type": "n8n-nodes-base.respondToWebhook", "version": 1.5, "config": {"name": "Return Panel Tool Error", "parameters": {"respondWith": "json", "responseBody": "={{ {ok:false,error:$json.error} }}", "options": {"responseCode": "={{ $json.statusCode || 400 }}", "responseHeaders": {"entries": [{"name": "Cache-Control", "value": "no-store"}, {"name": "X-Content-Type-Options", "value": "nosniff"}]}}}}});
 
-export default workflow('dona-panel-tools','DONA Panel — Media i Dysk',{"settings": {"executionOrder": "v1", "executionTimeout": 900, "saveDataErrorExecution": "none", "saveDataSuccessExecution": "none", "saveExecutionProgress": false, "saveManualExecutions": false, "timezone": "Europe/Warsaw", "callerPolicy": "workflowsFromSameOwner"}})
+export default workflow('dona-panel-tools','DONA Panel — Media i Dysk',{"settings": {"executionOrder": "v1", "executionTimeout": 900, "saveDataErrorExecution": "all", "saveDataSuccessExecution": "none", "saveExecutionProgress": false, "saveManualExecutions": false, "timezone": "Europe/Warsaw", "callerPolicy": "workflowsFromSameOwner"}})
   .add(request).to(secret).to(auth).to(access)
   .add(access.output(0).to(isSearch))
   .add(access.output(1).to(deny))
