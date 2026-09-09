@@ -12,6 +12,8 @@ function text(value, max = 240) {
     .replace(/\b(?:sk|pk|rk|ghp|xox[baprs])[-_][A-Za-z0-9_-]{10,}\b/gi, '[UKRYTO]')
     .replace(/\bAIza[A-Za-z0-9_-]{10,}\b/g, '[UKRYTO]')
     .replace(/\b(api[_ -]?key|token|haslo|hasło|password|authorization)\s*[:=]\s*[^\s,;]+/gi, '$1=[UKRYTO]')
+    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[UKRYTY ADRES]')
+    .replace(/https?:\/\/\S+/gi, '[UKRYTY LINK]')
     .slice(0, max);
 }
 
@@ -138,12 +140,79 @@ const costAuditRows = byNewest(rows('Read Cost Audits', 'klient_id', 'costs').fi
   row.agent === 'PM Agent OS — OpenAI Cost Monitor' && row.narzedzia === 'openai-costs-api'
 ), row => row.czas);
 const llmRows = byNewest(rows('Read LLM Observability', 'tenant_id', 'models'), row => row.started_at || row.utworzono);
+const processRows = byNewest(rows('Read Processes', 'tenant_id', 'processes'), row => row.ostatnia_aktywnosc || row.utworzono);
+const panelEventRows = byNewest(rows('Read Panel Events', 'tenant_id', 'events'), row => row.occurred_at || row.createdAt);
 
 function parseJson(value) {
   if (value && typeof value === 'object') return value;
   if (typeof value !== 'string' || value.length > 100000) return null;
   try { return JSON.parse(value); } catch { return null; }
 }
+
+function displayName(value, fallback) {
+  const safe = text(value, 120).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!safe) return fallback;
+  return safe.charAt(0).toUpperCase() + safe.slice(1);
+}
+
+function processState(value, updatedAt) {
+  const safe = normalized(value);
+  if (/przerw|cancel|abort|error|fail|blad|zatrzym/.test(safe)) return 'interrupted';
+  if (/zakoncz|complete|done|success|finished|gotowe/.test(safe)) return 'completed';
+  if (/approval|zgod|decyzj|review/.test(safe)) return 'waiting_approval';
+  if (/czeka|wait|kolejk|scheduled|zaplan/.test(safe)) return 'waiting_system';
+  if (/w toku|running|active|working|process|in progress|pracuje/.test(safe)) {
+    return freshness(updatedAt).status === 'stale' ? 'stalled' : 'running';
+  }
+  return 'unconfirmed';
+}
+
+const processStateLabels = {
+  running:'Pracuje', waiting_approval:'Czeka na zgodę', waiting_system:'Czeka na system',
+  completed:'Zakończony', interrupted:'Przerwany', stalled:'Brak świeżego śladu',
+  unconfirmed:'Stan niepotwierdzony',
+};
+
+const operationalProcessRows = processRows.filter(row => !/test harness/.test(normalized(row.typ)));
+const processes = operationalProcessRows.slice(0, 50).map(row => {
+  const updatedAt = time(row.ostatnia_aktywnosc || row.updatedAt || row.utworzono).value;
+  const createdAt = time(row.utworzono || row.createdAt).value;
+  const state = processState(row.status, updatedAt);
+  const result = text(row.wynik, 420).trim();
+  const resultState = !result ? 'none' : state === 'completed' ? 'confirmed' : 'partial';
+  return {
+    id:text(row.proces_id || row.id, 180), name:displayName(row.typ, 'Proces Dony'),
+    type:text(row.typ, 120), state, stateLabel:processStateLabels[state], status:text(row.status, 80),
+    description:text(row.opis, 300), currentStep:text(row.krok_obecny, 360),
+    result, resultState, resultLabel:resultState === 'confirmed' ? 'Wynik potwierdzony' : resultState === 'partial' ? 'Wynik częściowy' : 'Brak końcowego wyniku',
+    requestedBy:text(row.requested_by, 100), createdAt, updatedAt, freshness:freshness(updatedAt),
+    hasCheckpoint:!!parseJson(row.stan_json),
+  };
+});
+
+function eventState(value) {
+  const safe = normalized(value);
+  if (/reject|odrzu/.test(safe)) return {state:'done', label:'Odrzucono'};
+  if (/approve|zatwierdz/.test(safe)) return {state:'done', label:'Zatwierdzono'};
+  if (/saved|zapis/.test(safe)) return {state:'done', label:'Zapisano'};
+  if (/publish|opublik/.test(safe)) return {state:'done', label:'Opublikowano'};
+  if (/sent|wyslan|wysłan/.test(safe)) return {state:'done', label:'Wysłano'};
+  if (/success|complete|done|executed|zakoncz|wykonan/.test(safe)) return {state:'done', label:'Zakończono'};
+  if (/error|fail|blad/.test(safe)) return {state:'attention', label:'Błąd'};
+  return {state:'unconfirmed', label:'Stan niepotwierdzony'};
+}
+
+const events = panelEventRows.slice(0, 50).map(row => {
+  const outcome = eventState(row.status);
+  const occurredAt = time(row.occurred_at || row.createdAt).value;
+  return {
+    id:text(row.event_id || row.id, 180), kind:text(row.kind, 80),
+    title:text(row.title, 260) || displayName(row.kind, 'Zdarzenie Panelu'),
+    status:text(row.status, 80), state:outcome.state, stateLabel:outcome.label,
+    occurredAt, referenceId:text(row.reference_id, 180), brandId:text(row.brand_id, 100),
+    freshness:freshness(occurredAt),
+  };
+});
 
 function costEntries(value) {
   const parsed = parseJson(value);
@@ -311,6 +380,8 @@ const freshnessBySource = {
   costs:sourceFreshness(costAuditRows, row => row.czas),
   models:sourceFreshness(llmRows, row => row.started_at || row.utworzono),
   approvals:sourceFreshness(approvalRows, row => row.created_at || row.createdAt),
+  processes:sourceFreshness(operationalProcessRows, row => row.ostatnia_aktywnosc || row.utworzono),
+  events:sourceFreshness(panelEventRows, row => row.occurred_at || row.createdAt),
 };
 const latestAt = Object.values(freshnessBySource).map(item => item.latestAt).filter(Boolean).sort((a,b) => time(b).ms-time(a).ms)[0] || '';
 const overallFreshness = {latestAt, ...freshness(latestAt), sources:freshnessBySource};
@@ -319,11 +390,18 @@ const active = agents.filter(item => item.state === 'working' && item.freshness.
 const waiting = agents.filter(item => item.state === 'waiting').length;
 const listening = agents.filter(item => item.state === 'listening' && item.freshness.status !== 'stale').length;
 const completed = agents.filter(item => item.state === 'done').length;
-const succeeded24h = agents.filter(item => item.state === 'done' && item.freshness.status !== 'stale').length;
+const processRunning = processes.filter(item => item.state === 'running').length;
+const processWaitingApproval = processes.filter(item => item.state === 'waiting_approval').length;
+const processWaitingSystem = processes.filter(item => item.state === 'waiting_system').length;
+const processCompleted = processes.filter(item => item.state === 'completed').length;
+const processAttention = processes.filter(item => ['interrupted','stalled','unconfirmed'].includes(item.state)).length;
+const confirmed24h = agents.filter(item => item.state === 'done' && item.freshness.status !== 'stale').length
+  + processes.filter(item => item.state === 'completed' && item.freshness.status !== 'stale').length
+  + events.filter(item => item.state === 'done' && item.freshness.status !== 'stale').length;
 const agentAttention = agents.filter(item => ['error','attention','unknown'].includes(item.state) || (['working','waiting'].includes(item.state) && item.freshness.status === 'stale')).length;
 const openIncidents = incidents.filter(item => item.status === 'open').length;
 const pendingApprovals = approvals.filter(item => item.state === 'pending').length;
-const health = openIncidents || agentAttention ? 'attention' : active ? 'working' : agents.length ? 'quiet' : 'unknown';
+const health = openIncidents || agentAttention || processAttention ? 'attention' : active + processRunning ? 'working' : agents.length + processes.length ? 'quiet' : 'unknown';
 
 const costs = {
   currency:'USD', today:Number(today.toFixed(6)), month:Number(month.toFixed(6)), measuredAt:costsMeasuredAt,
@@ -332,16 +410,18 @@ const costs = {
   freshness:freshness(costsMeasuredAt),
 };
 const summary = {
-  health, totalAgents:agents.length, active, waiting, listening, completed, attention:agentAttention,
+  health, totalAgents:agents.length, active:active + processRunning, waiting:waiting + processWaitingApproval,
+  listening:listening + processWaitingSystem, completed:completed + processCompleted, attention:agentAttention + processAttention,
   pendingApprovals, openIncidents, requests:llmRows.length, costTodayUsd:costs.today, costMonthUsd:costs.month,
-  running:active, waitingApproval:Math.max(waiting, pendingApprovals), waitingSystem:listening,
-  failed24h:Math.max(agentAttention, openIncidents), succeeded24h,
+  running:active + processRunning, waitingApproval:Math.max(waiting + processWaitingApproval, pendingApprovals), waitingSystem:listening + processWaitingSystem,
+  failed24h:Math.max(agentAttention + processAttention, openIncidents), succeeded24h:confirmed24h, confirmed24h,
+  processes:processes.length, processRunning, processWaitingApproval, processWaitingSystem, processCompleted, processAttention,
   costToday:costs.today, costMonth:costs.month, currency:costs.currency,
 };
 
 return [{json:{
   ok:true, generatedAt:new Date(now).toISOString(), readOnly:true, summary, agents, approvals,
-  costs, incidents, models, freshness:overallFreshness,
+  processes, events, costs, incidents, models, freshness:overallFreshness,
   meta:{
     mode:'owner_live_ops', readOnly:true, tenantId:tenant, limit:cap, windowHours:24,
     truncated:truncated.length > 0, truncatedSources:truncated, sourceFreshness:overallFreshness,
@@ -352,6 +432,8 @@ return [{json:{
       {id:'costs', records:costAuditRows.length, scope:'exact-monitor', freshness:freshnessBySource.costs},
       {id:'models', records:llmRows.length, scope:'tenant', freshness:freshnessBySource.models},
       {id:'approvals', records:approvalRows.length, scope:'tenant', freshness:freshnessBySource.approvals},
+      {id:'processes', records:operationalProcessRows.length, scope:'tenant', freshness:freshnessBySource.processes},
+      {id:'events', records:panelEventRows.length, scope:'tenant', freshness:freshnessBySource.events},
     ],
   },
 }}];

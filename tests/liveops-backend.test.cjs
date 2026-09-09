@@ -11,7 +11,7 @@ function run(source,records,input=[]){
   return JSON.parse(JSON.stringify(vm.runInNewContext('(function(){'+source+'})()',{$,$input:{all:()=>input.map(row)},require:name=>{assert.equal(name,'crypto');return crypto;}})[0].json));
 }
 function auth(body,secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}]){return run(authSource,{'Live Ops Request':[{body}]},secrets);}
-function fixture(){return {'Validate Live Ops Access':[{authorized:true,tenantId:'PM'}],'Read Agent Logs':[{}],'Read Incidents':[{}],'Read Cost Audits':[{}],'Read LLM Observability':[{}],'Read Approvals':[{}]};}
+function fixture(){return {'Validate Live Ops Access':[{authorized:true,tenantId:'PM'}],'Read Agent Logs':[{}],'Read Incidents':[{}],'Read Cost Audits':[{}],'Read LLM Observability':[{}],'Read Approvals':[{}],'Read Processes':[{}],'Read Panel Events':[{}]};}
 
 test('backend auth is fail-closed and allows read-only operations only',()=>{
   assert.equal(auth({operation:'liveops',haslo:'test-only-password'}).authorized,true);
@@ -25,7 +25,7 @@ test('backend auth is fail-closed and allows read-only operations only',()=>{
 test('empty sources return an honest read-only response',()=>{
   const r=run(snapshotSource,fixture());
   assert.equal(r.readOnly,true);assert.equal(r.meta.readOnly,true);assert.equal(r.summary.health,'unknown');
-  for(const key of ['agents','approvals','incidents','models'])assert.deepEqual(r[key],[]);
+  for(const key of ['agents','approvals','incidents','models','processes','events'])assert.deepEqual(r[key],[]);
   assert.equal(r.costs.today,0);assert.equal(r.costs.month,0);
 });
 
@@ -68,9 +68,30 @@ test('a newer LLM success resolves an older failure while usage remains aggregat
   assert.equal(r.models[0].avgLatencyMs,200);assert.equal(r.models[0].successRate,50);assert.equal(r.costs.updatedAt,r.costs.measuredAt);
 });
 
+test('processes and confirmed events stay tenant-scoped, sanitized and honest about stale work',()=>{
+  const f=fixture(),now=new Date().toISOString(),old='2026-08-20T10:00:00.000Z';
+  f['Read Processes']=[
+    {id:1,tenant_id:'OTHER',proces_id:'foreign',typ:'sekret',status:'W_TOKU',opis:'PRIVATE',ostatnia_aktywnosc:now},
+    {id:2,tenant_id:'PM',proces_id:'p1',typ:'kampania-testowa',status:'W_TOKU',opis:'Kontakt klient@example.com przez https://example.com',krok_obecny:'Przygotowanie planu',wynik:'Wynik częściowy',stan_json:'{"etap":2}',utworzono:old,ostatnia_aktywnosc:old},
+    {id:3,tenant_id:'PM',proces_id:'p2',typ:'raport',status:'ZAKONCZONY',wynik:'Gotowe',utworzono:now,ostatnia_aktywnosc:now},
+    {id:4,tenant_id:'PM',proces_id:'test',typ:'test-harness-proces',status:'PRZERWANY',wynik:'noise',utworzono:now,ostatnia_aktywnosc:now},
+  ];
+  f['Read Panel Events']=[
+    {id:1,tenant_id:'OTHER',event_id:'foreign-event',kind:'memory',title:'PRIVATE',status:'SAVED',occurred_at:now},
+    {id:2,tenant_id:'PM',event_id:'e1',kind:'memory',title:'Zapis dla klient@example.com',status:'SAVED',occurred_at:now,reference_id:'ref-1'},
+    {id:3,tenant_id:'PM',event_id:'e2',kind:'approval',title:'Decyzja',status:'REJECTED',occurred_at:now,reference_id:'ref-2'},
+  ];
+  const r=run(snapshotSource,f);
+  assert.equal(r.processes.length,2);assert.equal(r.processes[0].state,'completed');assert.equal(r.processes[0].resultState,'confirmed');
+  assert.equal(r.processes[1].state,'stalled');assert.equal(r.processes[1].resultState,'partial');assert.equal(r.processes[1].hasCheckpoint,true);
+  assert.deepEqual(r.events.map(x=>x.state),['done','done']);assert.deepEqual(r.events.map(x=>x.stateLabel),['Zapisano','Odrzucono']);
+  assert.equal(r.summary.processAttention,1);assert.equal(r.summary.confirmed24h,3);
+  assert.doesNotMatch(JSON.stringify(r),/PRIVATE|foreign|klient@example\.com|example\.com/);
+});
+
 test('generated workflow is scoped and contains no Data Table writes',()=>{
   const s=fs.readFileSync('backend/liveops.workflow.ts','utf8');
-  for(const id of ['WjTziChiMmtxWWlZ','ejPSDcWeyryp3deZ','T8LCNWvmIZH9vjZJ','KGyAqpVVwhv7G0Ra'])assert.match(s,new RegExp(id));
+  for(const id of ['WjTziChiMmtxWWlZ','ejPSDcWeyryp3deZ','T8LCNWvmIZH9vjZJ','KGyAqpVVwhv7G0Ra','gofNfnnyfk2JiaIT','prNvnc22Kdu4GVQI'])assert.match(s,new RegExp(id));
   assert.match(s,/PM Agent OS — OpenAI Cost Monitor/);assert.match(s,/"saveDataSuccessExecution": "none"/);
   assert.doesNotMatch(s,/"operation": "(?:insert|update|upsert|delete)"/);
 });

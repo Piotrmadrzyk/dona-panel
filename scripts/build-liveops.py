@@ -59,6 +59,10 @@ table("costs", "Read Cost Audits", "ejPSDcWeyryp3deZ", [
       "Owner-only exact cost-monitor read. Build Snapshot additionally requires narzedzia=openai-costs-api and parses a strict JSON allowlist. No writes.")
 table("models", "Read LLM Observability", "T8LCNWvmIZH9vjZJ", [condition("tenant_id", tenant)], "started_at")
 table("approvals", "Read Approvals", "KGyAqpVVwhv7G0Ra", [condition("tenant_id", tenant)], "created_at", 51)
+table("processes", "Read Processes", "gofNfnnyfk2JiaIT", [condition("tenant_id", tenant)], "ostatnia_aktywnosc", 101,
+      "Tenant-scoped process read. Build Snapshot exposes sanitized status, step and result fields only. No writes.")
+table("events", "Read Panel Events", "prNvnc22Kdu4GVQI", [condition("tenant_id", tenant)], "occurred_at", 101,
+      "Tenant-scoped confirmation-event read. Build Snapshot exposes an explicit allowlist only. No writes.")
 add("snapshot", "Build Live Ops Snapshot", "code", 2, {
     "mode": "runOnceForAllItems", "language": "javaScript",
     "jsCode": (ROOT / "backend/liveops-snapshot.js").read_text(),
@@ -86,7 +90,7 @@ settings = {
 graph = """
 export default workflow('dona-live-ops','DONA Panel — Live Ops',SETTINGS)
   .add(request).to(secret).to(auth).to(access)
-  .add(access.output(0).to(agents).to(audit).to(costs).to(models).to(approvals).to(snapshot).to(success))
+  .add(access.output(0).to(agents).to(audit).to(costs).to(models).to(approvals).to(processes).to(events).to(snapshot).to(success))
   .add(access.output(1).to(deny));
 """.replace("SETTINGS", json.dumps({"settings": settings}, ensure_ascii=False))
 

@@ -11,6 +11,8 @@ const STATUS={
   unconfirmed:{label:'BRAK KOŃCOWEGO POTWIERDZENIA',rank:4},
   done:{label:'ZAKOŃCZONE',rank:5}
 };
+const PROCESS_STATUS={RUNNING:'working',WAITING_APPROVAL:'approval',WAITING_SYSTEM:'listening',COMPLETED:'done',INTERRUPTED:'attention',STALLED:'attention',UNCONFIRMED:'unconfirmed'};
+const EVENT_STATUS={DONE:'done',ATTENTION:'attention',UNCONFIRMED:'unconfirmed'};
 const state={active:false,demo:false,loading:false,error:'',payload:null,request:0,timer:null,sessionOps:[]};
 
 const text=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -53,10 +55,40 @@ function normalizeAgent(item,index,source='system',now=Date.now()){
   };
 }
 
+function normalizeProcess(item,index,now=Date.now()){
+  item=item&&typeof item==='object'?item:{};
+  const rawStatus=first(item,['state','status'],'UNCONFIRMED'),status=PROCESS_STATUS[fold(rawStatus)]||classifyStatus(rawStatus,item,now);
+  const lastSeenAt=first(item,['updatedAt','createdAt'],'');
+  const currentStep=clean(first(item,['currentStep','description'],''));
+  const result=clean(first(item,['result'],''));
+  const resultLabel=clean(first(item,['resultLabel'],result?'Wynik częściowy':''));
+  return {
+    id:clean(first(item,['id'],'process-'+index),'process-'+index),
+    name:clean(first(item,['name','type'],'Proces Dony'),'Proces Dony'),status,
+    rawStatus:clean(first(item,['stateLabel','status'],rawStatus),'UNCONFIRMED'),
+    summary:currentStep||(result?(resultLabel+': '+result):'Proces nie ma jeszcze potwierdzonego kroku.'),
+    lastSeenAt,source:'process',executionId:'',result,resultLabel,
+  };
+}
+
+function normalizeEvent(item,index){
+  item=item&&typeof item==='object'?item:{};
+  const status=EVENT_STATUS[fold(first(item,['state'],'UNCONFIRMED'))]||classifyStatus(first(item,['status'],'UNCONFIRMED'),item);
+  return {
+    id:clean(first(item,['id'],'event-'+index),'event-'+index),
+    title:clean(first(item,['title','kind'],'Zdarzenie Dony'),'Zdarzenie Dony'),
+    status,stateLabel:clean(first(item,['stateLabel'],STATUS[status]?.label||'Stan niepotwierdzony'),'Stan niepotwierdzony'),
+    occurredAt:first(item,['occurredAt','createdAt'],''),kind:clean(first(item,['kind'],'')),
+  };
+}
+
 function normalizePayload(raw,now=Date.now()){
   const body=raw&&typeof raw==='object'&&(raw.data&&typeof raw.data==='object'?raw.data:raw)||{};
   const sourceAgents=Array.isArray(body.agents)?body.agents:Array.isArray(body.agentRuns)?body.agentRuns:Array.isArray(body.runs)?body.runs:Array.isArray(body.items)?body.items:[];
   const agents=sourceAgents.map((item,index)=>normalizeAgent(item,index,'system',now));
+  const processes=(Array.isArray(body.processes)?body.processes:[]).slice(0,50).map((item,index)=>normalizeProcess(item,index,now));
+  agents.push(...processes);
+  const events=(Array.isArray(body.events)?body.events:[]).slice(0,12).map(normalizeEvent);
   const approvals=Array.isArray(body.approvals)?body.approvals:[];
   approvals.filter(item=>/(REQUESTED|WAITING|PENDING|APPROVAL)/.test(fold(first(item,['status','executionStatus'],'')))&&(!item.expiresAt||Date.parse(item.expiresAt)>now)).forEach((item,index)=>{
     agents.push(normalizeAgent({id:'approval-'+first(item,['id'],index),name:'Bramka decyzji',status:'WAITING_APPROVAL',summary:clean(first(item,['type'],'Materiał'))+' czeka na Twoją zgodę.',lastSeenAt:first(item,['createdAt','updatedAt'],'')},index,'approval',now));
@@ -79,7 +111,7 @@ function normalizePayload(raw,now=Date.now()){
       costToday:number(first(summary,['costToday'],costs.today)),costMonth:number(first(summary,['costMonth'],costs.month)),
       currency:clean(first(summary,['currency'],costs.currency||'USD'),'USD').slice(0,3).toUpperCase()
     },
-    agents,
+    agents,processes,events,
     costs:{today:number(first(costs,['today'],summary.costToday)),month:number(first(costs,['month'],summary.costMonth)),currency:clean(first(costs,['currency'],summary.currency||'USD'),'USD').slice(0,3).toUpperCase(),updatedAt:first(costs,['updatedAt'],first(body,['generatedAt'],'')),source:clean(first(costs,['source'],'Rejestr kosztów Dony'),'Rejestr kosztów Dony')},
     models:models.slice(0,4).map((model,index)=>({name:clean(first(model,['model','name'],'Model '+(index+1)),'Model '+(index+1)),requests:number(model.requests),successRate:number(model.successRate),avgLatencyMs:number(model.avgLatencyMs),updatedAt:first(model,['updatedAt'],'')})),
     meta:{readOnly:meta.readOnly!==false,windowHours:number(meta.windowHours)||24,truncated:!!meta.truncated,sourceFreshness:meta.sourceFreshness}
@@ -88,12 +120,12 @@ function normalizePayload(raw,now=Date.now()){
 
 function demoPayload(now=Date.now()){
   const ago=minutes=>new Date(now-minutes*60000).toISOString();
-  return normalizePayload({ok:true,generatedAt:new Date(now).toISOString(),summary:{health:'DEMO',running:1,waitingApproval:1,waitingSystem:1,failed24h:0,succeeded24h:3,costToday:null,costMonth:null,currency:'USD'},agents:[
+  return normalizePayload({ok:true,generatedAt:new Date(now).toISOString(),summary:{health:'DEMO',running:1,waitingApproval:1,waitingSystem:1,failed24h:0,succeeded24h:4,costToday:null,costMonth:null,currency:'USD'},agents:[
     {id:'demo-live',name:'Agent Poczty',status:'RUNNING',lastSeenAt:ago(0),summary:'Pokaz sposobu prezentacji bieżącej pracy.'},
     {id:'demo-listener',name:'Agent Formularzy',status:'LISTENING',lastSeenAt:ago(1),summary:'Przykład bezpiecznego nasłuchiwania zdarzeń.'},
     {id:'demo-done',name:'Agent Marketingu',status:'COMPLETED',lastSeenAt:ago(7),summary:'Przykład potwierdzonego zakończenia zadania.'},
     {id:'demo-unconfirmed',name:'Agent Systemowy',status:'ROZPOCZETY',lastSeenAt:ago(42),summary:'Stary wpis rozpoczęcia nie jest pokazywany jako aktywna praca.'}
-  ],approvals:[{id:'demo-approval',type:'Przykładowy materiał',status:'REQUESTED',createdAt:ago(2),expiresAt:new Date(now+3600000).toISOString()}],costs:{today:null,month:null,currency:'USD',updatedAt:new Date(now).toISOString(),source:'Dane demonstracyjne'},meta:{windowHours:24,readOnly:true}},now);
+  ],processes:[{id:'demo-process',name:'Proces przygotowania oferty',state:'COMPLETED',stateLabel:'Zakończony',result:'Gotowy materiał',resultLabel:'Wynik potwierdzony',updatedAt:ago(5)}],events:[{id:'demo-event',title:'Zapisano potwierdzony wynik',state:'DONE',stateLabel:'Zapisano',occurredAt:ago(5)}],approvals:[{id:'demo-approval',type:'Przykładowy materiał',status:'REQUESTED',createdAt:ago(2),expiresAt:new Date(now+3600000).toISOString()}],costs:{today:null,month:null,currency:'USD',updatedAt:new Date(now).toISOString(),source:'Dane demonstracyjne'},meta:{windowHours:24,readOnly:true}},now);
 }
 
 function when(value){
@@ -126,11 +158,15 @@ function combinedAgents(payload,now=Date.now()){
 function statusCount(agents,status){return agents.filter(agent=>agent.status===status).length;}
 function agentCard(agent){
   const status=STATUS[agent.status]||STATUS.unconfirmed;
-  return '<article class="liveops-agent is-'+text(agent.status)+'"><span class="liveops-node" aria-hidden="true"><i></i></span><div class="liveops-agent-body"><div class="liveops-agent-head"><div><span class="liveops-source">'+text(agent.source==='session'?'BIEŻĄCA SESJA':agent.source==='approval'?'BRAMKA DECYZJI':agent.source==='incident'?'INCYDENT':'ŚLAD SYSTEMOWY')+'</span><h3>'+text(agent.name)+'</h3></div><span class="liveops-status">'+text(status.label)+'</span></div><p>'+text(agent.summary)+'</p><small>Ostatni ślad: <time datetime="'+text(agent.lastSeenAt)+'">'+text(when(agent.lastSeenAt))+'</time>'+(agent.executionId?' · wykonanie '+text(agent.executionId.slice(-10)):'')+'</small></div></article>';
+  return '<article class="liveops-agent is-'+text(agent.status)+'"><span class="liveops-node" aria-hidden="true"><i></i></span><div class="liveops-agent-body"><div class="liveops-agent-head"><div><span class="liveops-source">'+text(agent.source==='session'?'BIEŻĄCA SESJA':agent.source==='approval'?'BRAMKA DECYZJI':agent.source==='incident'?'INCYDENT':agent.source==='process'?'PROCES DONY':'ŚLAD SYSTEMOWY')+'</span><h3>'+text(agent.name)+'</h3></div><span class="liveops-status">'+text(status.label)+'</span></div><p>'+text(agent.summary)+'</p><small>Ostatni ślad: <time datetime="'+text(agent.lastSeenAt)+'">'+text(when(agent.lastSeenAt))+'</time>'+(agent.executionId?' · wykonanie '+text(agent.executionId.slice(-10)):'')+'</small></div></article>';
 }
 function modelCards(models){
   if(!models.length)return '<div class="liveops-empty-compact">Brak danych o modelach w tym odczycie.</div>';
   return models.map(model=>'<div class="liveops-model"><strong>'+text(model.name)+'</strong><span>'+modelValue(model.successRate,'%')+' powodzenia</span><small>'+modelValue(model.requests)+' wywołań · '+modelValue(model.avgLatencyMs,' ms')+'</small></div>').join('');
+}
+function eventCards(events){
+  if(!events.length)return '<div class="liveops-empty-compact">Brak potwierdzonych zdarzeń w tym odczycie.</div>';
+  return events.slice(0,6).map(item=>'<article class="liveops-confirmation is-'+text(item.status)+'"><i></i><div><strong>'+text(item.title)+'</strong><span>'+text(item.stateLabel)+' · '+text(when(item.occurredAt))+'</span></div></article>').join('');
 }
 
 function draw(){
@@ -148,7 +184,7 @@ function draw(){
   const staleWarning=state.error?'<div class="liveops-warning"><strong>Ostatnie odświeżenie nie powiodło się.</strong><span>Pokazuję poprzedni potwierdzony odczyt. Nie zgaduję aktualnego stanu.</span></div>':'';
   target.innerHTML=demoBanner+staleWarning+
     '<section class="liveops-stage is-'+text(system.key)+'"><header><div><span class="liveops-kicker"><i></i> DONA LIVE OPS</span><h2>'+text(system.title)+'</h2><p>'+text(system.copy)+'</p></div><div class="liveops-read"><span>'+(payload.meta.readOnly?'TYLKO ODCZYT':'TRYB ODCZYTU')+'</span><time title="'+text(exactTime(payload.generatedAt))+'">'+text(when(payload.generatedAt))+'</time><button class="liveops-refresh" type="button" data-liveops-refresh '+(state.loading?'disabled':'')+' aria-label="Odśwież stan agentów">↻</button></div></header><div class="liveops-stage-grid"><div class="liveops-core" aria-hidden="true"><span class="liveops-orbit orbit-one"><i></i><i></i><i></i></span><span class="liveops-orbit orbit-two"><i></i><i></i><i></i></span><b>D</b><small>LIVE</small></div><div class="liveops-metrics"><article><span>TERAZ</span><strong>'+running+'</strong><small>pracuje</small></article><article><span>KONTROLA</span><strong>'+approvals+'</strong><small>czeka na zgodę</small></article><article><span>CZUWA</span><strong>'+listening+'</strong><small>nasłuchuje</small></article><article class="'+(attention?'has-alert':'')+'"><span>24 GODZ.</span><strong>'+attention+'</strong><small>wymaga uwagi</small></article><article><span>24 GODZ.</span><strong>'+done24+'</strong><small>zakończonych</small></article></div></div><footer><span>Odświeżanie co 15 s tylko podczas oglądania tego ekranu.</span><strong>Żadnych wysyłek · żadnych publikacji · żadnych zmian</strong></footer></section>'+
-    '<div class="liveops-layout"><section class="liveops-work"><div class="liveops-section-head"><div><span>OŚ PRACY</span><h2>Co robią agenci</h2></div><small>'+agents.length+' '+(agents.length===1?'widoczny ślad':'widoczne ślady')+'</small></div><div class="liveops-timeline">'+(agents.length?agents.map(agentCard).join(''):'<div class="liveops-empty"><strong>Brak śladów w tym odczycie.</strong><span>Nie oznacza to błędu. Żaden agent nie jest pokazywany bez potwierdzonego rekordu.</span></div>')+'</div></section><aside class="liveops-side"><section class="liveops-cost"><div class="liveops-card-title"><span>KOSZT MODELI</span><b>↗</b></div><div class="liveops-cost-grid"><div><small>Dzisiaj</small><strong>'+text(money(payload.costs.today,currency))+'</strong></div><div><small>Ten miesiąc</small><strong>'+text(money(payload.costs.month,currency))+'</strong></div></div><p>Źródło: '+text(payload.costs.source)+'.</p><time title="'+text(exactTime(payload.costs.updatedAt))+'">Stan kosztów: '+text(when(payload.costs.updatedAt))+'</time></section><section class="liveops-models"><div class="liveops-card-title"><span>JAKOŚĆ ROUTINGU</span><b>24 h</b></div>'+modelCards(payload.models)+'</section><section class="liveops-legend"><div class="liveops-card-title"><span>JAK CZYTAĆ STATUSY</span></div>'+Object.entries(STATUS).map(([key,item])=>'<div><i class="is-'+key+'"></i><span>'+text(item.label)+'</span></div>').join('')+'<p>„Rozpoczęty” bez świeżego śladu nigdy nie jest uznawany za aktywną pracę.</p></section></aside></div>'+
+    '<div class="liveops-layout"><section class="liveops-work"><div class="liveops-section-head"><div><span>OŚ PRACY</span><h2>Co robi Dona</h2></div><small>'+agents.length+' '+(agents.length===1?'widoczny ślad':'widoczne ślady')+'</small></div><div class="liveops-timeline">'+(agents.length?agents.map(agentCard).join(''):'<div class="liveops-empty"><strong>Brak śladów w tym odczycie.</strong><span>Nie oznacza to błędu. Żaden agent ani proces nie jest pokazywany bez potwierdzonego rekordu.</span></div>')+'</div></section><aside class="liveops-side"><section class="liveops-cost"><div class="liveops-card-title"><span>KOSZT MODELI</span><b>↗</b></div><div class="liveops-cost-grid"><div><small>Dzisiaj</small><strong>'+text(money(payload.costs.today,currency))+'</strong></div><div><small>Ten miesiąc</small><strong>'+text(money(payload.costs.month,currency))+'</strong></div></div><p>Źródło: '+text(payload.costs.source)+'.</p><time title="'+text(exactTime(payload.costs.updatedAt))+'">Stan kosztów: '+text(when(payload.costs.updatedAt))+'</time></section><section class="liveops-models"><div class="liveops-card-title"><span>JAKOŚĆ ROUTINGU</span><b>24 h</b></div>'+modelCards(payload.models)+'</section><section class="liveops-confirmations"><div class="liveops-card-title"><span>POTWIERDZONE OSTATNIO</span><b>'+payload.events.length+'</b></div>'+eventCards(payload.events)+'</section><section class="liveops-legend"><div class="liveops-card-title"><span>JAK CZYTAĆ STATUSY</span></div>'+Object.entries(STATUS).map(([key,item])=>'<div><i class="is-'+key+'"></i><span>'+text(item.label)+'</span></div>').join('')+'<p>„Rozpoczęty” bez świeżego śladu nigdy nie jest uznawany za aktywną pracę.</p></section></aside></div>'+
     '<p class="liveops-provenance">Zakres: ostatnie '+text(payload.meta.windowHours)+' h · odczyt '+text(exactTime(payload.generatedAt))+(payload.meta.truncated?' · wynik skrócony przez źródło':' · pełny zwrócony zakres')+'. Prywatne treści, prompty, adresy i surowe dane są ukryte.</p>';
   bind(target);updateNav(agents);
 }
@@ -182,7 +218,7 @@ function render(_workspaceData,demo){setActive(true,demo);draw();}
 
 const api={views:{operations:'Praca Dony'},descriptions:{operations:'Zobacz na żywo, który agent pracuje, na co czeka i czy zadanie ma końcowe potwierdzenie.'},render,setActive,refresh};
 root.DonaLiveOps=api;
-if(typeof module!=='undefined')module.exports={STATUS,classifyStatus,normalizeAgent,normalizePayload,demoPayload,clean};
+if(typeof module!=='undefined')module.exports={STATUS,classifyStatus,normalizeAgent,normalizeProcess,normalizeEvent,normalizePayload,demoPayload,clean};
 
 if(!root.document||!root.addEventListener)return;
 root.addEventListener('dona:operation',event=>{
