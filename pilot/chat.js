@@ -564,8 +564,8 @@ async function send(text){
   var prepared=window.DonaPanelActions&&window.DonaPanelActions.prepare?window.DonaPanelActions.prepare(text,{source:'chat'}):{backendText:text};
   lastText=text;lockPanel(true);add('me',text);zapiszHist('user',text);inp.value='';phase('Czekam na odpowiedź Dony…');
   var tip=add('sys','Dona odpowiada…');
-  try{prepared=await enrichPanelAction(prepared);var ans=await ask(prepared&&prepared.backendText||text);tip.remove();add('dona',ans);zapiszHist('dona',ans);phase('Odpowiedź otrzymana');speak(ans);}
-  catch(e){tip.remove();add('sys',requestError(e));phase('Wynik niepotwierdzony');}
+  try{prepared=await enrichPanelAction(prepared);var ans=await ask(prepared&&prepared.backendText||text);tip.remove();add('dona',ans);zapiszHist('dona',ans);phase('Odpowiedź otrzymana');speak(ans);return {ok:true,answer:ans};}
+  catch(e){tip.remove();add('sys',requestError(e));phase('Wynik niepotwierdzony');return {ok:false,error:e&&e.message||'UNKNOWN'};}
   finally{lockPanel(false);}
 }
 function openBranch(a){
@@ -593,7 +593,8 @@ async function executeBranch(branchId,branchName,text){
     if(typeof j.answer!=='string'||!j.answer.trim())throw new Error('EMPTY_RESPONSE');
     add('dona','['+selected.name+']\n'+j.answer);zapiszHist('dona','['+selected.name+']\n'+j.answer);
     phase(j.ok===false?'Gałąź zgłosiła problem — sprawdź odpowiedź':'Otrzymano odpowiedź: '+selected.name);
-  }catch(e){add('sys',requestError(e));phase('Wynik niepotwierdzony');}
+    return j;
+  }catch(e){add('sys',requestError(e));phase('Wynik niepotwierdzony');return {ok:false,error:e&&e.message||'UNKNOWN'};}
   finally{tip.remove();lockPanel(false);document.querySelectorAll('.running').forEach(function(n){n.classList.remove('running');});}
 }
 document.getElementById('branchCancel').onclick=closeBranch;
@@ -753,6 +754,7 @@ window.Dona={
   isAuthenticated:function(){return authenticated;},
   request:function(path,body,timeout){if(!authenticated||isDemo)return Promise.reject(new Error('AUTH'));return panelPost(API+'/'+path,Object.assign({},body,{haslo:sessionPw}),timeout);},
   draft:function(text){setInput(text);emit('open-chat');},
+  run:function(text){return send(text);},
   branch:function(name){openBranch({nm:name});},
   runBranch:function(id,name,text){return executeBranch(id,name,text);},
   newThread:newConversation,

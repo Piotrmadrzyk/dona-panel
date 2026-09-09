@@ -52,3 +52,18 @@ test('YouTube results and Files use a persistent visual folder history', () => {
   assert.match(workspace,/mediaAnalyses/);
   assert.match(workspace,/v==='files'\)renderFiles\(\)/);
 });
+
+test('mobile chat stays in the viewport and always exposes a return action', () => {
+  const html = read('pilot/index.html');
+  const workspace = read('pilot/workspace.js');
+  const css = read('pilot/workspace.css');
+
+  assert.match(html, /id="chatClose"[^>]+aria-label="Wróć do panelu"/);
+  assert.match(html, /class="chat-back-label"[^>]*>.*Wróć/);
+  assert.match(css, /@media\(max-width:1140px\)\{body\.chat-modal-open\{overflow:hidden\}\.assistant\{position:fixed;inset:0 0 0 auto;height:100dvh/);
+  assert.match(css, /\.assistant-chat\{height:100%;overflow:hidden\}/);
+  assert.match(css, /\.chat-back-label\{display:flex!important/);
+  assert.match(workspace, /document\.body\.classList\.toggle\('chat-modal-open',innerWidth<=1140\)/);
+  assert.match(workspace, /document\.body\.classList\.remove\('chat-modal-open'\)/);
+  assert.match(workspace, /if\(innerWidth<=1140&&\$\('app'\)\.classList\.contains\('chat-open'\)\)\{closeChat\(\)/);
+});

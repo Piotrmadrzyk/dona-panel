@@ -13,7 +13,7 @@ function run(source, records, input=[]) {
 function auth(body, secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}]) {
   return run(authSource,{'Workspace Request':[{body}]},secrets);
 }
-function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Documents','Events','Brain','Social Profiles','Social Posts','Mail','Mail Sync','Project Memory','Panel Events','Zoho Calendar','Media Registry','Agent Logs'].map(n=>['Read '+n,[{}]]))};}
+function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Processes','Assets','Campaigns','Customer Memory','Next Actions','Documents','Invoices','Subscriptions','Subscription Usage','Research','Competitor Observations','Playbooks','Events','Brain','Social Profiles','Social Posts','Mail','Mail Sync','Project Memory','Panel Events','Zoho Calendar','Media Registry','Agent Logs'].map(n=>['Read '+n,[{}]]))};}
 test('only the correct password can authorize snapshot',()=>{
   for(const body of [undefined,null,[],{}, {operation:'snapshot',haslo:'wrong'}, {operation:'snapshot',haslo:{}}])assert.equal(auth(body).statusCode,401);
   assert.equal(auth({operation:'snapshot',haslo:'test-only-password'}).authorized,true);
@@ -26,7 +26,7 @@ test('client identity overrides and duplicate/missing credentials fail closed',(
 });
 test('empty tables produce valid empty arrays; missing tenant fails',()=>{
   const f=fixture();const result=run(snapshotSource,f);
-  for(const key of ['approvals','leads','offers','clients','meetings','tasks','files','mediaAnalyses','activity'])assert.deepEqual(result[key],[]);
+  for(const key of ['approvals','leads','offers','clients','meetings','tasks','processes','assets','campaigns','customerMemory','nextActions','files','invoices','subscriptions','subscriptionUsage','researches','competitorObservations','playbooks','mediaAnalyses','activity'])assert.deepEqual(result[key],[]);
   f['Tenant Configuration']=[{}];assert.throws(()=>run(snapshotSource,f),/TENANT_CONFIGURATION_UNAVAILABLE/);
   f['Validate Access']=[{authorized:false,tenantId:'PM'}];assert.throws(()=>run(snapshotSource,f),/ACCESS_DENIED/);
 });
@@ -46,6 +46,27 @@ test('owner-pilot document table keeps business client IDs separate from ownersh
   ];
   const r=run(snapshotSource,f);
   assert.deepEqual(r.files.map(x=>x.id),['doc-1','doc-2','doc-3']);assert.equal(r.files[0].url,'https://drive.google.com/file/d/one/view');assert.equal(r.files[1].url,'https://docs.google.com/document/d/two/edit');assert.equal(r.files[2].url,'');assert.doesNotMatch(JSON.stringify(r),/business-customer-17|PRIVATE|raw_content/);
+});
+test('business systems expose allowlisted fields and keep raw workflow payloads private',()=>{
+ const f=fixture();
+ f['Read Customers']=[{id:1,client_id:'PM',customer_id:'customer-1',nazwa:'Klient Jeden',owner:'Piotr',poziom_obslugi:'VIP',drive_folder_id:'folder-1'}];
+ f['Read Tasks']=[{id:1,tenant_id:'PM',zadanie_id:'task-1',tytul:'Oddać raport',customer_id:'customer-1',projekt_id:'project-1',explicit_priority:'HIGH',priority_score:88,wlasciciel:'Piotr',provenance:'PRIVATE PROVENANCE'}];
+ f['Read Processes']=[{id:1,tenant_id:'OTHER',proces_id:'foreign',opis:'FOREIGN PROCESS'},{id:2,tenant_id:'PM',proces_id:'process-1',opis:'Wdrożenie',stan_json:JSON.stringify({ustalone:['Zakres'],czeka_na_ciebie:['Akceptacja'],zablokowane:['Dostęp'],secret:'PRIVATE STATE'}),apiKey:'PRIVATE KEY'}];
+ f['Read Assets']=[{id:1,client_id:'PM',asset_id:'site-1',title:'Landing',asset_type:'LANDING_PAGE',preview_url:'javascript:alert(1)',source_data_location:'https://example.com/source',raw_html:'PRIVATE HTML'}];
+ f['Read Campaigns']=[{id:1,campaign_id:'campaign-1',nazwa:'Kampania',budzet_netto:1500,sekret:'PRIVATE CAMPAIGN'}];
+ f['Read Customer Memory']=[{id:1,client_id:'PM',memory_id:'memory-1',customer_id:'customer-1',memory_key:'kontakt',wartosc:'Telefon rano',source_excerpt:'potwierdzone',wartosc_norm:'PRIVATE NORMALIZED'}];
+ f['Read Next Actions']=[{id:1,client_id:'PM',action_id:'action-1',customer_id:'customer-1',action:'Zadzwonić',due_at:'2026-09-10T08:00:00Z'}];
+ f['Read Invoices']=[{id:1,numer_faktury:'FV/1',klient:'Klient Jeden',kwota:1234.5,waluta:'PLN',raw_pdf:'PRIVATE PDF'}];
+ f['Read Subscriptions']=[{id:1,service_id:'service-1',nazwa:'OpenAI',cena:99,waluta:'USD',aktywny:true,dashboard_url:'https://example.com/dashboard',credential_ref:'PRIVATE CREDENTIAL'}];
+ f['Read Subscription Usage']=[{id:1,odczyt_id:'usage-1',service_id:'service-1',used:25,total:100,raw_field:'PRIVATE RAW'}];
+ f['Read Research']=[{id:1,client_id:'PM',temat_klucz:'research-1',temat:'Rynek',podsumowanie:'Wynik',wynik_json:'PRIVATE RESEARCH'}];
+ f['Read Competitor Observations']=[{id:1,client_id:'PM',obserwacja_id:'watch-1',konkurent:'Firma X',skrot:'Podsumowanie',migawka:'PRIVATE SNAPSHOT'}];
+ f['Read Playbooks']=[{id:1,playbook_id:'pb-1',nazwa:'AI B2B',branza:'b2b',moduly:'leady,oferty',szablony_json:'PRIVATE TEMPLATE'}];
+ const r=run(snapshotSource,f),serialized=JSON.stringify(r);
+ assert.equal(r.tasks[0].projectId,'project-1');assert.equal(r.tasks[0].priorityScore,88);assert.equal(r.processes.length,1);assert.deepEqual(r.processes[0].state,{settled:['Zakres'],waiting:['Akceptacja'],blocked:['Dostęp']});
+ assert.equal(r.assets[0].previewUrl,'');assert.equal(r.assets[0].sourceUrl,'https://example.com/source');assert.equal(r.customerMemory[0].clientName,'Klient Jeden');assert.equal(r.nextActions[0].clientName,'Klient Jeden');
+ assert.equal(r.invoices[0].amount,1234.5);assert.equal(r.subscriptions[0].dashboardUrl,'https://example.com/dashboard');assert.equal(r.subscriptionUsage[0].used,25);assert.equal(r.researches[0].topic,'Rynek');assert.equal(r.competitorObservations[0].competitor,'Firma X');assert.deepEqual(r.playbooks[0].modules,['leady','oferty']);
+ assert.doesNotMatch(serialized,/FOREIGN PROCESS|PRIVATE PROVENANCE|PRIVATE STATE|PRIVATE KEY|PRIVATE HTML|PRIVATE CAMPAIGN|PRIVATE NORMALIZED|PRIVATE PDF|PRIVATE CREDENTIAL|PRIVATE RAW|PRIVATE RESEARCH|PRIVATE SNAPSHOT|PRIVATE TEMPLATE/);
 });
 test('large collections honestly signal truncated results',()=>{
   const f=fixture();f['Read Leads']=Array.from({length:251},(_,id)=>({id,client_id:'PM',lead_id:String(id)}));const r=run(snapshotSource,f);assert.equal(r.leads.length,250);assert.deepEqual(r.meta.truncated,['leads']);
@@ -105,5 +126,8 @@ test('media collection limit is honest and generated workflow remains tenant sco
  assert.equal(r.mediaAnalyses.length,50);assert.ok(r.meta.truncated.includes('mediaAnalyses'));
  assert.match(workflow,/Read Media Registry/);assert.match(workflow,/mgopWpfCfOrtMNt1/);assert.match(workflow,/tenant_id/);assert.match(workflow,/Validate Access/);assert.match(workflow,/"limit": 51/);assert.match(workflow,/"orderByDirection": "DESC"/);assert.match(workflow,/mediaAnalyses/);
  assert.match(workflow,/Read Documents/);assert.match(workflow,/ESx6r7mHmbKM4rj3/);assert.match(workflow,/readOwnerTable/);
+ assert.match(workflow,/Read Processes/);assert.match(workflow,/gofNfnnyfk2JiaIT/);assert.match(workflow,/Read Assets/);assert.match(workflow,/kQ8QuBtVttLgQVOp/);
+ assert.match(workflow,/Read Invoices/);assert.match(workflow,/GKRo2xR3NdoT64H1/);assert.match(workflow,/Read Subscriptions/);assert.match(workflow,/jbutUJix5k0Po9aS/);
+ assert.match(workflow,/Read Research/);assert.match(workflow,/fUm0Roh35CycVB8Y/);assert.match(workflow,/Read Competitor Observations/);assert.match(workflow,/HVksoxfn9IR8A2sc/);
  assert.match(workflow,/"saveDataErrorExecution": "none"/);assert.match(workflow,/"saveDataSuccessExecution": "none"/);assert.match(workflow,/"saveManualExecutions": false/);
 });
