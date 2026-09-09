@@ -35,8 +35,10 @@ tables=[
     ('invoices','Read Invoices','GKRo2xR3NdoT64H1',''),
     ('subscriptions','Read Subscriptions','jbutUJix5k0Po9aS',''),
     ('subscriptionUsage','Read Subscription Usage','daDVWZtcUpEe1kpX',''),
-    ('research','Read Research','fUm0Roh35CycVB8Y','client_id'),
-    ('competitors','Read Competitor Observations','HVksoxfn9IR8A2sc','client_id'),
+    # These legacy owner tables use klient_id as a customer reference, not a tenant ID.
+    # Access is restricted by the PM owner gate; do not invent a client_id filter.
+    ('research','Read Research','fUm0Roh35CycVB8Y',''),
+    ('competitors','Read Competitor Observations','HVksoxfn9IR8A2sc',''),
     ('playbooks','Read Playbooks','jo07Za4h64ddgyLA',''),
     ('events','Read Events','OUh2puv86Ip0YZLE','client_id'),
     ('brain','Read Brain','XeJ2EyohsX0nIrgz','tenant_id'),
