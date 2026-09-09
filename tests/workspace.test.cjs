@@ -41,6 +41,37 @@ test('other tenants and non-allowlisted payload keys never reach the browser',()
   f['Read Approvals']=[{id:1,tenant_id:'PM',approval_id:'a',action_type:'email_send',payload_preview:JSON.stringify({subject:'Hello',body:'Approved preview',apiKey:'do-not-expose',haslo:'secret'})}];
   const r=run(snapshotSource,f);assert.deepEqual(r.leads.map(x=>x.id),['own']);assert.equal(r.approvals[0].type,'Wiadomość do wysłania');assert.match(r.approvals[0].preview,/Hello/);assert.doesNotMatch(JSON.stringify(r),/private@example|do-not-expose|secret/);
 });
+test('mail rows expose which mailbox they arrived on, not just the sender',()=>{
+  const f=fixture();
+  f['Read Mail']=[
+    {id:1,tenant_id:'PM',mail_id:'m1',subject:'Faktura',sender_email:'ktos@example.com',mailbox_adres:'biuro@probatum.pl',konto:'biuro',mailbox_id:'glowne'},
+    {id:2,tenant_id:'PM',mail_id:'m2',subject:'Zapytanie',sender_email:'inny@example.com',konto:'drugie',mailbox_id:'drugie'},
+    {id:3,tenant_id:'PM',mail_id:'m3',subject:'Bez konta',sender_email:'trzeci@example.com'}
+  ];
+  const r=run(snapshotSource,f);
+  assert.equal(r.mails.find(m=>m.id==='m1').account,'biuro@probatum.pl');
+  assert.equal(r.mails.find(m=>m.id==='m2').account,'drugie');
+  assert.equal(r.mails.find(m=>m.id==='m3').account,'');
+});
+test('QA/harness test fixtures never reach the owner panel as real processes',()=>{
+  const f=fixture();
+  f['Read Processes']=[
+    {id:1,tenant_id:'PM',proces_id:'p1',opis:'Wdrożenie realne',status:'W_TOKU',requested_by:'telegram:123:OWNER'},
+    {id:2,tenant_id:'PM',proces_id:'PROC-test-harness',opis:'Testowy proces',status:'PRZERWANY',requested_by:'test-harness'},
+    {id:3,tenant_id:'PM',proces_id:'PROC-buty-zimowe',opis:'Kampania FB - buty zimowe',status:'W_TOKU',requested_by:'test-case-manager'}
+  ];
+  const r=run(snapshotSource,f);
+  assert.deepEqual(r.processes.map(p=>p.id),['p1']);
+});
+test('a message re-ingested twice under the same id only appears once',()=>{
+  const f=fixture();
+  f['Read Mail']=[
+    {id:1,tenant_id:'PM',mail_id:'dup-1',subject:'Rejestr domeny',sender_email:'automat@dns.pl'},
+    {id:2,tenant_id:'PM',mail_id:'dup-1',subject:'Rejestr domeny',sender_email:'automat@dns.pl'}
+  ];
+  const r=run(snapshotSource,f);
+  assert.equal(r.mails.length,1);
+});
 test('unsafe URLs are removed and missing monetary values stay unknown',()=>{
   const f=fixture();f['Read Offers']=[{id:1,client_id:'PM',offer_id:'one',drive_link:'javascript:alert(1)'},{id:2,client_id:'PM',offer_id:'two',total_netto:0,drive_link:'https://example.com/file'}];const r=run(snapshotSource,f);assert.equal(r.offers[0].url,'');assert.equal(r.offers[0].amount,null);assert.equal(r.offers[1].amount,0);assert.equal(r.offers[1].url,'https://example.com/file');
 });

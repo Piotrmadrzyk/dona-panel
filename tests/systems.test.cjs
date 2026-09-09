@@ -79,7 +79,11 @@ function fixture() {
     researches:[{id:'research-1',topic:'Rynek',summary:'Wynik badania',highConfidenceClaims:4}],
     competitorObservations:[{id:'watch-1',competitor:'Firma X',area:'ceny',whatChanged:'Nowy plan',changed:true}],
     playbooks:[{id:'pb-1',name:'AI B2B',sector:'b2b',readiness:80,active:true,modules:['leady','oferty']}],
-    offers:[],meetings:[],memory:[],permanentMemory:[],mails:[]
+    offers:[],meetings:[],
+    memory:[{id:'memory-1b',text:'Ustalenie o marce',tags:'marka',type:'ustalenie',source:'rozmowa'}],
+    permanentMemory:[],
+    mails:[{id:'mail-1',title:'Wiadomość',sender:'klient@example.com',account:'kontakt@probatum.pl',snippet:'Treść',status:'NEW'}],
+    socialPosts:[{id:'post-1',title:'Post',text:'Treść posta',status:'DRAFT'}]
   };
 }
 
@@ -120,6 +124,11 @@ test('unified search indexes the connected business collections',()=>{
   assert.ok(index.some(item=>item.type==='Dokument'&&item.route==='documents'));
   assert.ok(index.some(item=>item.type==='Research'&&item.route==='researchhub'));
   assert.ok(index.some(item=>item.type==='Strona / zasób'&&item.route==='websites'));
+  // "Otwórz" must never route back to the search page itself - that reads as a dead button.
+  assert.ok(index.some(item=>item.type==='Wiadomość'&&item.route==='mail'));
+  assert.ok(index.some(item=>item.type==='Wiedza'&&item.route==='knowledge'));
+  assert.ok(index.some(item=>item.type==='Post na Facebooku'&&item.route==='social'));
+  assert.ok(index.every(item=>item.route!=='searchall'));
 });
 
 test('write prompts identify exact records and preserve approval boundaries',()=>{
