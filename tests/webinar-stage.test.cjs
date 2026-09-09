@@ -24,11 +24,11 @@ test('webinar mode exposes agents, evidence and approval control in one stage',(
 });
 
 test('webinar assets are cache-busted together',()=>{
-  assert.match(html,/trace\.css\?v=5\.2\.0/);
-  assert.match(html,/trace\.js\?v=5\.2\.0/);
-  assert.match(html,/centre\.css\?v=5\.2\.0/);
-  assert.match(html,/centre\.js\?v=5\.2\.0/);
-  assert.match(html,/workspace\.js\?v=5\.2\.0/);
+  assert.match(html,/trace\.css\?v=5\.2\.1/);
+  assert.match(html,/trace\.js\?v=5\.2\.1/);
+  assert.match(html,/centre\.css\?v=5\.2\.1/);
+  assert.match(html,/centre\.js\?v=5\.2\.1/);
+  assert.match(html,/workspace\.js\?v=5\.2\.1/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
