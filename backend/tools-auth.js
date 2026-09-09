@@ -25,14 +25,23 @@ let query = validBody && typeof body.query === 'string' ? body.query.trim().slic
 const searchMode = validBody && body.searchMode === 'content' ? 'content' : 'name';
 const fileId = validBody && typeof body.fileId === 'string' ? body.fileId.trim() : '';
 let url = validBody && typeof body.url === 'string' ? body.url.trim() : '';
+function normalizeYouTubeUrl(value) {
+  const candidate = String(value || '').trim();
+  if (!candidate || candidate.length > 1000 || /\s/.test(candidate)) return '';
+  if (/^https:\/\/youtu\.be\/[A-Za-z0-9_-]{11}(?:[?&#].*)?$/i.test(candidate)) return candidate;
+  const full = candidate.match(/^https:\/\/(?:(?:www|m)\.)?youtube\.com\/([^?#]*)(?:\?([^#]*))?(?:#.*)?$/i);
+  if (!full) return '';
+  const path = full[1] || '';
+  const queryString = full[2] || '';
+  if (path === 'watch' && /(?:^|&)v=[A-Za-z0-9_-]{11}(?:&|$)/.test(queryString)) return candidate;
+  if (/^(?:shorts|live|embed)\/[A-Za-z0-9_-]{11}(?:\/|$)/i.test(path)) return candidate;
+  return '';
+}
 if (authorized && operation === 'drive_search' && !query) { error = 'invalid_query'; statusCode = 400; }
 if (authorized && operation === 'drive_read' && !/^[A-Za-z0-9_-]{10,200}$/.test(fileId)) { error = 'invalid_file'; statusCode = 400; }
 if (authorized && operation === 'youtube_analyze') {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'https:' || !['youtube.com','www.youtube.com','youtu.be','m.youtube.com'].includes(parsed.hostname)) throw new Error('host');
-    url = parsed.href.slice(0, 1000);
-  } catch (e) { error = 'invalid_youtube_url'; statusCode = 400; }
+  url = normalizeYouTubeUrl(url);
+  if (!url) { error = 'invalid_youtube_url'; statusCode = 400; }
 }
 return [{json:{
   authorized: authorized && !error, tenantId:'PM', operation, query, searchMode,

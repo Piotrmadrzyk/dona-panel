@@ -29,6 +29,8 @@ test('YouTube errors are specific and never recommend a blind automatic retry',(
  const ctx=vm.createContext({TypeError});
  vm.runInContext(src,ctx);
  assert.match(ctx.youtubeFailureMessage({code:'invalid_youtube_url',status:400}),/pełny link/);
+ assert.doesNotMatch(ctx.youtubeFailureMessage({code:'operation_not_allowed',status:400,payload:{error:'operation_not_allowed'}}),/pełny link/);
+ assert.match(ctx.youtubeFailureMessage({code:'operation_not_allowed',status:400,payload:{error:'operation_not_allowed'}}),/odrzucił zlecenie/);
  assert.match(ctx.youtubeFailureMessage({name:'AbortError'}),/nadal pracować/);
  assert.match(ctx.youtubeFailureMessage({status:502,payload:{status:'FAILED',message:'Brak transkrypcji'}}),/Brak transkrypcji/);
  assert.match(ctx.youtubeFailureMessage(new TypeError('Failed to fetch')),/nie połączyła/);
@@ -37,4 +39,20 @@ test('YouTube errors are specific and never recommend a blind automatic retry',(
   ctx.youtubeFailureMessage({name:'AbortError'}),
   ctx.youtubeFailureMessage({status:502,payload:{status:'FAILED'}})
  ])assert.doesNotMatch(value,/spróbuj ponownie|uruchamiam ponownie/i);
+});
+
+test('YouTube validator accepts supported links without relying on the URL global',()=>{
+ const auth=fs.readFileSync(path.join(root,'backend/tools-auth.js'),'utf8');
+ const stored='test-secret';
+ const webhook={json:{body:{haslo:stored,operation:'youtube_analyze',url:'https://www.youtube.com/watch?v=Dr3Q-Ju_c3U'},headers:{origin:'https://dona.probatum.pl'}}};
+ const credential={json:{nazwa:'panel_haslo',wartosc:stored}};
+ const ctx=vm.createContext({
+  require(name){if(name==='crypto')return require('node:crypto');throw Error('blocked');},
+  $input:{all:()=>[credential]},
+  $(name){assert.equal(name,'Panel Tools Request');return{first:()=>webhook};}
+ });
+ const output=vm.runInContext('(function(){'+auth+'})()',ctx);
+ assert.equal(output[0].json.authorized,true);
+ assert.equal(output[0].json.error,'');
+ assert.equal(output[0].json.url,'https://www.youtube.com/watch?v=Dr3Q-Ju_c3U');
 });
