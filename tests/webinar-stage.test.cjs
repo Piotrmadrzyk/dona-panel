@@ -5,6 +5,8 @@ const fs=require('node:fs');
 const js=fs.readFileSync('pilot/trace.js','utf8');
 const css=fs.readFileSync('pilot/trace.css','utf8');
 const html=fs.readFileSync('pilot/index.html','utf8');
+const centre=fs.readFileSync('pilot/centre.js','utf8');
+const workspace=fs.readFileSync('pilot/workspace.js','utf8');
 
 test('webinar stage distinguishes simulations from live operations',()=>{
   assert.match(js,/SYMULACJA · DANE PRZYKŁADOWE/);
@@ -27,4 +29,11 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.css\?v=5\.2\.0/);
   assert.match(html,/centre\.js\?v=5\.2\.0/);
   assert.match(html,/workspace\.js\?v=5\.2\.0/);
+});
+
+test('demo Buffer state is never labelled as a confirmed external read',()=>{
+  assert.match(centre,/DEMO:'Dane demonstracyjne'/);
+  assert.match(centre,/demo\?'DEMO':bufferReady\?'READ_OK'/);
+  assert.match(centre,/nie wykonuje żadnego odczytu zewnętrznej usługi/);
+  assert.match(workspace,/status:'DEMO'/);
 });
