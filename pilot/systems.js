@@ -270,7 +270,7 @@
     ['permanentMemory','Pamięć projektu','searchall', item => short(item.text,100), item => [item.tags,item.type,item.source]],
     ['offers','Oferta','customer', item => item.title, item => [item.clientName,item.description,item.status]],
     ['meetings','Spotkanie','customer', item => item.title, item => [item.clientName,item.location,item.status]],
-    ['mails','Wiadomość','searchall', item => item.title, item => [item.sender,item.snippet,item.status]],
+    ['mails','Wiadomość','searchall', item => item.title, item => [item.sender,item.account,item.snippet,item.status]],
     ['assets','Strona / zasób','websites', item => item.title, item => [item.campaignId,item.provider,item.status]],
     ['campaigns','Kampania','websites', item => item.name, item => [item.clientName,item.nextAction,item.status]],
     ['researches','Research','researchhub', item => item.topic, item => [item.summary,item.mode]],
