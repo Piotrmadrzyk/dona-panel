@@ -81,6 +81,15 @@ test('calendar approvals expose only reviewable fields and safe execution metada
  assert.equal(item.type,'Zmiana spotkania w Zoho');assert.equal(item.canApprove,false);assert.equal(item.actionPayload.eventUid,'event@zoho.com');assert.deepEqual(item.actionPayload.attendees,['guest@example.com']);assert.equal(item.actionPayload.secret,undefined);assert.equal(item.executionStatus,'PENDING');assert.doesNotMatch(JSON.stringify(item),/HIDDEN/);
  delete payload.secret;f['Read Approvals'][0].payload_preview=JSON.stringify(payload);assert.equal(run(snapshotSource,f).approvals[0].canApprove,true);
 });
+test('calendar snapshot ignores the synthetic test calendar placeholder',()=>{
+ const f=fixture();f['Read Zoho Calendar']=[
+  {id:1,tenant_id:'PM',provider:'zoho',calendar_id:'own',calendar_name:'Test',status:'READ_OK',checked_at:'2026-09-09T16:21:19Z',events_json:JSON.stringify([{id:'fake',title:'Test'}])},
+  {id:2,tenant_id:'PM',provider:'zoho',calendar_id:'e5bf299d9487429baacd94f522d8823f',calendar_name:'kontakt',status:'READ_OK',checked_at:'2026-09-09T17:00:45Z',events_json:'[]'}
+ ];
+ const r=run(snapshotSource,f);
+ assert.deepEqual(r.calendar.calendars.map(x=>x.id),['e5bf299d9487429baacd94f522d8823f']);
+ assert.doesNotMatch(JSON.stringify(r),/"id":"fake"/);
+});
 test('brain and Facebook rows remain owner scoped with no extra raw fields',()=>{
  const f=fixture();f['Read Brain']=[{id:1,tenant_id:'OTHER',tresc:'FOREIGN'},{id:2,tenant_id:'PM',wpis_id:'own',tresc:'Own memory',zrodlo_kanal:'panel',apiKey:'HIDDEN'}];
  f['Read Social Profiles']=[{id:1,profile_key:'edwardjanusz',fb_page_id:'WRONG',brand_name:'FOREIGN'},{id:2,profile_key:'edwardjanusz',fb_page_id:'61594093026807',brand_name:'Janusz',posting_enabled:false,connection_status:'META_NOT_CONNECTED'}];
