@@ -74,6 +74,13 @@ test('large collections honestly signal truncated results',()=>{
 test('malformed approval payloads cannot break the snapshot',()=>{
   for(const payload_preview of ['null','[]','123','not json',null]){const f=fixture();f['Read Approvals']=[{id:1,tenant_id:'PM',approval_id:'one',payload_preview}];assert.equal(run(snapshotSource,f).approvals.length,1);}
 });
+test('calendar approvals expose only reviewable fields and safe execution metadata',()=>{
+ const f=fixture(),payload={calendarId:'own',eventUid:'event@zoho.com',etag:'1234',title:'Spotkanie',start:'2026-09-10T10:00:00+02:00',end:'2026-09-10T10:30:00+02:00',attendees:['guest@example.com'],notifyAttendees:1,secret:'HIDDEN'};
+ f['Read Approvals']=[{id:1,tenant_id:'PM',approval_id:'zoho-1',action_type:'ZOHO_EVENT_UPDATE',payload_preview:JSON.stringify(payload),status:'REQUESTED',execution_status:'PENDING'}];
+ const r=run(snapshotSource,f),item=r.approvals[0];
+ assert.equal(item.type,'Zmiana spotkania w Zoho');assert.equal(item.canApprove,false);assert.equal(item.actionPayload.eventUid,'event@zoho.com');assert.deepEqual(item.actionPayload.attendees,['guest@example.com']);assert.equal(item.actionPayload.secret,undefined);assert.equal(item.executionStatus,'PENDING');assert.doesNotMatch(JSON.stringify(item),/HIDDEN/);
+ delete payload.secret;f['Read Approvals'][0].payload_preview=JSON.stringify(payload);assert.equal(run(snapshotSource,f).approvals[0].canApprove,true);
+});
 test('brain and Facebook rows remain owner scoped with no extra raw fields',()=>{
  const f=fixture();f['Read Brain']=[{id:1,tenant_id:'OTHER',tresc:'FOREIGN'},{id:2,tenant_id:'PM',wpis_id:'own',tresc:'Own memory',zrodlo_kanal:'panel',apiKey:'HIDDEN'}];
  f['Read Social Profiles']=[{id:1,profile_key:'edwardjanusz',fb_page_id:'WRONG',brand_name:'FOREIGN'},{id:2,profile_key:'edwardjanusz',fb_page_id:'61594093026807',brand_name:'Janusz',posting_enabled:false,connection_status:'META_NOT_CONNECTED'}];

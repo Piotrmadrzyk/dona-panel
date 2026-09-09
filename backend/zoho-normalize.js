@@ -17,7 +17,7 @@ function date(value,allDay){
 const events=ok?sourceEvents.map(e=>{
  const allDay=e.isallday===true;
  const start=date(e.dateandtime?.start||e.start,allDay),end=date(e.dateandtime?.end||e.end,allDay);
- return {id:String(e.uid||'')+':'+start,title:String(e.title||'Spotkanie').slice(0,500),date:start,end,allDay,location:String(e.location||'').slice(0,600),status:String(e.status||'SCHEDULED'),url:'',brandId:''};
+ return {id:String(e.uid||'')+':'+start,uid:String(e.uid||'').slice(0,500),etag:String(e.etag||'').slice(0,120),recurrenceId:String(e.recurrenceid||'').slice(0,80),title:String(e.title||'Spotkanie').slice(0,500),date:start,end,allDay,location:String(e.location||'').slice(0,600),status:String(e.status||e.estatus||'SCHEDULED'),url:'',brandId:''};
 }).filter(e=>e.id&&e.date&&e.end):[];
 const invalid=ok&&(events.length!==sourceEvents.length||events.length>500);
 return [{json:{tenant_id:'PM',provider:'zoho',calendar_id:request.calendarId,calendar_name:request.calendarName,events_json:JSON.stringify(events.slice(0,500)),event_count:events.length,status:ok&&!invalid?'READ_OK':'ERROR',checked_at:new Date().toISOString(),error_code:invalid?'INVALID_OR_TRUNCATED_EVENTS':ok?'':'ZOHO_READ_FAILED_'+code,range_start:request.rangeStart,range_end:request.rangeEnd}}];

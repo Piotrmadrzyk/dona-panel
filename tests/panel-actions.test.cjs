@@ -50,6 +50,14 @@ test('calendar mutations always return for approval before execution',()=>{
   assert.match(result.backendText,/bez jednoznacznego potwierdzenia Piotra/);
 });
 
+test('calendar review UI requires an explicit destructive confirmation',()=>{
+  const source=fs.readFileSync('pilot/command.js','utf8');
+  assert.match(source,/ZOHO_EVENT_DELETE/);
+  assert.match(source,/destructiveConfirm/);
+  assert.match(source,/Wpisz ANULUJ/);
+  assert.match(source,/Sprawdziłem kalendarz, termin i powiadomienia/);
+});
+
 test('current weather uses device location only after an explicit weather question',()=>{
   const f=setup(),result=f.actions.prepare('Dona, jaka jest pogoda?',{source:'voice'});
   assert.equal(result.view,'weather');

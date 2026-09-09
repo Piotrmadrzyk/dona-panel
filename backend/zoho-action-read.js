@@ -1,0 +1,6 @@
+const request=$('Validate Calendar Tool Input').first().json;
+const raw=$json,body=raw.body||raw,code=Number(raw.statusCode)||200;
+const events=code>=200&&code<300&&Array.isArray(body.events)?body.events:[];
+function date(value,allDay){const s=String(value||'');if(allDay&&/^\d{8}$/.test(s))return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);const m=s.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z|[+-]\d{4})?$/);if(!m)return '';const z=m[7]?(m[7]==='Z'?'Z':m[7].slice(0,3)+':'+m[7].slice(3)):'Z';return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}${z}`;}
+const safe=events.filter(e=>e&&e.uid).slice(0,100).map(e=>{const allDay=e.isallday===true;return {calendarId:request.selectedCalendarId,calendarName:request.selectedCalendarName,uid:String(e.uid).slice(0,500),etag:String(e.etag||'').slice(0,120),recurrenceId:String(e.recurrenceid||'').slice(0,80),title:String(e.title||'Spotkanie').slice(0,500),start:date(e.dateandtime?.start||e.start,allDay),end:date(e.dateandtime?.end||e.end,allDay),allDay,location:String(e.location||'').slice(0,255),status:String(e.estatus||e.status||'SCHEDULED')}}).filter(e=>e.start&&e.end);
+return {json:{ok:code>=200&&code<300&&Array.isArray(body.events),mode:'read',calendarId:request.selectedCalendarId,calendarName:request.selectedCalendarName,events:safe,error:code>=200&&code<300?'':'ZOHO_READ_FAILED_'+code}};
