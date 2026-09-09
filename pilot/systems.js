@@ -29,6 +29,7 @@
     demo: false,
     selectedCustomer: '',
     search: '',
+    searchCategory: '',
     action: null
   };
 
@@ -266,16 +267,26 @@
     ['tasks','Zadanie','projects', item => item.title, item => [item.description,item.clientName,item.owner,item.status]],
     ['processes','Proces','projects', item => item.title, item => [item.currentStep,item.type,item.status]],
     ['files','Dokument','documents', item => item.title, item => [item.type,item.clientName,item.projectId,item.status]],
-    ['memory','Wiedza','searchall', item => short(item.text,100), item => [item.tags,item.type,item.source]],
-    ['permanentMemory','Pamięć projektu','searchall', item => short(item.text,100), item => [item.tags,item.type,item.source]],
+    ['memory','Wiedza','knowledge', item => short(item.text,100), item => [item.tags,item.type,item.source]],
+    ['permanentMemory','Pamięć projektu','knowledge', item => short(item.text,100), item => [item.tags,item.type,item.source]],
     ['offers','Oferta','customer', item => item.title, item => [item.clientName,item.description,item.status]],
     ['meetings','Spotkanie','customer', item => item.title, item => [item.clientName,item.location,item.status]],
-    ['mails','Wiadomość','searchall', item => item.title, item => [item.sender,item.account,item.snippet,item.status]],
+    ['mails','Wiadomość','mail', item => item.title, item => [item.sender,item.account,item.snippet,item.status]],
+    ['socialPosts','Post na Facebooku','social', item => item.title, item => [item.text,item.status]],
     ['assets','Strona / zasób','websites', item => item.title, item => [item.campaignId,item.provider,item.status]],
     ['campaigns','Kampania','websites', item => item.name, item => [item.clientName,item.nextAction,item.status]],
     ['researches','Research','researchhub', item => item.topic, item => [item.summary,item.mode]],
     ['competitorObservations','Konkurencja','researchhub', item => item.competitor, item => [item.area,item.summary,item.whatChanged]]
   ];
+
+  const searchCategoryGroups = {
+    'Klienci': ['Klient'],
+    'Zadania': ['Zadanie', 'Proces'],
+    'Dokumenty': ['Dokument'],
+    'Wiedza': ['Wiedza', 'Pamięć projektu'],
+    'Research': ['Research', 'Konkurencja'],
+    'WWW': ['Strona / zasób', 'Kampania']
+  };
 
   function buildSearchIndex() {
     const rows = [];
@@ -294,7 +305,7 @@
     let html = hero('search', 'SYSTEM 04 · WIEDZA', 'Znajdź wszystko z jednego miejsca', 'Przeszukuj dane panelu od razu. Gdy potrzeba pełnego kontekstu z Dysku i poczty, uruchom głębokie szukanie DONY.', '',
       '<div class="hero-search"><span>' + icon('search') + '</span><i></i><i></i><i></i><b>' + index.length + '</b></div>');
     html += actionStatus();
-    html += '<section class="global-search"><div class="global-search-box">' + icon('search') + '<input id="globalSearchInput" type="search" autocomplete="off" placeholder="Klient, dokument, projekt, temat researchu…" aria-label="Szukaj we wszystkich danych" value="' + escape(state.search) + '"><button class="primary" data-system-action="search-deep">Szukaj głębiej z DONĄ</button></div><div class="search-source-chips"><span>Klienci</span><span>Zadania</span><span>Dokumenty</span><span>Wiedza</span><span>Research</span><span>WWW</span></div><div id="globalSearchResults"></div></section>';
+    html += '<section class="global-search"><div class="global-search-box">' + icon('search') + '<input id="globalSearchInput" type="search" autocomplete="off" placeholder="Klient, dokument, projekt, temat researchu…" aria-label="Szukaj we wszystkich danych" value="' + escape(state.search) + '"><button class="primary" data-system-action="search-deep">Szukaj głębiej z DONĄ</button></div><div class="search-source-chips">' + Object.keys(searchCategoryGroups).map(label => '<button type="button" data-search-category="' + escape(label) + '" aria-pressed="' + (state.searchCategory === label) + '">' + escape(label) + '</button>').join('') + '</div><div id="globalSearchResults"></div></section>';
     byId('viewContent').innerHTML = html;
     const input = byId('globalSearchInput');
     input.addEventListener('input', event => {
@@ -309,13 +320,16 @@
     const container = byId('globalSearchResults');
     if (!container) return;
     const query = state.search.trim();
-    if (!query) {
+    const categoryTypes = state.searchCategory ? (searchCategoryGroups[state.searchCategory] || []) : null;
+    if (!query && !categoryTypes) {
       const counts = searchSources.map(source => ({label:source[1], count:brandRows(source[0]).length})).filter(item => item.count);
       container.innerHTML = '<div class="search-overview"><div><span>GOTOWE DO PRZESZUKANIA</span><strong>' + index.length + '</strong><p>bez uruchamiania agenta</p></div><div>' + counts.map(item => '<span><b>' + item.count + '</b>' + escape(item.label) + '</span>').join('') + '</div></div>';
       return;
     }
-    const results = index.filter(item => textMatch(query, [item.haystack])).slice(0,50);
-    container.innerHTML = '<div class="search-results-head"><strong>' + results.length + ' wyników</strong><span>dla „' + escape(query) + '”</span></div>' + (results.length ? '<div class="search-results">' + results.map(item => '<article><span class="search-type">' + escape(item.type) + '</span><div><h3>' + escape(item.title) + '</h3><p>' + escape(short(item.detail,180)) + '</p></div><button class="secondary" data-system-route="' + escape(item.route) + '">Otwórz</button></article>').join('') + '</div>' : empty('Brak wyniku w snapshotcie', 'Uruchom głębokie szukanie, aby sprawdzić także Dysk Google, pocztę i powiązania.'));
+    const scoped = categoryTypes ? index.filter(item => categoryTypes.includes(item.type)) : index;
+    const results = scoped.filter(item => !query || textMatch(query, [item.haystack])).slice(0,50);
+    const label = query ? 'dla „' + escape(query) + '”' : 'w kategorii „' + escape(state.searchCategory) + '”';
+    container.innerHTML = '<div class="search-results-head"><strong>' + results.length + ' wyników</strong><span>' + label + '</span></div>' + (results.length ? '<div class="search-results">' + results.map(item => '<article><span class="search-type">' + escape(item.type) + '</span><div><h3>' + escape(item.title) + '</h3><p>' + escape(short(item.detail,180)) + '</p></div><button class="secondary" data-system-route="' + escape(item.route) + '">Otwórz</button></article>').join('') + '</div>' : empty('Brak wyniku w snapshotcie', 'Uruchom głębokie szukanie, aby sprawdzić także Dysk Google, pocztę i powiązania.'));
   }
 
   function renderDocuments() {
@@ -701,6 +715,16 @@
     const route = event.target.closest('[data-system-route]');
     if (route) {
       root.Dona.navigate(route.dataset.systemRoute);
+      return;
+    }
+    const categoryChip = event.target.closest('[data-search-category]');
+    if (categoryChip) {
+      const label = categoryChip.dataset.searchCategory;
+      state.searchCategory = state.searchCategory === label ? '' : label;
+      if (byId('globalSearchInput')) {
+        document.querySelectorAll('[data-search-category]').forEach(chip => chip.setAttribute('aria-pressed', String(chip.dataset.searchCategory === state.searchCategory)));
+        renderSearchResults(buildSearchIndex());
+      }
       return;
     }
     const button = event.target.closest('[data-system-action]');
