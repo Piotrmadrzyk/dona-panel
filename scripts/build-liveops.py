@@ -34,7 +34,7 @@ def table(var, name, table_id, conditions, order_by, limit=251, notes="Tenant-sc
 
 add("request", "Live Ops Request", "webhook", 2.1, {
     "httpMethod": "POST", "path": "dona-live-ops", "responseMode": "responseNode",
-    "options": {"allowedOrigins": "https://piotrmadrzyk.github.io,https://dona.probatum.pl"},
+    "options": {"allowedOrigins": "https://dona.probatum.pl"},
 })
 table("secret", "Panel Credential", "gtb2O8mzxTu0Wd2l", [condition("nazwa", "panel_haslo")], "createdAt", 2,
       "Fail-closed password lookup. No writes.")

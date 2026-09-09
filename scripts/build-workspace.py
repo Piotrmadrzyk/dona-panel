@@ -14,7 +14,7 @@ def table(var,name,table_id,field,value,limit=251):
         params.update({'matchType':'allConditions','filters':{'conditions':[{'keyName':field,'condition':'eq','keyValue':value}]}})
     add(var,name,'dataTable',1.1,params,executeOnce=True,alwaysOutputData=True,notes='Empty results are intentionally passed to explicit empty-array handling. Owner-table reads are allowed only after fail-closed PM authentication. No writes.')
 
-add('request','Workspace Request','webhook',2.1,{'httpMethod':'POST','path':'dona-workspace','responseMode':'responseNode','options':{'allowedOrigins':'https://piotrmadrzyk.github.io,https://dona.probatum.pl'}})
+add('request','Workspace Request','webhook',2.1,{'httpMethod':'POST','path':'dona-workspace','responseMode':'responseNode','options':{'allowedOrigins':'https://dona.probatum.pl'}})
 table('secret','Panel Credential','gtb2O8mzxTu0Wd2l','nazwa','panel_haslo',2)
 add('auth','Validate Access','code',2,{'mode':'runOnceForAllItems','language':'javaScript','jsCode':(ROOT/'backend/workspace-auth.js').read_text()})
 add('gate','Authorized','if',2.3,{'conditions':{'options':{'caseSensitive':True,'leftValue':'','typeValidation':'strict','version':2},'conditions':[{'leftValue':'={{ $json.authorized }}','operator':{'type':'boolean','operation':'true'}}],'combinator':'and'}})

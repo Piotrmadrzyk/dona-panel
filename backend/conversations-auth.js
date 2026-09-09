@@ -11,7 +11,7 @@ const authorized = !!stored && !!password && password.length <= 256 && crypto.ti
 );
 const operation = validBody && typeof body.operation === 'string' ? body.operation.trim().toLowerCase() : '';
 const threadId = validBody && typeof body.threadId === 'string' ? body.threadId.trim() : '';
-const allowedOrigins = ['https://dona.probatum.pl', 'https://piotrmadrzyk.github.io'];
+const allowedOrigins = ['https://dona.probatum.pl'];
 const origin = typeof request.headers?.origin === 'string' ? request.headers.origin : '';
 let error = authorized ? '' : 'auth';
 let statusCode = authorized ? 200 : 401;

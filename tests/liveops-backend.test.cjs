@@ -10,7 +10,7 @@ function run(source,records,input=[]){
   const $=name=>({first:()=>row(records[name][0]),all:()=>(records[name]||[]).map(row)});
   return JSON.parse(JSON.stringify(vm.runInNewContext('(function(){'+source+'})()',{$,$input:{all:()=>input.map(row)},require:name=>{assert.equal(name,'crypto');return crypto;}})[0].json));
 }
-function auth(body,secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}]){return run(authSource,{'Live Ops Request':[{body}]},secrets);}
+function auth(body,secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}],origin='https://dona.probatum.pl'){return run(authSource,{'Live Ops Request':[{body,headers:{origin}}]},secrets);}
 function fixture(){return {'Validate Live Ops Access':[{authorized:true,tenantId:'PM'}],'Read Agent Logs':[{}],'Read Incidents':[{}],'Read Cost Audits':[{}],'Read LLM Observability':[{}],'Read Approvals':[{}],'Read Processes':[{}],'Read Panel Events':[{}]};}
 
 test('backend auth is fail-closed and allows read-only operations only',()=>{
@@ -20,6 +20,13 @@ test('backend auth is fail-closed and allows read-only operations only',()=>{
   assert.equal(auth({operation:'liveops',haslo:'wrong'}).statusCode,401);
   assert.equal(auth({operation:'liveops',haslo:'test-only-password',tenant_id:'OTHER'}).statusCode,403);
   assert.equal(auth({operation:'liveops',haslo:'test-only-password'},[]).authorized,false);
+});
+
+test('only the exact production origin may authorize live ops access',()=>{
+  for(const origin of ['https://piotrmadrzyk.github.io','http://dona.probatum.pl',''])
+    assert.equal(auth({operation:'liveops',haslo:'test-only-password'},undefined,origin).statusCode,403);
+  assert.equal(auth({operation:'liveops',haslo:'test-only-password'},undefined,'https://dona.probatum.pl').authorized,true);
+  assert.equal(run(authSource,{'Live Ops Request':[{body:{operation:'liveops',haslo:'test-only-password'}}]},[{nazwa:'panel_haslo',wartosc:'test-only-password'}]).statusCode,403);
 });
 
 test('empty sources return an honest read-only response',()=>{

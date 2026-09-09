@@ -9,7 +9,7 @@ const authorized = !!stored && !!password && password.length <= 256 && crypto.ti
   crypto.createHash('sha256').update(password).digest(),
   crypto.createHash('sha256').update(stored).digest()
 );
-const allowedOrigins = ['https://dona.probatum.pl', 'https://piotrmadrzyk.github.io'];
+const allowedOrigins = ['https://dona.probatum.pl'];
 const origin = typeof request.headers?.origin === 'string' ? request.headers.origin : '';
 const operation = validBody && typeof body.operation === 'string' ? body.operation.trim().toLowerCase() : '';
 let error = authorized ? '' : 'auth';
@@ -18,7 +18,7 @@ if (authorized && !allowedOrigins.includes(origin)) { error = 'origin_not_allowe
 if (authorized && !['drive_search', 'drive_read', 'youtube_analyze'].includes(operation)) {
   error = 'operation_not_allowed'; statusCode = 400;
 }
-if (authorized && ['tenant_id','tenantId','role_id','user_id','userId','folder_id','w_folderze'].some(key => Object.prototype.hasOwnProperty.call(body,key))) {
+if (authorized && ['tenant_id','tenantId','role','rola','role_id','user_id','userId','folder_id','w_folderze'].some(key => Object.prototype.hasOwnProperty.call(body,key))) {
   error = 'client_scope_not_allowed'; statusCode = 403;
 }
 let query = validBody && typeof body.query === 'string' ? body.query.trim().slice(0, 500) : '';

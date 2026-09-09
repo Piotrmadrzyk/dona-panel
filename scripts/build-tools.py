@@ -32,7 +32,7 @@ def execute(var, name, workflow_id, values, declared, **settings):
     }, **settings)
 
 
-add('request','Panel Tools Request','webhook',2.1,{'httpMethod':'POST','path':'dona-panel-tools','responseMode':'responseNode','options':{'allowedOrigins':'https://piotrmadrzyk.github.io,https://dona.probatum.pl'}})
+add('request','Panel Tools Request','webhook',2.1,{'httpMethod':'POST','path':'dona-panel-tools','responseMode':'responseNode','options':{'allowedOrigins':'https://dona.probatum.pl'}})
 add('secret','Panel Credential','dataTable',1.1,{'resource':'row','operation':'get','dataTableId':{'__rl':True,'mode':'id','value':'gtb2O8mzxTu0Wd2l'},'returnAll':False,'limit':2,'matchType':'allConditions','filters':{'conditions':[{'keyName':'nazwa','condition':'eq','keyValue':'panel_haslo'}]}},executeOnce=True,alwaysOutputData=True)
 add('auth','Validate Panel Tools Access','code',2,{'mode':'runOnceForAllItems','language':'javaScript','jsCode':(ROOT/'backend/tools-auth.js').read_text()})
 add('access','Authorized','if',2.3,{'conditions':{'options':{'caseSensitive':True,'leftValue':'','typeValidation':'strict','version':2},'conditions':[{'leftValue':'={{ $json.authorized }}','operator':{'type':'boolean','operation':'true'}}],'combinator':'and'}})

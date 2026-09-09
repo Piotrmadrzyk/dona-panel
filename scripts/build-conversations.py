@@ -66,7 +66,7 @@ cond = lambda key, value: {"keyName": key, "condition": "eq", "keyValue": value}
 
 add("request", "Conversation Request", "webhook", 2.1, {
     "httpMethod": "POST", "path": "dona-panel-conversations", "responseMode": "responseNode",
-    "options": {"allowedOrigins": "https://piotrmadrzyk.github.io,https://dona.probatum.pl"},
+    "options": {"allowedOrigins": "https://dona.probatum.pl"},
 })
 table_get("secret", "Panel Credential", SECRET, [cond("nazwa", "panel_haslo")], 2)
 add("auth", "Validate Conversation Access", "code", 2, {

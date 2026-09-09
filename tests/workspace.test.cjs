@@ -10,8 +10,8 @@ function run(source, records, input=[]) {
   const $ = name => ({first:()=>row(records[name][0]),all:()=>records[name].map(row)});
   return JSON.parse(JSON.stringify(vm.runInNewContext('(function(){'+source+'})()',{$,$input:{all:()=>input.map(row)},URL,require:name=>{assert.equal(name,'crypto');return crypto;}})[0].json));
 }
-function auth(body, secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}]) {
-  return run(authSource,{'Workspace Request':[{body}]},secrets);
+function auth(body, secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}], origin='https://dona.probatum.pl') {
+  return run(authSource,{'Workspace Request':[{body,headers:{origin}}]},secrets);
 }
 function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Processes','Assets','Campaigns','Customer Memory','Next Actions','Documents','Invoices','Subscriptions','Subscription Usage','Research','Competitor Observations','Playbooks','Events','Brain','Social Profiles','Social Posts','Mail','Mail Sync','Project Memory','Panel Events','Zoho Calendar','Media Registry','Agent Logs'].map(n=>['Read '+n,[{}]]))};}
 test('only the correct password can authorize snapshot',()=>{
@@ -23,6 +23,12 @@ test('client identity overrides and duplicate/missing credentials fail closed',(
   for(const key of ['tenantId','tenant_id','role','rola','userId','user_id'])assert.equal(auth({operation:'snapshot',haslo:'test-only-password',[key]:'other'}).statusCode,403);
   assert.equal(auth({operation:'snapshot',haslo:'test-only-password'},[]).authorized,false);
   assert.equal(auth({operation:'snapshot',haslo:'test-only-password'},[{nazwa:'panel_haslo',wartosc:'test-only-password'},{nazwa:'panel_haslo',wartosc:'test-only-password'}]).authorized,false);
+});
+test('only the exact production origin may authorize a snapshot',()=>{
+  for(const origin of ['https://piotrmadrzyk.github.io','http://dona.probatum.pl','https://dona.probatum.pl.evil.com',''])
+    assert.equal(auth({operation:'snapshot',haslo:'test-only-password'},undefined,origin).statusCode,403);
+  assert.equal(auth({operation:'snapshot',haslo:'test-only-password'},undefined,'https://dona.probatum.pl').authorized,true);
+  assert.equal(run(authSource,{'Workspace Request':[{body:{operation:'snapshot',haslo:'test-only-password'}}]},[{nazwa:'panel_haslo',wartosc:'test-only-password'}]).statusCode,403);
 });
 test('empty tables produce valid empty arrays; missing tenant fails',()=>{
   const f=fixture();const result=run(snapshotSource,f);
