@@ -32,7 +32,7 @@ test('Live Ops frontend is wired to a read-only endpoint and polls only in its a
   assert.match(html,/liveops\.css\?v=1\.0\.0/);
   assert.match(html,/liveops\.js\?v=1\.0\.0/);
   assert.match(html,/panel-actions\.js\?v=5\.2\.0/);
-  assert.match(html,/workspace\.js\?v=5\.3\.0/);
+  assert.match(html,/workspace\.js\?v=5\.4\.0/);
   assert.match(workspace,/setActive\?\.\(state\.view==='operations',state\.demo\)/);
   assert.match(workspace,/state\.view==='operations'\?window\.DonaLiveOps\.refresh\(\):loadData\(\)/);
   assert.match(js,/Dona\.request\('dona-live-ops',\{operation:'snapshot'\}/);

@@ -37,3 +37,18 @@ test('every tool card has a meaningful visual scene', () => {
   assert.match(workspace, /class="tool-card-content"/);
   for (const id of ids) assert.match(workspace, new RegExp(`\\{id:'${id}'`));
 });
+
+test('YouTube results and Files use a persistent visual folder history', () => {
+  const features = read('pilot/features.js');
+  const workspace = read('pilot/workspace.js');
+  const css = read('pilot/features.css');
+  for (const selector of ['.media-history-grid','.media-result-head','.media-file-links','.media-stages .missing','.file-library-summary','.file-library-counts']) assert.match(css,new RegExp(selector.replace('.','\\.')));
+  assert.match(features,/ZAPISANE WYNIKI · CAŁA PRZESTRZEŃ/);
+  assert.match(features,/DonaFeatures=.*mediaCard/);
+  assert.match(features,/\(drive\|docs\)\\\.google\\\.com/);
+  assert.match(features,/youtube\\\.com/);
+  assert.match(workspace,/function renderFiles\(\)/);
+  assert.match(workspace,/Foldery analiz YouTube/);
+  assert.match(workspace,/mediaAnalyses/);
+  assert.match(workspace,/v==='files'\)renderFiles\(\)/);
+});
