@@ -18,7 +18,35 @@ add('request','Workspace Request','webhook',2.1,{'httpMethod':'POST','path':'don
 table('secret','Panel Credential','gtb2O8mzxTu0Wd2l','nazwa','panel_haslo',2)
 add('auth','Validate Access','code',2,{'mode':'runOnceForAllItems','language':'javaScript','jsCode':(ROOT/'backend/workspace-auth.js').read_text()})
 add('gate','Authorized','if',2.3,{'conditions':{'options':{'caseSensitive':True,'leftValue':'','typeValidation':'strict','version':2},'conditions':[{'leftValue':'={{ $json.authorized }}','operator':{'type':'boolean','operation':'true'}}],'combinator':'and'}})
-tables=[('config','Tenant Configuration','Njc9seD34Eeck9Vf','client_id'),('customers','Read Customers','WlE2p5ab7BLjhoSr','client_id'),('approvals','Read Approvals','KGyAqpVVwhv7G0Ra','tenant_id'),('leads','Read Leads','gAMd9Fouz9dffQaD','client_id'),('offers','Read Offers','2jCWFfufSfo7X9kr','client_id'),('meetings','Read Meetings','XfBmAVssaQ1dvOpE','client_id'),('tasks','Read Tasks','9lpZx2cRIk7edt8a','tenant_id'),('documents','Read Documents','ESx6r7mHmbKM4rj3',''),('events','Read Events','OUh2puv86Ip0YZLE','client_id'),('brain','Read Brain','XeJ2EyohsX0nIrgz','tenant_id'),('mail','Read Mail','VaKLh60KD8Wng7yO','tenant_id'),('mailSync','Read Mail Sync','Fa9C1UUUMUEJtfC1','tenant_id'),('projectMemory','Read Project Memory','OnVQpSBfjfn6Oqla','tenant_id'),('panelEvents','Read Panel Events','prNvnc22Kdu4GVQI','tenant_id'),('zoho','Read Zoho Calendar','lOnEaEQ8varOsmdt','tenant_id'),('media','Read Media Registry','mgopWpfCfOrtMNt1','tenant_id')]
+tables=[
+    ('config','Tenant Configuration','Njc9seD34Eeck9Vf','client_id'),
+    ('customers','Read Customers','WlE2p5ab7BLjhoSr','client_id'),
+    ('approvals','Read Approvals','KGyAqpVVwhv7G0Ra','tenant_id'),
+    ('leads','Read Leads','gAMd9Fouz9dffQaD','client_id'),
+    ('offers','Read Offers','2jCWFfufSfo7X9kr','client_id'),
+    ('meetings','Read Meetings','XfBmAVssaQ1dvOpE','client_id'),
+    ('tasks','Read Tasks','9lpZx2cRIk7edt8a','tenant_id'),
+    ('processes','Read Processes','gofNfnnyfk2JiaIT','tenant_id'),
+    ('assets','Read Assets','kQ8QuBtVttLgQVOp','client_id'),
+    ('campaigns','Read Campaigns','NKeLThYjECSaG3fH',''),
+    ('customerMemory','Read Customer Memory','m2gO4rV7afNuT6qY','client_id'),
+    ('nextActions','Read Next Actions','M8z0eogSyKfqMOIQ','client_id'),
+    ('documents','Read Documents','ESx6r7mHmbKM4rj3',''),
+    ('invoices','Read Invoices','GKRo2xR3NdoT64H1',''),
+    ('subscriptions','Read Subscriptions','jbutUJix5k0Po9aS',''),
+    ('subscriptionUsage','Read Subscription Usage','daDVWZtcUpEe1kpX',''),
+    ('research','Read Research','fUm0Roh35CycVB8Y','client_id'),
+    ('competitors','Read Competitor Observations','HVksoxfn9IR8A2sc','client_id'),
+    ('playbooks','Read Playbooks','jo07Za4h64ddgyLA',''),
+    ('events','Read Events','OUh2puv86Ip0YZLE','client_id'),
+    ('brain','Read Brain','XeJ2EyohsX0nIrgz','tenant_id'),
+    ('mail','Read Mail','VaKLh60KD8Wng7yO','tenant_id'),
+    ('mailSync','Read Mail Sync','Fa9C1UUUMUEJtfC1','tenant_id'),
+    ('projectMemory','Read Project Memory','OnVQpSBfjfn6Oqla','tenant_id'),
+    ('panelEvents','Read Panel Events','prNvnc22Kdu4GVQI','tenant_id'),
+    ('zoho','Read Zoho Calendar','lOnEaEQ8varOsmdt','tenant_id'),
+    ('media','Read Media Registry','mgopWpfCfOrtMNt1','tenant_id')
+]
 for var,name,tid,field in tables:
     table(var,name,tid,field,"={{ $('Validate Access').first().json.tenantId }}",limit=51 if var in ['mail','mailSync','projectMemory','panelEvents','zoho','media'] else 251)
 for var,name,tid in [('profiles','Read Social Profiles','R0KOOO2OE4xqkfPK'),('posts','Read Social Posts','ML98cvIaIgZtd7u9')]:
