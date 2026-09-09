@@ -24,11 +24,11 @@ test('webinar mode exposes agents, evidence and approval control in one stage',(
 });
 
 test('webinar assets are cache-busted together',()=>{
-  assert.match(html,/trace\.css\?v=5\.2\.1/);
-  assert.match(html,/trace\.js\?v=5\.2\.1/);
-  assert.match(html,/centre\.css\?v=5\.2\.1/);
-  assert.match(html,/centre\.js\?v=5\.2\.1/);
-  assert.match(html,/workspace\.js\?v=5\.2\.1/);
+  assert.match(html,/trace\.css\?v=5\.2\.2/);
+  assert.match(html,/trace\.js\?v=5\.2\.2/);
+  assert.match(html,/centre\.css\?v=5\.2\.2/);
+  assert.match(html,/centre\.js\?v=5\.2\.2/);
+  assert.match(html,/workspace\.js\?v=5\.2\.2/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -36,4 +36,10 @@ test('demo Buffer state is never labelled as a confirmed external read',()=>{
   assert.match(centre,/demo\?'DEMO':bufferReady\?'READ_OK'/);
   assert.match(centre,/nie wykonuje żadnego odczytu zewnętrznej usługi/);
   assert.match(workspace,/status:'DEMO'/);
+});
+
+test('webinar demo keeps both graphical Facebook drafts visible across brand filters',()=>{
+  assert.match(workspace,/state\.demo&&\['dona','connections','social'\]\.includes\(v\)\?state\.data/);
+  assert.match(workspace,/site-previews\/silverandglass\.webp/);
+  assert.match(workspace,/site-previews\/edwardjanusz\.webp/);
 });
