@@ -114,7 +114,7 @@
     $('dataStamp').textContent=state.demo?'Dane demonstracyjne':state.data?'Ostatni odczyt: '+formatDate(state.data.generatedAt,true):'Brak potwierdzonego odczytu danych.';
     window.DonaCentre.setSnapshot(state.data);
     if(window.DonaCommand.views[v]){window.DonaCommand.render(v,state.data,state.demo);return;}
-    if(window.DonaCentre.views[v]){window.DonaCentre.render(v,window.DonaCommand.scoped(state.data),state.demo);return;}
+    if(window.DonaCentre.views[v]){const centreData=state.demo&&['dona','connections','social'].includes(v)?state.data:window.DonaCommand.scoped(state.data);window.DonaCentre.render(v,centreData,state.demo);return;}
     const independent=['tools','marketing','recipes','youtube','drive','weather','maps','settings','history'].includes(v);
     if(!state.data&&!independent){$('viewContent').innerHTML=state.loading?'<div class="skeleton hero" aria-label="Wczytywanie danych"></div><div class="skeleton"></div><div class="skeleton"></div>':empty('Dane czekają na połączenie','Odśwież widok, aby pobrać informacje z DONY. Możesz też rozpocząć rozmowę.','refresh','Sprawdź moje bieżące sprawy. Tylko odczyt, bez zmian.');return;}
     if(window.DonaFeatures?.views?.[v])window.DonaFeatures.render(v,state.data,state.demo);else if(v==='today')renderToday();else if(v==='approvals')renderApprovals();else if(v==='tools')renderTools(v);else if(v==='settings')renderSettings();else if(v==='history')renderHistory();else renderList();
