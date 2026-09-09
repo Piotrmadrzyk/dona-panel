@@ -176,3 +176,20 @@ test('tools workflow builder disables execution retention and does not retry Med
  assert.match(builder,/'saveDataSuccessExecution':'none'/);
  assert.doesNotMatch(builder,/retryOnFail/);
 });
+
+test('reused results describe existing artifacts and retain the original processing date',()=>{
+ const date='2026-09-08T12:30:00+02:00';
+ const result=normalizeToolResult({operation:'youtube_analyze'}, {
+  status:'SUCCESS',powod:'JUZ_PRZETWORZONY',przetworzono_at:date,
+  folder_url:'https://drive.google.com/drive/folders/example',
+  pliki:[{nazwa:'01_TRANSKRYPCJA.pdf',link:'https://drive.google.com/file/d/example/view'}],
+  etapy:{transkrypcja:'POMINIETO',podsumowanie:'POMINIETO',drive:'ISTNIEJE'}
+ });
+ assert.equal(result.reused,true);assert.equal(result.processedAt,date);
+ assert.equal(result.stages.transcript,true);assert.equal(result.stages.summary,false);assert.equal(result.stages.drive,true);
+});
+
+test('Polish failure and partial stage values never appear as still pending',()=>{
+ const result=normalizeToolResult({operation:'youtube_analyze'}, {status:'PARTIAL',etapy:{transkrypcja:'BLAD',podsumowanie:'CZESCIOWO',mapa_mysli:'NIE_URUCHOMIONO'}});
+ assert.equal(result.stages.transcript,false);assert.equal(result.stages.summary,'PARTIAL');assert.equal(result.stages.mindMap,'SKIPPED');
+});

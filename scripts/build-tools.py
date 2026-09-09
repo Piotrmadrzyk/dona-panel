@@ -44,11 +44,11 @@ drive_empty={'tresc':'','file_id':'','folder_id':'','nowa_nazwa':'','typ_pliku':
 execute('driveSearch','Run Safe Drive Search','MhOlUFeCGdmXxxtU',{
     **drive_empty,'operacja':"={{ $('Validate Panel Tools Access').first().json.searchMode === 'content' ? 'szukaj_w_tresci' : 'szukaj' }}",
     'tenant_id':'PM','nazwa':"={{ $('Validate Panel Tools Access').first().json.query }}",'limit':20,
-},drive_declared)
+},drive_declared,onError='continueRegularOutput')
 execute('driveRead','Run Safe Drive Read','MhOlUFeCGdmXxxtU',{
     **drive_empty,'operacja':'pobierz','tenant_id':'PM','nazwa':'',
     'file_id':"={{ $('Validate Panel Tools Access').first().json.fileId }}",'limit':1,
-},drive_declared)
+},drive_declared,onError='continueRegularOutput')
 
 media_declared=[('zapytanie','string'),('typ_zrodla','string'),('tenant_id','string'),('projekt_id','string'),('tryb','string'),('w_folderze','string'),('od_daty','string'),('material_uid','string'),('transcript_revision_id','string'),('mapping_json','string'),('mapping_wersja','string')]
 execute('media','Run Media Intelligence','NOVrc2bJvF8s4oQa',{

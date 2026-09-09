@@ -22,19 +22,44 @@ const realizations=[
  {id:'zamek-rzeszow',name:'Zamek w Rzeszowie',url:'https://probatum.pl/p/zamek-rzeszow-spacer-historyczny/wersje/w2/',kind:'Realizacja / podgląd',status:'Wersja robocza',preview:PREVIEW_ROOT+'zamek-rzeszow.webp',previewAlt:'Widok prezentacji Zamek w Rzeszowie',copy:'Rozbudowana prezentacja spaceru historycznego z materiałami terenowymi.'}
 ];
 let snapshot=null,demo=false,busy=false,lastWeather='',lastMap='';
+let featureSession=0,driveReading=false;
+const youtubeState={url:'',phase:'idle',message:'',result:null};
+const driveState={query:'',mode:'name',phase:'idle',message:'',results:[]};
+function statusClass(phase){return 'feature-status'+(phase==='working'?' is-working':phase==='error'?' is-error':'');}
+function paintYouTube(){
+ const status=document.getElementById('youtubeStatus'),results=document.getElementById('youtubeResults'),form=document.getElementById('youtubeForm');
+ if(!status||!results||!form)return;
+ status.className=statusClass(youtubeState.phase);status.textContent=youtubeState.message;
+ const input=document.getElementById('youtubeUrl');input.value=youtubeState.url;input.readOnly=youtubeState.phase==='working';
+ const button=form.querySelector('button[type="submit"]');button.disabled=youtubeState.phase==='working';button.textContent=button.disabled?'Analiza trwa…':'Analizuj film';
+ form.setAttribute('aria-busy',String(button.disabled));
+ results.innerHTML=youtubeState.result?mediaCard(youtubeState.result):'';
+}
+function driveResultCard(file){const url=D(file.url),folder=file.type==='application/vnd.google-apps.folder';return '<article class="drive-result"><div><strong>'+E(file.name||file.id)+'</strong><small>'+E(folder?'Folder':file.type||'Plik Google Drive')+'</small></div><div class="command-actions">'+(url?'<a class="secondary" href="'+E(url)+'" target="_blank" rel="noopener noreferrer">Otwórz ↗</a>':'')+(!folder?'<button class="primary" data-drive-read="'+E(file.id)+'" data-drive-name="'+E(file.name||'Plik')+'">Podgląd tekstu</button>':'')+'</div></article>';}
+function paintDrive(){
+ const status=document.getElementById('driveStatus'),results=document.getElementById('driveResults'),form=document.getElementById('driveForm');
+ if(!status||!results||!form)return;
+ status.className=statusClass(driveState.phase);status.textContent=driveState.message;
+ document.getElementById('driveQuery').value=driveState.query;document.getElementById('driveMode').value=driveState.mode;
+ const button=form.querySelector('button[type="submit"]');button.disabled=driveState.phase==='working';button.textContent=button.disabled?'Szukam…':'Szukaj';
+ form.setAttribute('aria-busy',String(button.disabled));results.innerHTML=driveState.results.map(driveResultCard).join('');
+}
+function refreshAfterWork(session){setTimeout(()=>{if(session===featureSession)window.dispatchEvent(new CustomEvent('dona:refresh'));},2500);}
+function toolNotice(message){window.dispatchEvent(new CustomEvent('dona:notice',{detail:message}));}
+
 const weatherCodes={0:'bezchmurnie',1:'przeważnie pogodnie',2:'częściowe zachmurzenie',3:'pochmurno',45:'mgła',48:'mgła osadzająca szadź',51:'lekka mżawka',53:'mżawka',55:'silna mżawka',56:'lekka marznąca mżawka',57:'silna marznąca mżawka',61:'lekki deszcz',63:'deszcz',65:'silny deszcz',66:'lekki marznący deszcz',67:'silny marznący deszcz',71:'lekki śnieg',73:'śnieg',75:'silny śnieg',77:'ziarna śnieżne',80:'lekkie przelotne opady',81:'przelotne opady',82:'gwałtowne opady',85:'lekkie przelotne opady śniegu',86:'silne przelotne opady śniegu',95:'burza',96:'burza z lekkim gradem',99:'burza z silnym gradem'};
 const dialog=document.createElement('dialog');dialog.className='revision-dialog';dialog.setAttribute('aria-labelledby','revisionTitle');document.body.appendChild(dialog);
 function siteCard(site){return '<article class="site-card"><div class="site-preview"><div class="browser-bar"><i></i><i></i><i></i><span>'+E(new URL(site.url).hostname)+'</span></div><img class="site-shot" src="'+E(site.preview)+'" alt="'+E(site.previewAlt)+'" loading="lazy" decoding="async"><span class="site-preview-kind">'+E(site.kind)+'</span></div><div class="site-body"><div class="site-meta"><span>'+E(site.kind)+'</span><span>'+E(site.status)+'</span></div><h3>'+E(site.name)+'</h3><p>'+E(site.copy)+'</p><div class="command-actions"><a class="secondary" href="'+E(site.url)+'" target="_blank" rel="noopener noreferrer">Otwórz ↗</a><button class="primary" data-site-edit="'+E(site.id)+'">Edytuj</button></div></div></article>';}
 function mediaDate(value){if(!value)return 'Brak daty';const date=new Date(value);return Number.isNaN(+date)?'Brak daty':date.toLocaleString('pl-PL',{timeZone:'Europe/Warsaw',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 function mediaStageLabel(key){return ({transcript:'Transkrypcja',transkrypcja:'Transkrypcja',summary:'Podsumowanie',podsumowanie:'Podsumowanie',mindMap:'Mapa myśli',mapa_mysli:'Mapa myśli',metadata:'Metadane',metadane:'Metadane',analysis:'Analiza',analiza:'Analiza',synthesis:'Synteza',synteza:'Synteza',drive:'Zapis na Dysku',zapis_drive:'Zapis na Dysku'})[key]||String(key).replaceAll('_',' ');}
-function mediaStageState(value){if(value===true||/^(OK|SUCCESS|DONE)$/i.test(String(value)))return 'ok';if(value===false||/^(FAILED|ERROR|BRAK)$/i.test(String(value)))return 'missing';return 'pending';}
+function mediaStageState(value){if(value===true||/^(OK|SUCCESS|DONE|EXISTS|ISTNIEJE)$/i.test(String(value)))return 'ok';if(value===false||/^(FAILED|ERROR|BLAD|BŁĄD|BRAK)$/i.test(String(value)))return 'missing';if(/^(PARTIAL|CZESCIOWO|CZĘŚCIOWO)$/.test(String(value)))return 'partial';if(/^(SKIPPED|POMINIETO|NIE_URUCHOMIONO)$/.test(String(value)))return 'skipped';return 'pending';}
 function mediaCard(record){
  const status=String(record&&record.status||'UNKNOWN').toUpperCase(),statusLabel=status==='SUCCESS'?'Kompletna':status==='FAILED'?'Nieudana':status==='PARTIAL'?'Częściowa':'Do sprawdzenia';
  const files=Array.isArray(record&&record.files)?record.files:[],folder=D(record&&record.folderUrl),source=Y(record&&record.sourceUrl||record&&record.source);
  const stages=Object.entries(record&&record.stages||{}),chars=Number(record&&record.transcriptCharacters)||0,coverage=Number(record&&record.coverage)||0;
  return '<article class="media-result media-result-'+E(status.toLowerCase())+'"><div class="media-result-head"><span class="media-folder-icon" aria-hidden="true">▰</span><div><span class="eyebrow">FOLDER ANALIZY · '+E(mediaDate(record&&record.processedAt))+'</span><h3>'+E(record&&record.title||'Analiza filmu')+'</h3></div><span class="media-result-status">'+E(statusLabel)+'</span></div>'+
   ((chars||coverage)?'<p class="media-result-meta">'+(coverage?'Pokrycie analizy: '+E(coverage)+'%':'')+(coverage&&chars?' · ':'')+(chars?'Transkrypcja: '+E(chars.toLocaleString('pl-PL'))+' znaków':'')+'</p>':'')+
-  (stages.length?'<div class="media-stages">'+stages.map(([key,value])=>'<span class="'+mediaStageState(value)+'"><i aria-hidden="true">'+(mediaStageState(value)==='ok'?'✓':mediaStageState(value)==='missing'?'!':'…')+'</i>'+E(mediaStageLabel(key))+'</span>').join('')+'</div>':'')+
+  (stages.length?'<div class="media-stages">'+stages.map(([key,value])=>'<span title="'+E(({ok:'Potwierdzono',missing:'Brak lub błąd',partial:'Wynik częściowy',skipped:'Nie uruchamiano',pending:'Brak potwierdzenia'})[mediaStageState(value)])+'" class="'+mediaStageState(value)+'"><i aria-hidden="true">'+(mediaStageState(value)==='ok'?'✓':mediaStageState(value)==='missing'?'!':'…')+'</i>'+E(mediaStageLabel(key))+'</span>').join('')+'</div>':'')+
   '<div class="media-file-links">'+(folder?'<a class="primary" href="'+E(folder)+'" target="_blank" rel="noopener noreferrer">Otwórz folder w Google Drive ↗</a>':'')+files.map(file=>{const link=D(file&&file.url);return link?'<a class="secondary" href="'+E(link)+'" target="_blank" rel="noopener noreferrer">'+E(file.name||'Plik')+' ↗</a>':'';}).join('')+(source?'<a class="text-link" href="'+E(source)+'" target="_blank" rel="noopener noreferrer">Film źródłowy ↗</a>':'')+'</div></article>';
 }
 function mediaHistory(){
@@ -43,11 +68,11 @@ function mediaHistory(){
 }
 function renderMarketing(){return '<div class="feature-hero"><span class="eyebrow">PORTFOLIO I ZARZĄDZANIE WWW</span><h2>Strony w jednym, wizualnym katalogu.</h2><p>Każda karta pokazuje prawdziwy widok strony — bez sztucznych makiet. „Edytuj” przekazuje uwagi agentowi WWW; agent przygotowuje poprawkę, ale nie publikuje jej bez osobnej zgody.</p></div><h2 class="site-section-title">Twoje strony i systemy</h2><div class="site-grid">'+owned.map(siteCard).join('')+'</div><h2 class="site-section-title">Realizacje i wersje robocze</h2><div class="site-grid">'+realizations.map(siteCard).join('')+'</div><div class="catalog-add"><div><strong>Brakuje strony albo realizacji?</strong><p>Przekaż adres DONIE. Najpierw zweryfikuje własność i status, a dopiero potem doda kartę do katalogu.</p></div><button class="secondary" data-catalog-add>Dodaj brakującą stronę</button></div>';}
 function renderRecipes(){return '<div class="feature-hero"><span class="eyebrow">SYSTEM RECEPTURY</span><h2>Twój istniejący system — dostępny bezpośrednio z DONY.</h2><p>Nie budujemy Receptur drugi raz. Panel daje szybkie wejście do działającej aplikacji i pozwala omówić recepturę z DONĄ w osobnym wątku.</p><div class="command-actions"><a class="primary" href="https://receptury-jade.vercel.app/" target="_blank" rel="noopener noreferrer">Otwórz Receptury ↗</a><button class="secondary" data-recipe-chat>Omów z DONĄ</button></div></div><div class="feature-panel"><h2>Jak to działa</h2><p>Receptury pozostają niezależnym, zabezpieczonym systemem. Dzięki temu nie naruszamy jego logiki ani danych, a DONA może prowadzić osobną rozmowę dotyczącą receptur.</p></div>';}
-function renderYouTube(){return '<div class="feature-hero"><span class="eyebrow">MEDIA INTELLIGENCE</span><h2>Wklej film. Odbierz transkrypcję, podsumowanie i mapę myśli.</h2><p>DONA korzysta z Twojej istniejącej „maszynki”. Wyniki zapisują się w Google Drive. Jedno kliknięcie uruchamia jedną analizę — panel nie ponawia jej automatycznie.</p></div><section class="feature-panel"><h2>Nowa analiza YouTube</h2><p>Wklej pełny adres filmu z YouTube.</p><form class="feature-form" id="youtubeForm"><input id="youtubeUrl" type="url" inputmode="url" required placeholder="https://www.youtube.com/watch?v=…"><button class="primary" type="submit">Analizuj film</button></form><div class="feature-status" id="youtubeStatus" role="status"></div><div class="feature-results" id="youtubeResults"></div></section>'+mediaHistory();}
-function renderDrive(){return '<div class="feature-hero"><span class="eyebrow">TWÓJ GOOGLE DRIVE</span><h2>Znajdź dokument bez wychodzenia z panelu.</h2><p>Wyszukiwanie i podgląd tekstu są tylko do odczytu. Panel nie może usuwać, przenosić ani nadpisywać plików.</p></div><section class="feature-panel"><h2>Szukaj na Dysku</h2><form class="feature-form drive-form" id="driveForm"><input id="driveQuery" type="search" required maxlength="500" placeholder="np. umowa Probatum"><select id="driveMode"><option value="name">Po nazwie</option><option value="content">W treści plików</option></select><button class="primary" type="submit">Szukaj</button></form><div class="feature-status" id="driveStatus" role="status"></div><div class="feature-results" id="driveResults"></div></section>';}
+function renderYouTube(){return '<div class="feature-hero"><span class="eyebrow">MEDIA INTELLIGENCE</span><h2>Wklej film. Odbierz transkrypcję, podsumowanie i mapę myśli.</h2><p>DONA korzysta z Twojej istniejącej „maszynki”. Wyniki zapisują się w Google Drive. Jedno kliknięcie uruchamia jedną analizę — panel nie ponawia jej automatycznie.</p></div><section class="feature-panel"><h2>Nowa analiza YouTube</h2><p>Wklej pełny adres filmu z YouTube.</p><form class="feature-form" id="youtubeForm"><input id="youtubeUrl" aria-label="Adres filmu YouTube" type="url" inputmode="url" required placeholder="https://www.youtube.com/watch?v=…"><button class="primary" type="submit">Analizuj film</button></form><div class="feature-status" id="youtubeStatus" role="status"></div><div class="feature-results" id="youtubeResults"></div><a class="text-link" href="#files">Sprawdź wszystkie zapisane foldery ↗</a></section>'+mediaHistory();}
+function renderDrive(){return '<div class="feature-hero"><span class="eyebrow">TWÓJ GOOGLE DRIVE</span><h2>Znajdź dokument bez wychodzenia z panelu.</h2><p>Wyszukiwanie i podgląd tekstu są tylko do odczytu. Panel nie może usuwać, przenosić ani nadpisywać plików.</p></div><section class="feature-panel"><h2>Szukaj na Dysku</h2><form class="feature-form drive-form" id="driveForm"><input id="driveQuery" aria-label="Szukaj na Dysku" type="search" required maxlength="500" placeholder="np. umowa Probatum"><select id="driveMode" aria-label="Sposób wyszukiwania"><option value="name">Po nazwie</option><option value="content">W treści plików</option></select><button class="primary" type="submit">Szukaj</button></form><div class="feature-status" id="driveStatus" role="status"></div><div class="feature-results" id="driveResults"></div></section>';}
 function renderWeather(){return '<div class="feature-hero weather-hero"><span class="eyebrow">POGODA Z LOKALIZACJĄ URZĄDZENIA</span><h2>Zapytaj DONĘ, zanim wyjdziesz.</h2><p>„Jaka pogoda?” może użyć bieżącej lokalizacji dopiero po Twojej zgodzie. Współrzędne nie są zapisywane; do prognozy wysyłana jest tylko przybliżona lokalizacja.</p><div class="command-actions"><button class="primary" type="button" data-weather-current>Sprawdź pogodę u mnie</button></div></div><section class="feature-panel"><h2>Prognoza dla miejscowości</h2><form class="feature-form" id="weatherForm"><input id="weatherPlace" type="search" required maxlength="120" autocomplete="address-level2" placeholder="np. Rzeszów"><button class="primary" type="submit">Sprawdź</button></form><div class="feature-status" id="weatherStatus" role="status"></div><div class="feature-results weather-results" id="weatherResults">'+lastWeather+'</div><p class="provider-note">Dane pogodowe: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>. Bezpłatne źródło użyte w pilotażu; przed komercyjnym SaaS-em wymaga właściwej licencji lub zamiany dostawcy.</p></section>';}
 function renderMaps(){return '<div class="feature-hero maps-hero"><span class="eyebrow">MAPY I TRASY</span><h2>Pokaż miejsce. Wyznacz drogę.</h2><p>DONA może otworzyć ten widok na polecenie głosowe. Mapa w panelu korzysta z OpenStreetMap, a przycisk trasy otwiera Mapy Google bez płatnego API.</p><div class="command-actions"><button class="primary" type="button" data-map-current>Pokaż, gdzie jestem</button></div></div><section class="feature-panel"><h2>Znajdź miejsce lub cel trasy</h2><form class="feature-form" id="mapForm"><input id="mapQuery" type="search" required maxlength="180" placeholder="np. Zamek Lubomirskich w Rzeszowie"><button class="primary" type="submit">Pokaż na mapie</button></form><div class="feature-status" id="mapStatus" role="status"></div><div class="map-results" id="mapResults">'+lastMap+'</div><p class="provider-note">Mapa i geokodowanie: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>. Trasa otwiera się w Mapach Google.</p></section>';}
-function render(view,data,isDemo){snapshot=data;demo=isDemo;const root=document.getElementById('viewContent');if(view==='marketing')root.innerHTML=renderMarketing();else if(view==='recipes')root.innerHTML=renderRecipes();else if(view==='youtube')root.innerHTML=renderYouTube();else if(view==='drive')root.innerHTML=renderDrive();else if(view==='weather')root.innerHTML=renderWeather();else if(view==='maps')root.innerHTML=renderMaps();}
+function render(view,data,isDemo){snapshot=data;demo=isDemo;const root=document.getElementById('viewContent');if(view==='marketing')root.innerHTML=renderMarketing();else if(view==='recipes')root.innerHTML=renderRecipes();else if(view==='youtube'){root.innerHTML=renderYouTube();paintYouTube();}else if(view==='drive'){root.innerHTML=renderDrive();paintDrive();}else if(view==='weather')root.innerHTML=renderWeather();else if(view==='maps')root.innerHTML=renderMaps();}
 function openRevision(options){
  if(dialog.open)dialog.close();
  dialog.dataset.branchId=options.branchId||'system';dialog.dataset.branchName=options.branchName||'System';dialog.dataset.subject=options.subject||'materiał';
@@ -71,26 +96,73 @@ function youtubeFailureMessage(error){
  if(code==='auth'||message==='AUTH')return 'Sesja wygasła. Zaloguj się ponownie — analiza nie została uruchomiona drugi raz.';
  if(code==='invalid_youtube_url')return 'Nie rozpoznaję tego adresu YouTube. Wklej pełny link zaczynający się od https:// — niczego nie uruchomiłam ponownie.';
  if(Number(error&&error.status)===400)return safeDetail?'Panel odrzucił zlecenie: '+safeDetail+'. Analiza nie została ponowiona automatycznie.':safeCode?'Panel odrzucił zlecenie ('+safeCode+'). Analiza nie została ponowiona automatycznie.':'Panel odrzucił zlecenie z powodu błędu danych. Analiza nie została ponowiona automatycznie.';
- if(error&&error.name==='AbortError')return 'Analiza nie potwierdziła wyniku w wyznaczonym czasie. Mogła nadal pracować w n8n; sprawdź Media Intelligence przed ponowieniem.';
- if(status==='FAILED'||Number(error&&error.status)>=500)return safeDetail?'Media Intelligence przerwało analizę: '+safeDetail+' Nie ponawiam jej automatycznie.':'Media Intelligence przerwało zadanie przed potwierdzeniem wyniku. Błąd został zachowany w n8n; nie ponawiam analizy automatycznie.';
- if(message==='INVALID_RESPONSE')return 'Adapter Media Intelligence zwrócił nieprawidłową odpowiedź. Niczego nie uruchomiłam ponownie; błąd został zachowany do diagnozy.';
+ if(error&&error.name==='AbortError')return 'Analiza nie potwierdziła wyniku w wyznaczonym czasie. Mogła nadal pracować w n8n; sprawdź zapisane foldery przed ponowieniem.';
+ if(code==='ai_payment_required')return 'Usługa AI zgłosiła brak środków. Sprawdź saldo oraz zapisane wyniki przed ponowieniem.';
+ if(status==='FAILED'||Number(error&&error.status)>=500)return safeDetail?'Media Intelligence przerwało analizę: '+safeDetail+' Nie ponawiam jej automatycznie.':'Media Intelligence przerwało zadanie przed potwierdzeniem wyniku. Sprawdź zapisane foldery przed ponowieniem.';
+ if(message==='INVALID_RESPONSE')return 'Nie otrzymałam poprawnej odpowiedzi z serwera. Sprawdź zapisane foldery przed ponowieniem.';
  if(error instanceof TypeError||/failed to fetch|networkerror|load failed/i.test(message))return 'Przeglądarka nie połączyła się z Media Intelligence. Analiza nie została potwierdzona ani ponowiona automatycznie.';
- return 'Nie potwierdzono wyniku analizy. Błąd został zachowany w n8n i analiza nie zostanie ponowiona automatycznie.';
+ return 'Nie potwierdzono wyniku analizy. Sprawdź zapisane foldery. Analiza nie została ponowiona automatycznie.';
 }
 async function analyzeYouTube(){
- const input=document.getElementById('youtubeUrl'),status=document.getElementById('youtubeStatus'),results=document.getElementById('youtubeResults');const value=input.value.trim();if(!value||busy)return;
- if(demo){status.className='feature-status is-error';status.textContent='Analiza działa po zalogowaniu.';return;}busy=true;status.className='feature-status is-working';status.textContent='DONA uruchomiła analizę. Transkrypcja i mapa mogą potrwać kilka minut — nie zamykaj tej karty.';results.textContent='';
- try{const r=await window.Dona.request('dona-panel-tools',{operation:'youtube_analyze',url:value},900000);if(r.status==='PYTANIE'){status.className='feature-status';status.textContent=r.message||'Media Intelligence potrzebuje doprecyzowania. Odpowiedz w rozmowie z DONĄ; analiza nie została ponowiona.';return;}if(!r.ok&&r.status!=='PARTIAL'){const failure=Error(r.message||'ANALYSIS');failure.code=String(r.error||'ANALYSIS');failure.payload=r;throw failure;}status.className='feature-status';status.textContent=r.message||'Analiza zakończona.';results.innerHTML=mediaCard({...r,sourceUrl:r.source||value,processedAt:new Date().toISOString()});setTimeout(()=>window.dispatchEvent(new CustomEvent('dona:refresh')),2500);
- }catch(e){status.className='feature-status is-error';status.textContent=youtubeFailureMessage(e);setTimeout(()=>window.dispatchEvent(new CustomEvent('dona:refresh')),2500);}finally{busy=false;}
+ const input=document.getElementById('youtubeUrl'),value=input?.value.trim();
+ if(!value||youtubeState.phase==='working')return;
+ youtubeState.url=value;
+ if(demo){youtubeState.phase='error';youtubeState.message='Analiza działa po zalogowaniu.';paintYouTube();return;}
+ const session=featureSession;
+ Object.assign(youtubeState,{phase:'working',message:'Zlecenie wysłane. Czekam na wynik analizy. Możesz korzystać z innych zakładek panelu.',result:null});
+ paintYouTube();
+ try{
+  const r=await window.Dona.request('dona-panel-tools',{operation:'youtube_analyze',url:value},900000);
+  if(session!==featureSession)return;
+  if(r.status==='PYTANIE'){youtubeState.phase='question';youtubeState.message=r.message||'Odpowiedz na pytanie w rozmowie z DONĄ.';return;}
+  if(!r.ok&&r.status!=='PARTIAL'){const failure=Error(r.message||'ANALYSIS');failure.code=String(r.error||'ANALYSIS');failure.payload=r;throw failure;}
+  const processedAt=r.processedAt||(r.reused?'':new Date().toISOString());
+  youtubeState.result={...r,sourceUrl:r.source||value,processedAt};
+  youtubeState.phase='done';youtubeState.message=r.message||'Analiza zakończona. Wyniki są dostępne w folderze.';
+  if(!document.getElementById('youtubeForm'))toolNotice('Wynik analizy jest gotowy. Otwórz YouTube → wiedza lub Pliki.');
+ }catch(error){
+  if(session!==featureSession)return;
+  youtubeState.phase='error';youtubeState.message=youtubeFailureMessage(error);
+ }finally{
+  if(session===featureSession){paintYouTube();refreshAfterWork(session);}
+ }
+}
+function driveFailureMessage(error,action){
+ if(error?.message==='AUTH')return 'Zaloguj się ponownie, aby korzystać z Dysku.';
+ const code=error?.code||error?.payload?.error;
+ if(code==='service_rate_limited')return 'Google Drive osiągnął chwilowy limit. Odczekaj chwilę i ponów odczyt.';
+ if(code==='service_access_failed')return 'Połączenie z Google Drive wymaga sprawdzenia. Otwórz Połączenia.';
+ if(code==='service_timeout'||error?.name==='AbortError')return 'Odczyt z Google Drive trwał zbyt długo. Możesz ponowić odczyt.';
+ return action==='read'?'Nie udało się odczytać tekstu. Możesz otworzyć plik bezpośrednio na Dysku.':'Nie udało się pobrać wyników wyszukiwania. Sprawdź połączenie i ponów odczyt.';
 }
 async function searchDrive(){
- const q=document.getElementById('driveQuery').value.trim(),mode=document.getElementById('driveMode').value,status=document.getElementById('driveStatus'),results=document.getElementById('driveResults');if(!q||busy)return;
- if(demo){status.className='feature-status is-error';status.textContent='Wyszukiwanie działa po zalogowaniu.';return;}busy=true;status.className='feature-status is-working';status.textContent='Szukam na Twoim Dysku…';results.textContent='';
- try{const r=await window.Dona.request('dona-panel-tools',{operation:'drive_search',query:q,searchMode:mode},60000);if(!r.ok)throw Error(r.error||'SEARCH');const list=Array.isArray(r.results)?r.results:[];status.className='feature-status';status.textContent=list.length?'Znaleziono: '+list.length:'Nie znaleziono pasujących plików.';results.innerHTML=list.map(file=>'<article class="drive-result"><div><strong>'+E(file.name||file.id)+'</strong><small>'+E(file.type||'Plik Google Drive')+'</small></div><div class="command-actions">'+(U(file.url)?'<a class="secondary" href="'+E(U(file.url))+'" target="_blank" rel="noopener noreferrer">Otwórz ↗</a>':'')+'<button class="primary" data-drive-read="'+E(file.id)+'" data-drive-name="'+E(file.name||'Plik')+'">Podgląd tekstu</button></div></article>').join('');
- }catch(e){status.className='feature-status is-error';status.textContent='Nie udało się potwierdzić wyszukiwania na Dysku.';}finally{busy=false;}
+ const query=document.getElementById('driveQuery')?.value.trim(),mode=document.getElementById('driveMode')?.value;
+ if(!query||driveState.phase==='working')return;
+ Object.assign(driveState,{query,mode,results:[]});
+ if(demo){driveState.phase='error';driveState.message='Wyszukiwanie działa po zalogowaniu.';paintDrive();return;}
+ const session=featureSession;
+ driveState.phase='working';driveState.message='Szukam na Twoim Dysku…';paintDrive();
+ try{
+  const r=await window.Dona.request('dona-panel-tools',{operation:'drive_search',query,searchMode:mode},60000);
+  if(session!==featureSession)return;
+  if(!r.ok)throw Object.assign(Error('SEARCH'),{code:r.error});
+  driveState.results=Array.isArray(r.results)?r.results:[];driveState.phase='done';
+  driveState.message=driveState.results.length?'Znaleziono: '+driveState.results.length:'Nie znaleziono pasujących plików.';
+ }catch(error){if(session!==featureSession)return;driveState.phase='error';driveState.message=driveFailureMessage(error,'search');}
+ finally{if(session===featureSession)paintDrive();}
 }
 async function readDrive(button){
- if(busy||demo)return;busy=true;button.disabled=true;try{const r=await window.Dona.request('dona-panel-tools',{operation:'drive_read',fileId:button.dataset.driveRead},60000);if(!r.ok)throw Error(r.error||'READ');dialog.innerHTML='<div class="detail-top"><span class="eyebrow">PODGLĄD Z DYSKU · TYLKO ODCZYT</span><button class="icon-button" data-revision-close aria-label="Zamknij">×</button></div><h2 id="revisionTitle">'+E(button.dataset.driveName)+'</h2><div class="drive-preview">'+E(r.text||'Nie udało się wydobyć tekstu z tego typu pliku.')+'</div>';dialog.showModal();}catch(e){document.getElementById('driveStatus').className='feature-status is-error';document.getElementById('driveStatus').textContent='Nie udało się odczytać treści tego pliku.';}finally{busy=false;button.disabled=false;}
+ if(driveReading||demo)return;
+ const session=featureSession;driveReading=true;button.disabled=true;
+ try{
+  const r=await window.Dona.request('dona-panel-tools',{operation:'drive_read',fileId:button.dataset.driveRead},60000);
+  if(session!==featureSession)return;
+  if(!r.ok)throw Object.assign(Error('READ'),{code:r.error});
+  if(!document.getElementById('driveForm'))return;
+  if(dialog.open)dialog.close();
+  dialog.innerHTML='<div class="detail-top"><span class="eyebrow">PODGLĄD Z DYSKU</span><button class="icon-button" data-revision-close aria-label="Zamknij">×</button></div><h2 id="revisionTitle">'+E(button.dataset.driveName)+'</h2><div class="drive-preview">'+E(r.text||'Ten plik nie zawiera tekstu dostępnego w podglądzie.')+'</div>';dialog.showModal();
+ }catch(error){if(session!==featureSession)return;driveState.phase='error';driveState.message=driveFailureMessage(error,'read');paintDrive();}
+ finally{if(session===featureSession){driveReading=false;button.disabled=false;}}
 }
 async function fetchJson(url,timeout){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeout||16000);try{const response=await fetch(url,{signal:ctrl.signal,cache:'no-store',headers:{Accept:'application/json'}});if(!response.ok)throw Error('HTTP_'+response.status);return await response.json();}finally{clearTimeout(timer);}}
 function currentPosition(){return new Promise((resolve,reject)=>{if(!window.isSecureContext||!navigator.geolocation){reject(Error('GEO_UNAVAILABLE'));return;}navigator.geolocation.getCurrentPosition(p=>resolve({latitude:p.coords.latitude,longitude:p.coords.longitude}),e=>reject(Error(e.code===1?'GEO_DENIED':'GEO_FAILED')),{enableHighAccuracy:false,timeout:12000,maximumAge:300000});});}
@@ -120,6 +192,15 @@ function mapStatus(message,error){const node=document.getElementById('mapStatus'
 function showMapResult(position,label,query){lastMap=mapHtml(position,label,query);const root=document.getElementById('mapResults');if(root)root.innerHTML=lastMap;mapStatus('Miejsce pokazane na mapie.');return 'Mapa pokazuje: '+label+'.';}
 async function showMap(query){query=String(query||'').trim();if(!query)return '';mapStatus('Szukam miejsca…');try{const position=await geocode(query);return showMapResult(position,position.label,query);}catch(error){mapStatus('Nie znalazłam tego miejsca. Dopisz miejscowość lub kraj.',true);throw error;}}
 async function mapCurrentLocation(){mapStatus('Czekam na zgodę urządzenia…');try{const exact=await currentPosition(),position=roundedPosition(exact),label=await reversePlace(position);return showMapResult(position,label);}catch(error){mapStatus(geoMessage(error),true);throw error;}}
+document.addEventListener('input',event=>{if(event.target.id==='youtubeUrl'&&youtubeState.phase!=='working')youtubeState.url=event.target.value;if(event.target.id==='driveQuery')driveState.query=event.target.value;});
+document.addEventListener('change',event=>{if(event.target.id==='driveMode')driveState.mode=event.target.value;});
+window.addEventListener('dona:auth',event=>{
+ if(event.detail?.authenticated||event.detail?.demo)return;
+ featureSession++;snapshot=null;busy=false;driveReading=false;
+ Object.assign(youtubeState,{url:'',phase:'idle',message:'',result:null});
+ Object.assign(driveState,{query:'',mode:'name',phase:'idle',message:'',results:[]});
+ if(dialog.open)dialog.close();dialog.innerHTML='';paintYouTube();paintDrive();
+});
 document.addEventListener('submit',e=>{if(e.target.id==='youtubeForm'){e.preventDefault();analyzeYouTube();}else if(e.target.id==='driveForm'){e.preventDefault();searchDrive();}else if(e.target.id==='weatherForm'){e.preventDefault();weatherForPlace(document.getElementById('weatherPlace').value,'current').catch(()=>{});}else if(e.target.id==='mapForm'){e.preventDefault();showMap(document.getElementById('mapQuery').value).catch(()=>{});}else if(e.target.id==='revisionForm'){e.preventDefault();submitRevision(e.target);}});
 document.addEventListener('click',async e=>{const edit=e.target.closest('[data-site-edit]'),close=e.target.closest('[data-revision-close]'),read=e.target.closest('[data-drive-read]');if(close&&!busy)dialog.close();if(read)readDrive(read);if(edit){const site=[...owned,...realizations].find(x=>x.id===edit.dataset.siteEdit);if(site)openRevision({branchId:'www',branchName:'WWW',subject:site.name+' ('+site.url+')',context:site.copy+'\nStatus: '+site.status});}if(e.target.closest('[data-weather-current]'))weatherForCurrentLocation('current').catch(()=>{});if(e.target.closest('[data-map-current]'))mapCurrentLocation().catch(()=>{});if(e.target.closest('[data-catalog-add]'))window.Dona.draft('Chcę dodać brakującą stronę lub realizację do katalogu. Najpierw poproś mnie o adres, zweryfikuj własność i status; niczego nie publikuj ani nie wdrażaj.');if(e.target.closest('[data-recipe-chat]')){await window.Dona.newThread();window.Dona.draft('Chcę porozmawiać o systemie Receptury. Najpierw ustal, której receptury lub funkcji dotyczy temat; bez zmieniania danych.');}});
 window.DonaFeatures={views:{recipes:'Receptury',youtube:'YouTube → wiedza',drive:'Dysk Google',weather:'Pogoda',maps:'Mapy i trasy',marketing:'Strony i realizacje'},descriptions:{recipes:'Twój istniejący system receptur.',youtube:'Transkrypcja, podsumowanie i mapa myśli z filmu.',drive:'Bezpieczne wyszukiwanie i odczyt plików z Google Drive.',weather:'Prognoza dla bieżącej lokalizacji lub wskazanej miejscowości.',maps:'Wyszukiwanie miejsc i uruchamianie tras bez płatnego API.',marketing:'Wizualny katalog wszystkich stron, systemów i realizacji.'},render,openRevision,weatherForCurrentLocation,weatherForPlace,showMap,mapCurrentLocation,mediaCard,sites:()=>[...owned,...realizations]};

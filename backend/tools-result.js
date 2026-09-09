@@ -128,7 +128,10 @@ function stageValue(value) {
   if (value === true || value === false) return value;
   const normalized = text(value, 24).toUpperCase();
   if (/^(OK|SUCCESS|DONE)$/.test(normalized)) return true;
-  if (/^(FAILED|ERROR|BRAK|MISSING)$/.test(normalized)) return false;
+  if (/^(FAILED|ERROR|BLAD|BŁĄD|BRAK|MISSING)$/.test(normalized)) return false;
+  if (/^(PARTIAL|CZESCIOWO|CZĘŚCIOWO|CZESCIOWE)$/.test(normalized)) return 'PARTIAL';
+  if (/^(SKIPPED|POMINIETO|POMINIĘTO|NIE_URUCHOMIONO)$/.test(normalized)) return 'SKIPPED';
+  if (normalized === 'ISTNIEJE') return 'EXISTS';
   return 'PENDING';
 }
 for (const [canonical, aliases] of Object.entries(stageAliases)) {
@@ -143,6 +146,15 @@ const defaultMessages = {
 };
 const suppliedMessage = safeMessage(first.komunikat || first.pytanie || '', 500);
 const source = youtubeUrl(first.zrodlo || first.source_url) || youtubeUrl(auth.url);
+const reused = first.powod === 'JUZ_PRZETWORZONY';
+// Reused work did not run again. Describe the artifacts actually returned by the registry.
+if (reused) {
+  for (const [key, prefix] of Object.entries({transcript:'01_TRANSKRYPCJA',summary:'02_PODSUMOWANIE',mindMap:'03_MAPA_MYSLI',metadata:'04_METADATA'})) {
+    stages[key] = files.some(file => file.name.startsWith(prefix));
+  }
+  stages.drive = !!driveUrl(first.folder_url || first.folderUrl);
+}
+const processedAt = text(first.przetworzono_at || first.processedAt, 80);
 return [{ json: {
   ok: ['SUCCESS', 'PARTIAL'].includes(status),
   statusCode: 200,
@@ -150,6 +162,8 @@ return [{ json: {
   message: suppliedMessage || defaultMessages[status],
   title: text(first.tytul || first.title, 240),
   source,
+  reused,
+  processedAt: Number.isFinite(Date.parse(processedAt)) ? processedAt : '',
   folderUrl: driveUrl(first.folder_url || first.folderUrl),
   files,
   stages,
