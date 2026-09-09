@@ -10,7 +10,7 @@ Nowy panel działa w `pilot/` w tym samym repozytorium i pod tym samym pochodzen
 - Tryb webinarowy z widocznym stanem żądania oraz trzema bezpiecznymi scenariuszami startowymi. Oczekiwana gałąź jest oznaczona jako niepotwierdzona; po wyniku panel pokazuje wyłącznie potwierdzone nazwy użytych narzędzi/agentów, bez treści prywatnych i bez rozumowania modelu.
 - Oddzielny podgląd `?demo=1` ma jawnie przykładowe dane i blokuje wywołania operacyjne.
 - Szczegóły kierują do rozmowy przez przygotowanie wiadomości; wysłanie wymaga przycisku użytkownika. Materiały do decyzji mają także opcję „Edytuj”, która zwraca poprawioną wersję do ponownego zatwierdzenia.
-- Zgody można przeglądać i omawiać. Bezpośrednie zatwierdzanie z karty nie jest zaimplementowane; działa istniejący proces zgód DONY.
+- Zgody można przeglądać, omawiać, zatwierdzać i odrzucać. Karty zmian Zoho pokazują dokładny zakres operacji; usunięcie wymaga dodatkowego zaznaczenia pola i wpisania `ANULUJ`.
 
 ## Backend
 
@@ -19,6 +19,8 @@ Workflow `DONA Panel — Workspace API (pilot)`, ID `QdyWx6Gudc4S00m7`, projekt 
 Hasło pochodzi z istniejącego magazynu serwerowego; nie jest zapisane w kodzie. To pilot jednego właściciela: serwer przypisuje firmę PM. Pola tożsamości przesłane przez klienta są odrzucane. To nie jest jeszcze uwierzytelnianie wielu firm. Historia rozmów jest synchronizowana przez osobny endpoint i przekazuje dokładny identyfikator wątku do głównej DONY.
 
 Endpoint jest tylko do odczytu. Każdy odczyt ma filtr firmy, następnie wynik jest ponownie filtrowany i ograniczany do jawnej listy pól. Odpowiedź nie zawiera danych uwierzytelniających ani pełnych rekordów. Puste tabele zwracają puste kolekcje. Maksymalnie 250 najnowszych rekordów na kolekcję; ograniczenie jest sygnalizowane w `meta.truncated` i w panelu. Liczby na pulpicie opisują rekordy w widoku, nie całość firmy. Kalendarz i pliki pokazują rejestry DONY, nie pełną zawartość Google Calendar lub Drive.
+
+Decyzje zapisuje osobny workflow `DONA Panel — decyzje i pamięć`, ID `mILGt8TyRMEf6NZg`, przez POST `/webhook/dona-panel-actions`. Akcje Zoho trafiają po zatwierdzeniu do kolejki wykonawcy `jDW2QM45nGgA8vuw`. Zatwierdzenie wymaga zgodności typu akcji, wersji, skrótu payloadu, terminu ważności, właściciela i źródła decyzji. Edycja i usunięcie wymagają ponownego odczytu aktualnego `etag` przed zapisem.
 
 Zapisywanie danych wykonań workflow jest wyłączone dla sukcesów, błędów i testów ręcznych. Odpowiedzi mają `Cache-Control: no-store`. CORS dopuszcza obecne pochodzenie GitHub Pages. Przy włączonym „Zapamiętaj mnie na tym urządzeniu” hasło jest przechowywane w lokalnym magazynie tej przeglądarki; wylogowanie je usuwa.
 
