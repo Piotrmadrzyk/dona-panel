@@ -2,6 +2,9 @@ const request=$('Select Calendar').item.json;
 const raw=$input.first().json;
 const body=raw.body||raw;
 const code=Number(raw.statusCode)||200;
+const responseEvents=Array.isArray(body.events)?body.events:[];
+const emptyMarker=responseEvents.length===1&&!responseEvents[0]?.uid&&/^No events found\.?$/i.test(String(responseEvents[0]?.message||'').trim());
+const sourceEvents=emptyMarker?[]:responseEvents;
 const ok=code>=200&&code<300&&Array.isArray(body.events);
 function date(value,allDay){
  const s=String(value||'');
@@ -11,10 +14,10 @@ function date(value,allDay){
  const offset=m[7]?(m[7]==='Z'?'Z':m[7].slice(0,3)+':'+m[7].slice(3)):'Z';
  return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}${offset}`;
 }
-const events=ok?body.events.map(e=>{
+const events=ok?sourceEvents.map(e=>{
  const allDay=e.isallday===true;
  const start=date(e.dateandtime?.start||e.start,allDay),end=date(e.dateandtime?.end||e.end,allDay);
  return {id:String(e.uid||'')+':'+start,title:String(e.title||'Spotkanie').slice(0,500),date:start,end,allDay,location:String(e.location||'').slice(0,600),status:String(e.status||'SCHEDULED'),url:'',brandId:''};
 }).filter(e=>e.id&&e.date&&e.end):[];
-const invalid=ok&&(events.length!==body.events.length||events.length>500);
-return [{json:{tenant_id:'PM',provider:'zoho',calendar_id:request.calendarId,calendar_name:request.calendarName,events_json:JSON.stringify(events.slice(0,500)),status:ok&&!invalid?'READ_OK':'ERROR',checked_at:new Date().toISOString(),error_code:invalid?'INVALID_OR_TRUNCATED_EVENTS':ok?'':'ZOHO_READ_FAILED_'+code,range_start:request.rangeStart,range_end:request.rangeEnd}}];
+const invalid=ok&&(events.length!==sourceEvents.length||events.length>500);
+return [{json:{tenant_id:'PM',provider:'zoho',calendar_id:request.calendarId,calendar_name:request.calendarName,events_json:JSON.stringify(events.slice(0,500)),event_count:events.length,status:ok&&!invalid?'READ_OK':'ERROR',checked_at:new Date().toISOString(),error_code:invalid?'INVALID_OR_TRUNCATED_EVENTS':ok?'':'ZOHO_READ_FAILED_'+code,range_start:request.rangeStart,range_end:request.rangeEnd}}];
