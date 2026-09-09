@@ -27,6 +27,14 @@ test('checking mail opens the mail view so the agent run stays visible',()=>{
   assert.ok(f.events.some(e=>e.type==='dona:voice-panel-mode'&&e.detail.view==='mail'));
 });
 
+test('voice commands open the live agent operations view',()=>{
+  for(const command of ['Dona pokaż pracę agentów','Dona pokaż co robią agenci','Otwórz Live Ops']){
+    const f=setup(),result=f.actions.prepare(command,{source:'voice'});
+    assert.equal(result.view,'operations');
+    assert.equal(f.location.hash,'#operations');
+  }
+});
+
 test('editing a Facebook post opens the visible revision flow and keeps publishing blocked',()=>{
   const f=setup(),result=f.actions.prepare('Dona edytuj pierwszy post, skróć początek',{source:'voice'});
   assert.equal(result.view,'social');

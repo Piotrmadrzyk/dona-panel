@@ -3,6 +3,7 @@
 function plain(value){return String(value||'').toLocaleLowerCase('pl').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 let pendingWeatherPeriod='';
 const routes=[
+ {view:'operations',test:/\b(prac\w* agent\w*|co rob\w* agenc\w*|agenci|live ops|liveops|operacj\w* dony)\b/},
  {view:'mail',test:/\b(poczt\w*|mail\w*|wiadomosc\w*|skrzynk\w*)\b/},
  {view:'calendar',test:/\b(kalendarz\w*|spotkani\w*|termin\w*|grafik\w*)\b/},
  {view:'social',test:/\b(posty?|facebook|fb|messenger)\b/},
@@ -36,7 +37,7 @@ function prepare(text,options){
  options=options||{};const normalized=plain(text);let route=null,clientAction=null;
  const navigation=/\b(pokaz|otworz|przejdz|wyswietl|zobacz|wejdz|sprawdz)\b/.test(normalized);
  const mindMap=/\bmap[ae] mysli\b/.test(normalized);
- for(const candidate of routes){if(candidate.view==='maps'&&mindMap)continue;if(candidate.test.test(normalized)&&(navigation||/^(dona\s+)?(poczta|mail|wiadomosci|kalendarz|posty|facebook|dysk|youtube|receptury|strony|pogoda|mapa|mapy|trasa)/.test(normalized))){route=candidate;break;}}
+ for(const candidate of routes){if(candidate.view==='maps'&&mindMap)continue;if(candidate.test.test(normalized)&&(navigation||/^(dona\s+)?(poczta|mail|wiadomosci|kalendarz|posty|facebook|dysk|youtube|receptury|strony|pogoda|mapa|mapy|trasa|live ops|liveops|agenci)/.test(normalized))){route=candidate;break;}}
  const edit=/\b(edytuj|popraw|zmien|przeredaguj)\b/.test(normalized);
  if(route&&route.view==='mail'&&/\b(facebook|fb|messenger)\b/.test(normalized))route={view:'social'};
  if(edit&&/\b(post|facebook|fb)\b/.test(normalized))route={view:'social'};
