@@ -75,7 +75,7 @@
     if(state.loading)return;
     if(state.demo){
       const checkedAt=new Date().toISOString();
-      state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:checkedAt}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-buffer',name:'Buffer · dwie strony Facebook',status:'READ_OK',detail:'Przykładowy wynik połączenia. Tryb demo nie odpytuje prawdziwego konta Buffer.',source:'Dane demonstracyjne'}]});
+      state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:checkedAt}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-buffer',name:'Buffer · dwie strony Facebook',status:'DEMO',detail:'Przykładowy widok połączenia. Tryb demo nie odpytuje prawdziwego konta Buffer.',source:'Dane demonstracyjne'}]});
       state.data.approvals.forEach(a=>{a.canApprove=true;a.actionPayload={do:'klient@example.com',temat:a.title,tresc:a.preview,konto:'glowne'};});
       state.data.calendar={provider:'zoho',status:'CONFIGURED',calendars:[{id:'demo-zoho',name:'Przykładowy kalendarz Zoho',status:'READ_OK',checkedAt,events:state.data.meetings.map(m=>({...m,provider:'zoho',brandId:'probatum'}))}]};
       state.data.mails=[{id:'demo-mail',title:'Materiały do nowej strony',sender:'klient@example.com',snippet:'Przykładowa wiadomość oczekująca na odpowiedź.',status:'NEW',brandId:'probatum',date:checkedAt}];
