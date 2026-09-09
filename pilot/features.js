@@ -49,8 +49,10 @@ function youtubeFailureMessage(error){
  const message=String((error&&error.message)||'');
  const status=String(payload.status||'').toUpperCase();
  const safeDetail=String(payload.message||'').trim().slice(0,300);
+ const safeCode=/^[a-z0-9_-]{1,64}$/i.test(String(payload.error||code))?String(payload.error||code):'';
  if(code==='auth'||message==='AUTH')return 'Sesja wygasła. Zaloguj się ponownie — analiza nie została uruchomiona drugi raz.';
- if(code==='invalid_youtube_url'||Number(error&&error.status)===400)return 'Nie rozpoznaję tego adresu YouTube. Wklej pełny link zaczynający się od https:// — niczego nie uruchomiłam ponownie.';
+ if(code==='invalid_youtube_url')return 'Nie rozpoznaję tego adresu YouTube. Wklej pełny link zaczynający się od https:// — niczego nie uruchomiłam ponownie.';
+ if(Number(error&&error.status)===400)return safeDetail?'Panel odrzucił zlecenie: '+safeDetail+'. Analiza nie została ponowiona automatycznie.':safeCode?'Panel odrzucił zlecenie ('+safeCode+'). Analiza nie została ponowiona automatycznie.':'Panel odrzucił zlecenie z powodu błędu danych. Analiza nie została ponowiona automatycznie.';
  if(error&&error.name==='AbortError')return 'Analiza nie potwierdziła wyniku w wyznaczonym czasie. Mogła nadal pracować w n8n; sprawdź Media Intelligence przed ponowieniem.';
  if(status==='FAILED'||Number(error&&error.status)>=500)return safeDetail?'Media Intelligence przerwało analizę: '+safeDetail+' Nie ponawiam jej automatycznie.':'Media Intelligence przerwało zadanie przed potwierdzeniem wyniku. Błąd został zachowany w n8n; nie ponawiam analizy automatycznie.';
  if(message==='INVALID_RESPONSE')return 'Adapter Media Intelligence zwrócił nieprawidłową odpowiedź. Niczego nie uruchomiłam ponownie; błąd został zachowany do diagnozy.';
