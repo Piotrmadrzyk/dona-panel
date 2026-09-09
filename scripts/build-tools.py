@@ -62,7 +62,7 @@ headers={'entries':[{'name':'Cache-Control','value':'no-store'},{'name':'X-Conte
 add('respond','Return Panel Tool Result','respondToWebhook',1.5,{'respondWith':'json','responseBody':'={{ $json }}','options':{'responseCode':'={{ $json.statusCode || 200 }}','responseHeaders':headers}})
 add('deny','Return Panel Tool Error','respondToWebhook',1.5,{'respondWith':'json','responseBody':'={{ {ok:false,error:$json.error} }}','options':{'responseCode':'={{ $json.statusCode || 400 }}','responseHeaders':headers}})
 
-settings={'executionOrder':'v1','executionTimeout':900,'saveDataErrorExecution':'none','saveDataSuccessExecution':'none','saveExecutionProgress':False,'saveManualExecutions':False,'timezone':'Europe/Warsaw','callerPolicy':'workflowsFromSameOwner'}
+settings={'executionOrder':'v1','executionTimeout':900,'saveDataErrorExecution':'all','saveDataSuccessExecution':'none','saveExecutionProgress':False,'saveManualExecutions':False,'timezone':'Europe/Warsaw','callerPolicy':'workflowsFromSameOwner'}
 graph="""
 export default workflow('dona-panel-tools','DONA Panel — Media i Dysk',SETTINGS)
   .add(request).to(secret).to(auth).to(access)
