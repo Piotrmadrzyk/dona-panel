@@ -59,8 +59,8 @@ test('business systems expose allowlisted fields and keep raw workflow payloads 
  f['Read Invoices']=[{id:1,numer_faktury:'FV/1',klient:'Klient Jeden',kwota:1234.5,waluta:'PLN',raw_pdf:'PRIVATE PDF'}];
  f['Read Subscriptions']=[{id:1,service_id:'service-1',nazwa:'OpenAI',cena:99,waluta:'USD',aktywny:true,dashboard_url:'https://example.com/dashboard',credential_ref:'PRIVATE CREDENTIAL'}];
  f['Read Subscription Usage']=[{id:1,odczyt_id:'usage-1',service_id:'service-1',used:25,total:100,raw_field:'PRIVATE RAW'}];
- f['Read Research']=[{id:1,client_id:'PM',temat_klucz:'research-1',temat:'Rynek',podsumowanie:'Wynik',wynik_json:'PRIVATE RESEARCH'}];
- f['Read Competitor Observations']=[{id:1,client_id:'PM',obserwacja_id:'watch-1',konkurent:'Firma X',skrot:'Podsumowanie',migawka:'PRIVATE SNAPSHOT'}];
+ f['Read Research']=[{id:1,klient_id:'',temat_klucz:'research-1',temat:'Rynek',podsumowanie:'Wynik',wynik_json:'PRIVATE RESEARCH'}];
+ f['Read Competitor Observations']=[{id:1,klient_id:'PM',obserwacja_id:'watch-1',konkurent:'Firma X',skrot:'Podsumowanie',migawka:'PRIVATE SNAPSHOT'}];
  f['Read Playbooks']=[{id:1,playbook_id:'pb-1',nazwa:'AI B2B',branza:'b2b',moduly:'leady,oferty',szablony_json:'PRIVATE TEMPLATE'}];
  const r=run(snapshotSource,f),serialized=JSON.stringify(r);
  assert.equal(r.tasks[0].projectId,'project-1');assert.equal(r.tasks[0].priorityScore,88);assert.equal(r.processes.length,1);assert.deepEqual(r.processes[0].state,{settled:['Zakres'],waiting:['Akceptacja'],blocked:['Dostęp']});
