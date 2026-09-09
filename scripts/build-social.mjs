@@ -1,0 +1,50 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const specs = [];
+const add=(key,name,type,parameters,extra={})=>specs.push({key,type,version:({'executeWorkflowTrigger':1.1,'manualTrigger':1,code:2,dataTable:1.1,httpRequest:4.4,if:2.2})[type],config:{name,parameters,...extra}});
+const code=(key,name,jsCode,extra={})=>add(key,name,'code',{mode:'runOnceForAllItems',jsCode},extra);
+const gate=(key,name,expression)=>add(key,name,'if',{conditions:{options:{caseSensitive:true,typeValidation:'strict'},combinator:'and',conditions:[{leftValue:expression,rightValue:true,operator:{type:'boolean',operation:'equals'}}]}});
+const table=(key,name,id,extra={})=>add(key,name,'dataTable',{resource:'row',operation:'get',returnAll:true,dataTableId:{__rl:true,mode:'id',value:id}}, {executeOnce:true,alwaysOutputData:true,...extra});
+const headers={parameters:[{name:'Content-Type',value:'application/json'}]};
+const options={timeout:20000,redirect:{redirect:{followRedirects:false}},response:{response:{responseFormat:'json',fullResponse:true,neverError:true}}};
+const http=(key,name,jsonBody)=>add(key,name,'httpRequest',{method:'POST',url:'https://api.buffer.com',authentication:'genericCredentialType',genericAuthType:'httpBearerAuth',sendHeaders:true,headerParameters:headers,sendBody:true,contentType:'json',specifyBody:'json',jsonBody,options},{credentials:{httpBearerAuth:{id:'nViXBnoLQJgI3j2A',name:'Buffer API — DONA'}},retryOnFail:false,onError:'continueRegularOutput',executeOnce:true});
+const filter=(keyName,keyValue)=>({keyName,condition:'eq',keyValue});
+const update=(key,name,values,filters)=>add(key,name,'dataTable',{resource:'row',operation:'update',dataTableId:{__rl:true,mode:'id',value:'ML98cvIaIgZtd7u9'},matchType:'allConditions',filters:{conditions:filters},columns:{mappingMode:'defineBelow',value:values},options:{}},{alwaysOutputData:true,executeOnce:true});
+add('entry','Social Tool Input','executeWorkflowTrigger',{inputSource:'workflowInputs',workflowInputs:{values:['operation','post_key','profile_key','tenant_id','role','original_message'].map(name=>({name,type:'string'}))}});
+add('manual','Manual Read Only','manualTrigger',{});
+code('readContext','Manual Read Context',"return [{json:{operation:'read',tenant_id:'PM',role:'OWNER',original_message:''}}];");
+code('auth','Authorize Social Request',"const r=$input.first().json;return [{json:{...r,operation:r.operation||'read',ok:r.tenant_id==='PM'&&r.role==='OWNER'&&['read','status','publish_approved'].includes(r.operation||'read'),error:'UNAUTHORIZED_OR_INVALID_OPERATION'}}];");
+gate('allowed','Authorized Social Request','={{ $json.ok === true }}');
+table('profiles','Read Social Profiles','R0KOOO2OE4xqkfPK');
+table('posts','Read Social Posts','ML98cvIaIgZtd7u9');
+http('channels','Read Buffer Channels',JSON.stringify({query:'query DonaChannels { channels(input: { organizationId: "6aa0897b1a5b41e6dd2309bb" }) { id name service isDisconnected isLocked } }'}));
+code('select','Select Social Operation',fs.readFileSync(path.join(root,'backend/social-select.js'),'utf8'));
+gate('publishMode','Publish Approved Post','={{ $json.route === "publish" }}');
+gate('statusMode','Read Remote Post Status','={{ $json.route === "status" }}');
+code('returnNode','Return Social Result','return $input.all();');
+add('image','Read Approved Photo','httpRequest',{method:'GET',url:'={{ $json.post.image_url }}',options:{timeout:20000,redirect:{redirect:{followRedirects:false}},response:{response:{responseFormat:'file',outputPropertyName:'data'}}}},{retryOnFail:false});
+code('verify','Verify Approved Photo',"const p=$('Select Social Operation').first().json;const b=await this.helpers.getBinaryDataBuffer(0,'data');if(b.length<10000||b.length>10000000||require('crypto').createHash('sha256').update(b).digest('hex')!==p.post.image_sha256)throw new Error('APPROVED_IMAGE_CHANGED');return [{json:p}];");
+update('claim','Claim Exact Approved Post',{status:'PUBLISHING',claim_execution:'={{ $json.claim }}',scheduled_date:'={{ $json.today }}'},[
+  filter('id','={{ $json.post.id }}'),filter('status','APPROVED'),filter('approved_by','Piotr'),filter('approved_hash','={{ $json.post.approved_hash }}'),filter('caption_hash','={{ $json.post.caption_hash }}'),filter('caption','={{ $json.post.caption }}'),filter('image_sha256','={{ $json.post.image_sha256 }}'),filter('image_url','={{ $json.post.image_url }}'),filter('fb_page_id','={{ $json.post.fb_page_id }}')]);
+code('confirm','Confirm Claim',"const p=$('Select Social Operation').first().json;const rows=$input.all().map(i=>i.json);if(!rows.some(r=>r.id===p.post.id&&r.status==='PUBLISHING'&&r.claim_execution===String($execution.id)))throw new Error('CLAIM_NOT_ACQUIRED');return [{json:p}];");
+http('write','Publish Exact Post via Buffer','={{ $json.payload }}');
+code('receipt','Interpret Buffer Receipt',fs.readFileSync(path.join(root,'backend/social-result.js'),'utf8'));
+const resultValues=Object.fromEntries(['status','buffer_post_id','published_url','published_at','last_error','scheduled_date'].map(k=>[k,'={{ $json.'+k+' }}']));
+update('saveReceipt','Record Buffer Receipt',resultValues,[filter('post_key','={{ $json.post_key }}'),filter('claim_execution','={{ $json.claim_execution }}'),filter('status','PUBLISHING')]);
+gate('receiptKnown','Has Buffer Receipt','={{ !!$json.buffer_post_id }}');
+code('statusRequest','Build Status Query',"const s=$('Select Social Operation').first().json;const id=s.route==='status'?s.post.buffer_post_id:$json.buffer_post_id;if(!/^[a-zA-Z0-9_-]{8,100}$/.test(id||''))throw new Error('NO_BUFFER_POST_ID');return [{json:{payload:{query:'query DonaPost($input: PostInput!) { post(input: $input) { id text channelId status externalLink sentAt } }',variables:{input:{id}}}}}];");
+http('remote','Read Buffer Post','={{ $json.payload }}');
+code('outcome','Interpret Buffer Status',fs.readFileSync(path.join(root,'backend/social-result.js'),'utf8'));
+gate('resultValid','Can Record Buffer Status','={{ $json.route === "result" }}');
+update('saveOutcome','Record Buffer Status',resultValues,[filter('post_key','={{ $json.post_key }}'),filter('claim_execution','={{ $json.claim_execution }}'),filter('buffer_post_id','={{ $json.buffer_post_id }}'),filter('status','={{ $json.expected_status }}')]);
+code('final','Return Verified Outcome',"const r=$('Interpret Buffer Status').first().json;if(!$input.all().some(i=>i.json.post_key===r.post_key&&i.json.status===r.status))return [{json:{ok:false,error:'STATUS_NOT_SAVED',published:false,buffer_post_id:r.buffer_post_id}}];return [{json:r}];");
+const lines=["import {workflow,node,trigger} from '@n8n/workflow-sdk';"];
+for(const {key,type,...spec} of specs)lines.push(`const ${key} = ${type.endsWith('Trigger')?'trigger':'node'}(${JSON.stringify({type:'n8n-nodes-base.'+type,...spec}).replaceAll('$','\\u0024')});`);
+lines.push("export default workflow('dona-facebook-buffer','DONA — Facebook: kolejka i publikacja przez Buffer',"+JSON.stringify({settings:{availableInMCP:true,callerPolicy:'workflowsFromAList',callerIds:'vE77e9dXD2e93jBW',executionOrder:'v1',executionTimeout:120,timezone:'Europe/Warsaw'}})+")\n"+
+  '.add(entry).to(auth).to(allowed.onTrue(profiles.to(posts).to(channels).to(select).to(publishMode.onTrue(image.to(verify).to(claim).to(confirm).to(write).to(receipt).to(saveReceipt).to(receiptKnown.onTrue(statusRequest.to(remote).to(outcome).to(resultValid.onTrue(saveOutcome.to(final)).onFalse(returnNode))).onFalse(returnNode))).onFalse(statusMode.onTrue(statusRequest).onFalse(returnNode)))).onFalse(returnNode))\n'+
+  '.add(manual).to(readContext).to(auth);');
+// Generator output is a mechanical build artifact.
+fs.writeFileSync(path.join(root,'backend/social.workflow.ts'),lines.join('\n')+'\n');
+console.log(JSON.stringify({nodes:specs.length,output:'backend/social.workflow.ts'}));

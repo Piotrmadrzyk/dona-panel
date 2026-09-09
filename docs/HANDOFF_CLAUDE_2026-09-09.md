@@ -1,6 +1,6 @@
 # DONA — przekazanie pracy do Claude
 
-Stan na: 9 września 2026, po połączeniu Zoho Calendar z pełnym zapisem.
+Stan na: 9 września 2026, po połączeniu Zoho Calendar z pełnym zapisem i podpięciu bezpośredniego narzędzia Facebook/Buffer do Dony.
 
 ## Zacznij tutaj
 
@@ -73,10 +73,52 @@ Nie utworzono testowego wydarzenia w kalendarzu. To celowe. Pełny test końcowy
 
 ## Facebook i Buffer
 
-- Credential n8n `Buffer API — DONA` istnieje i był zapisany.
-- Panel potrafi pokazać stan kanałów Buffer bez włączania publikacji.
-- Automatyczna publikacja postów i obsługa Messengera pozostają wyłączone.
-- Nie traktuj Buffer jako potwierdzonego dostępu do Meta API. Przed publikacją sprawdź aktualne połączenie właściwych stron `Silver and Glass` oraz `Edward Janusz` i zachowaj bramkę zatwierdzenia dokładnej treści oraz obrazu.
+### Naprawa z 9 września, około 18:15 UTC
+
+Przeczytano rozmowę Piotra z Doną w `PM_panel_rozmowy`, sesja `thread-f6731bad-e6b9-45ca-a408-832dc8c29136` (17:43–17:59 UTC). Dona nie widziała listy i prosiła o ID, bo orkiestrator nie miał narzędzia Facebook. Stary nieaktywny wykonawca `HdeLS4FY1ZFoYnoS` używał Meta Graph API bez przypisanych credentials i nie pasował do połączenia Buffer. Pozostawiono go nieaktywnego.
+
+- Nowy workflow `j781hsS6dVKdWFxh`, „DONA — Facebook: kolejka i publikacja przez Buffer”, jest aktywny. Opublikowana wersja: `26767b57-43c3-461e-b500-8ec9d04a5f3e`.
+- Orkiestrator `vE77e9dXD2e93jBW` ma aktywne narzędzie `facebook_posty` i instrukcję odczytu listy przed publikacją. Opublikowana wersja: `459c32c8-12a9-4e12-9a00-606c79c8899a`.
+- Właściwy projekt n8n: `HiGPxPZPvAl4nZWh`, PM Command Center.
+- Credential `Buffer API — DONA`, ID `nViXBnoLQJgI3j2A`, jest przypisany bezpośrednio. Żadnych tokenów nie wyeksportowano.
+- Rzeczywisty odczyt Buffer potwierdził oba kanały Facebook: `isDisconnected=false`, `isLocked=false`. Kontrakt GraphQL sprawdzono przez introspekcję (wykonanie `52083`).
+- `silverandglass`: strona `61593755021660`, kanał Buffer `6aa08c72cd8b9c702c31bbbe`.
+- `edwardjanusz`: strona `61594093026807`, kanał Buffer `6aa08c72cd8b9c702c31bbbd`.
+- Tabele: profile `R0KOOO2OE4xqkfPK`, posty `ML98cvIaIgZtd7u9`. W postach dodano kolumnę string `buffer_post_id`.
+
+### Co działa i co sprawdzono
+
+1. `read`: rzeczywiste tytuły, treści, statusy, identyfikatory i stan kanałów. Bez zapisu do Facebooka.
+2. `publish_approved`: konkretna zatwierdzona treść i zdjęcie, po świeżym poleceniu właściciela `opublikuj/publikuj/wrzuć`. Nie wznawia historycznego polecenia.
+3. `status`: odczyt wyniku przyjętego przez Buffer posta. `BUFFER_ACCEPTED` nie oznacza publikacji; `PUBLISHED` wymaga `sent`, `sentAt` i linku Facebook.
+
+Bezpieczny test odczytu wykonawcy: `52079`, sukces. Test całej rozmowy z prawdziwym orkiestratorem: `52093` → `52094`, sukces. Dona sama wywołała `facebook_posty` z `operation=read` i potwierdziła „Attykę…” oraz portret Leopoldyny. Tymczasowy workflow QA `gEword7PdVnlafZE` zarchiwizowano. Pełny zestaw lokalny: **118 testów zaliczonych, 0 błędów**.
+
+**Nie wykonano publicznego testowego posta. Ścieżka publikacji jest wdrożona, ale pierwszy rzeczywisty wynik zapisu do Facebooka pozostaje do potwierdzenia.** Nie opisuj odczytu lub testów jednostkowych jako udanej publikacji.
+
+### Pierwszy rzeczywisty zapis — następny krok
+
+Piotr może powiedzieć Donie:
+
+> Opublikuj zatwierdzone „Attyka od strony południowej” na Silver & Glass i portret Leopoldyny Janusz na Edward Janusz.
+
+W odczytanym stanie wskazane posty są zatwierdzone i pierwsze w kolejce swojej marki:
+
+- `silverandglass:pt-3-35` — „Attyka od strony południowej”, zatwierdzenie `2026-09-09T17:39:25.072Z`.
+- `edwardjanusz:dzf-2-9` — portret Leopoldyny, zatwierdzenie `2026-09-09T17:39:44.734Z`.
+
+Przed działaniem odczytaj aktualny stan — te dane mogą się zmienić. Zgoda wygasa po 24 godzinach; później potrzebne ponowne zatwierdzenie w Panelu. Sprawdź zwrócone ID Buffer i prawdziwe linki. Przy `PUBLISHING`, `BUFFER_ACCEPTED` lub `UNKNOWN` nie ponawiaj publikacji, tylko ustal wynik.
+
+### Zabezpieczenia i granice
+
+- Wejście tylko `tenant_id=PM`, `role=OWNER`; tożsamość i aktualna wiadomość pochodzą z wejścia orkiestratora, nie z argumentów wymyślonych przez LLM.
+- Dozwolony wywołujący: tylko orkiestrator. Brak webhooka i harmonogramu; ręczny trigger wykonuje wyłącznie odczyt.
+- SHA-256 identycznej treści, strony, źródła, obrazu oraz rzeczywistej pobranej fotografii; zgoda Piotra ważna 24 h; dokładny atomowy claim przed pojedynczym requestem bez automatycznego retry.
+- Maksymalnie jeden post na markę dziennie, deterministyczny pierwszy zatwierdzony post; niepewny poprzedni wynik blokuje dalszą publikację.
+- `posting_enabled=false` pozostaje zachowane dla automatycznego harmonogramu. Nie blokuje ręcznej publikacji zatwierdzonego posta nowym narzędziem.
+- Messenger, reklamy i automatyczny harmonogram pozostają wyłączone. To połączenie Buffer, nie bezpośrednia autoryzacja Meta Graph API.
+- Definicja: `backend/social.workflow.ts`; generator: `scripts/build-social.mjs`; logika: `backend/social-select.js` i `backend/social-result.js`; zmiany orkiestratora: `backend/social-orchestrator.patch.json`; testy: `tests/social.test.cjs`.
+- Nie odtwarzaj całego orkiestratora z pliku w ciemno. Pobierz jego aktualną wersję, porównaj i pomiń istniejący już `facebook_posty`, żeby nie zdublować narzędzia.
 
 ## Najważniejsze pliki
 
