@@ -143,6 +143,14 @@ test('write prompts identify exact records and preserve approval boundaries',()=
   assert.match(onboarding,/sprawdź duplikat/i);assert.match(onboarding,/Nic[^\n]*nie wysyłaj ani nie publikuj/);
 });
 
+test('closing a task asks for confirmation instead of dispatching immediately',()=>{
+  const panel=boot();
+  // A tap on "Zamknij" is irreversible from the panel and used to fire straight at DONA -
+  // it must open a confirmation dialog first, not call Dona.runBranch synchronously.
+  panel.api._test.handleAction({dataset:{systemAction:'task-complete',id:'task-1',title:'Zadanie'}});
+  assert.equal(panel.calls.length,0);
+});
+
 test('demo fixtures cover every new backend collection',()=>{
   const panel=boot();
   const data=panel.api._test.withDemo({tasks:[],clients:[]},true);

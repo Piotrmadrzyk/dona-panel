@@ -564,16 +564,32 @@
     return definitions[action];
   }
 
-  function openForm(action, preset) {
-    const definition = formDefinition(action, preset || {});
-    if (!definition) return;
+  function ensureSystemDialog() {
     let dialog = byId('systemDialog');
     if (!dialog) {
       dialog = document.createElement('dialog');
       dialog.id = 'systemDialog';
       dialog.className = 'system-dialog';
       document.body.appendChild(dialog);
+      // Native showModal() blocks clicks to everything behind the backdrop, so closing
+      // it requires an explicit backdrop-click handler, not just an in-dialog button.
+      dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
     }
+    return dialog;
+  }
+
+  function confirmTaskComplete(preset) {
+    const dialog = ensureSystemDialog();
+    dialog.innerHTML = '<div class="system-dialog-head"><div><span>POTWIERDŹ</span><h2>Oznaczyć zadanie jako zrobione?</h2><p>' + escape(preset.title || 'To zadanie') + ' zniknie z listy otwartych zadań. Tej operacji nie da się cofnąć z poziomu Panelu — cofnięcie wymaga osobnej prośby do DONY.</p></div><button type="button" class="icon-button" data-system-dialog-close aria-label="Zamknij">×</button></div><div class="system-dialog-actions"><button type="button" class="secondary" data-system-dialog-close>Anuluj</button><button type="button" class="primary" data-task-complete-confirm>Tak, oznacz jako zrobione</button></div>';
+    dialog.querySelectorAll('[data-system-dialog-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('[data-task-complete-confirm]').addEventListener('click', () => { dialog.close(); runAction('task-complete', preset); });
+    dialog.showModal();
+  }
+
+  function openForm(action, preset) {
+    const definition = formDefinition(action, preset || {});
+    if (!definition) return;
+    const dialog = ensureSystemDialog();
     dialog.innerHTML = '<form method="dialog" id="systemForm"><div class="system-dialog-head"><div><span>AKCJA W DONIE</span><h2>' + escape(definition.title) + '</h2><p>' + escape(definition.copy) + '</p></div><button type="button" class="icon-button" data-system-dialog-close aria-label="Zamknij">×</button></div><div class="system-form-grid">' + definition.fields.map(field).join('') + '</div><div class="system-dialog-actions"><button type="button" class="secondary" data-system-dialog-close>Anuluj</button><button type="submit" class="primary">' + escape(definition.submit) + ' ' + icon('arrow') + '</button></div></form>';
     dialog.querySelectorAll('[data-system-dialog-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
     dialog.querySelector('form').addEventListener('submit', event => {
@@ -668,6 +684,10 @@
   function handleAction(button) {
     let action = button.dataset.systemAction;
     const preset = {id:button.dataset.id || '', title:button.dataset.title || ''};
+    if (action === 'task-complete') {
+      confirmTaskComplete(preset);
+      return;
+    }
     if (action === 'customer-brief') {
       runAction(action, {customer:state.selectedCustomer});
       return;
@@ -732,5 +752,5 @@
     if (button) handleAction(button);
   });
 
-  root.DonaSystems = {views:views, descriptions:descriptions, render:render, buildSearchIndex:buildSearchIndex, _test:{withDemo:withDemo,promptFor:promptFor,statusLabel:statusLabel}};
+  root.DonaSystems = {views:views, descriptions:descriptions, render:render, buildSearchIndex:buildSearchIndex, _test:{withDemo:withDemo,promptFor:promptFor,statusLabel:statusLabel,handleAction:handleAction}};
 })(window);

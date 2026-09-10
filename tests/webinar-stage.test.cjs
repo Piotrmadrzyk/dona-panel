@@ -29,7 +29,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.css\?v=5\.2\.3/);
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.2/);
-  assert.match(html,/systems\.js\?v=6\.0\.2/);
+  assert.match(html,/systems\.js\?v=6\.0\.3/);
   assert.match(html,/workspace\.js\?v=6\.0\.4/);
 });
 
