@@ -80,7 +80,8 @@ test('test invoice fixtures are excluded, and a hard-cut snippet gets an ellipsi
   ];
   f['Read Mail']=[
     {id:1,tenant_id:'PM',mail_id:'m1',subject:'Krótka',snippet:'Krótka wiadomość.'},
-    {id:2,tenant_id:'PM',mail_id:'m2',subject:'Długa',snippet:'x'.repeat(1200)}
+    {id:2,tenant_id:'PM',mail_id:'m2',subject:'Długa',snippet:'x'.repeat(1200)},
+    {id:3,tenant_id:'PM',mail_id:'m3',subject:'Ma pełną treść',snippet:'Ucięty podgląd bez sensu',tresc:'Pełna, prawdziwa treść wiadomości.'}
   ];
   const r=run(snapshotSource,f);
   assert.deepEqual(r.invoices.map(i=>i.id),['FV/2026/09/1']);
@@ -88,6 +89,23 @@ test('test invoice fixtures are excluded, and a hard-cut snippet gets an ellipsi
   const long=r.mails.find(m=>m.id==='m2').snippet;
   assert.equal(long.length,1001);
   assert.ok(long.endsWith('…'));
+  // The upstream "snippet" column is sometimes pre-truncated mid-sentence with no
+  // ellipsis by the mail sync itself; prefer the full body when it's available.
+  assert.equal(r.mails.find(m=>m.id==='m3').snippet,'Pełna, prawdziwa treść wiadomości.');
+});
+test('cancelled QA test tasks/processes ("[TEST ...]") never reach the owner panel',()=>{
+  const f=fixture();
+  f['Read Tasks']=[
+    {id:1,tenant_id:'PM',zadanie_id:'t1',tytul:'Oddać raport',status:'TODO'},
+    {id:2,tenant_id:'PM',zadanie_id:'t2',tytul:'[TEST S11] wyscig upsert',status:'ANULOWANE'}
+  ];
+  f['Read Processes']=[
+    {id:1,tenant_id:'PM',proces_id:'p1',opis:'Wdrożenie realne',status:'W_TOKU'},
+    {id:2,tenant_id:'PM',proces_id:'p2',opis:'[TEST] Proces synth',status:'ANULOWANE'}
+  ];
+  const r=run(snapshotSource,f);
+  assert.deepEqual(r.tasks.map(t=>t.id),['t1']);
+  assert.deepEqual(r.processes.map(p=>p.id),['p1']);
 });
 test('unsafe URLs are removed and missing monetary values stay unknown',()=>{
   const f=fixture();f['Read Offers']=[{id:1,client_id:'PM',offer_id:'one',drive_link:'javascript:alert(1)'},{id:2,client_id:'PM',offer_id:'two',total_netto:0,drive_link:'https://example.com/file'}];const r=run(snapshotSource,f);assert.equal(r.offers[0].url,'');assert.equal(r.offers[0].amount,null);assert.equal(r.offers[1].amount,0);assert.equal(r.offers[1].url,'https://example.com/file');
