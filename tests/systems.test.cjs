@@ -197,3 +197,22 @@ test('research library shows a clear "what happens" button and truncates long ra
   const h4Match=panel.view.innerHTML.match(/<h4>([^<]*)<\/h4>/);
   assert.ok(h4Match && h4Match[1].length<=141,'heading must be truncated, not a wall of raw prompt text');
 });
+
+test('customer card offers "to nie klient" to clean up junk records, with confirmation and no delete',()=>{
+  const panel=boot(),data=fixture();
+  panel.api.render('customer',data,false);
+  assert.match(panel.view.innerHTML,/data-system-action="client-not-customer" data-id="customer-1"/);
+  panel.api._test.handleAction({dataset:{systemAction:'client-not-customer',id:'customer-1',title:'Klient <Jeden>'}});
+  // Must ask for confirmation instead of firing immediately - same pattern as task-complete.
+  assert.equal(panel.calls.length,0);
+});
+
+test('the "to nie klient" prompt uses update_customer/status=NIE_KLIENT, never claims to delete',()=>{
+  const panel=boot();
+  const prompt=panel.api._test.promptFor('client-not-customer',{id:'customer-1',title:'Klient X'});
+  assert.match(prompt,/customer_ops/);
+  assert.match(prompt,/update_customer/);
+  assert.match(prompt,/customer-1/);
+  assert.match(prompt,/"status":"NIE_KLIENT"/);
+  assert.match(prompt,/Nie usuwaj rekordu/);
+});

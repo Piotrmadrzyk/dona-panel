@@ -256,7 +256,7 @@
     const openActions = rel.actions.filter(item => !done(item.status));
     const options = clients.map(item => '<option value="' + escape(item.id) + '"' + (item.id === client.id ? ' selected' : '') + '>' + escape(item.name) + '</option>').join('');
     html += '<div class="customer-picker"><label for="systemCustomerSelect">Klient</label><select id="systemCustomerSelect">' + options + '</select><span>' + clients.length + ' w bazie</span></div>';
-    html += '<section class="customer-head-card"><div class="customer-monogram">' + escape((client.name || '?').split(/\s+/).slice(0,2).map(word => word[0]).join('').toUpperCase()) + '</div><div class="customer-identity"><span>KARTA KLIENTA</span><h3>' + escape(client.name) + '</h3><p>' + escape([client.email, client.phone].filter(Boolean).join(' · ') || 'Brak zapisanych danych kontaktowych') + '</p></div><div class="customer-status">' + badge(client.status || client.lifecycle) + '<small>Opiekun: ' + escape(client.owner || 'nieprzypisany') + '</small></div></section>';
+    html += '<section class="customer-head-card"><div class="customer-monogram">' + escape((client.name || '?').split(/\s+/).slice(0,2).map(word => word[0]).join('').toUpperCase()) + '</div><div class="customer-identity"><span>KARTA KLIENTA</span><h3>' + escape(client.name) + '</h3><p>' + escape([client.email, client.phone].filter(Boolean).join(' · ') || 'Brak zapisanych danych kontaktowych') + '</p></div><div class="customer-status">' + badge(client.status || client.lifecycle) + '<small>Opiekun: ' + escape(client.owner || 'nieprzypisany') + '</small><button class="link-button" data-system-action="client-not-customer" data-id="' + escape(client.id) + '" data-title="' + escape(client.name) + '">To nie klient</button></div></section>';
     html += '<div class="customer-next-strip"><div><span>NASTĘPNY KROK</span><strong>' + escape(client.nextAction || (openActions[0] && openActions[0].title) || 'Nie zapisano następnego kroku') + '</strong></div><time>' + escape(date(client.nextActionAt || (openActions[0] && openActions[0].date), true)) + '</time></div>';
     html += '<div class="system-stats">' + stat('Ustalenia', String(rel.memory.length), 'aktywnych wpisów') + stat('Otwarte działania', String(openActions.length), 'dla tego klienta') + stat('Oferty', String(rel.offers.length), 'w historii') + stat('Dokumenty', String(rel.files.length), 'powiązane') + '</div>';
     html += '<div class="customer-grid"><section class="system-panel"><div class="system-section-head"><div><span>PAMIĘĆ RELACJI</span><h3>Co DONA wie</h3></div></div>' + (rel.memory.length ? rel.memory.slice(0, 12).map(item => '<article class="memory-row"><span>' + escape(item.domain || item.kind || 'ustalenie') + '</span><strong>' + escape(item.key || 'Informacja') + '</strong><p>' + escape(item.value) + '</p><small>' + escape(item.confidence ? 'Pewność: ' + item.confidence : date(item.updatedAt, true)) + '</small></article>').join('') : '<p class="system-small-empty">Nie ma jeszcze zapisanych ustaleń dla tego klienta.</p>') + '</section>';
@@ -596,6 +596,18 @@
     return dialog;
   }
 
+  // Piotr (10.09): audyt Klientow pokazal, ze WSZYSTKIE 19 zapisanych rekordow to smieci z
+  // automatycznych maili (Google Tag Manager, Apple, sady...) - root cause naprawiony u
+  // zrodla (Recepcja Poczty), ale te istniejace rekordy zostaly. To daje realny sposob ich
+  // posprzatania z panelu, bez czatowania z Dona proza za kazdym razem. Nie kasuje rekordu -
+  // ustawia status NIE_KLIENT (Build Snapshot go wtedy odfiltrowuje), w pelni odwracalne.
+  function confirmClientNotCustomer(preset) {
+    const dialog = ensureSystemDialog();
+    dialog.innerHTML = '<div class="system-dialog-head"><div><span>POTWIERDŹ</span><h2>Oznaczyć jako "to nie klient"?</h2><p>' + escape(preset.title || 'Ten rekord') + ' zniknie z listy klientów w panelu. Rekord nie zostanie skasowany — to odwracalne, ale cofnięcie wymaga osobnej prośby do DONY.</p></div><button type="button" class="icon-button" data-system-dialog-close aria-label="Zamknij">×</button></div><div class="system-dialog-actions"><button type="button" class="secondary" data-system-dialog-close>Anuluj</button><button type="button" class="primary" data-client-not-customer-confirm>Tak, to nie klient</button></div>';
+    dialog.querySelectorAll('[data-system-dialog-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('[data-client-not-customer-confirm]').addEventListener('click', () => { dialog.close(); runAction('client-not-customer', preset); });
+    dialog.showModal();
+  }
   function confirmTaskComplete(preset) {
     const dialog = ensureSystemDialog();
     dialog.innerHTML = '<div class="system-dialog-head"><div><span>POTWIERDŹ</span><h2>Oznaczyć zadanie jako zrobione?</h2><p>' + escape(preset.title || 'To zadanie') + ' zniknie z listy otwartych zadań. Tej operacji nie da się cofnąć z poziomu Panelu — cofnięcie wymaga osobnej prośby do DONY.</p></div><button type="button" class="icon-button" data-system-dialog-close aria-label="Zamknij">×</button></div><div class="system-dialog-actions"><button type="button" class="secondary" data-system-dialog-close>Anuluj</button><button type="button" class="primary" data-task-complete-confirm>Tak, oznacz jako zrobione</button></div>';
@@ -628,6 +640,7 @@
       'task-create': () => 'Utwórz w Agent Project Management nowe zadanie. Tytuł: ' + quoted(values.title) + '. Opis i kryterium wyniku: ' + quoted(values.description) + '. Termin: ' + quoted(values.due) + '. Priorytet: ' + quoted(values.priority) + '. Customer ID: ' + quoted(values.customer) + '. Po wykonaniu podaj identyfikator i potwierdzony status zapisu.',
       'task-complete': () => 'Oznacz zadanie o identyfikatorze ' + quoted(values.id) + ' jako zakończone. Tytuł kontrolny: ' + quoted(values.title) + '. Nie zmieniaj żadnego innego zadania. Podaj potwierdzony wynik.',
       'task-reopen': () => 'Przywróć zadanie o identyfikatorze ' + quoted(values.id) + ' do statusu otwartego (aktualizuj, status=OPEN). Tytuł kontrolny: ' + quoted(values.title) + '. To zostało omyłkowo zamknięte i ma wrócić na listę otwartych zadań. Nie zmieniaj żadnego innego zadania. Podaj potwierdzony wynik.',
+      'client-not-customer': () => 'Oznacz klienta o identyfikatorze ' + quoted(values.id) + ' (nazwa kontrolna: ' + quoted(values.title) + ') jako "to nie jest prawdziwy klient". Użyj narzędzia customer_ops z akcją update_customer, parametr=' + quoted(values.id) + ', dane={"status":"NIE_KLIENT"}. Nie usuwaj rekordu, nie zmieniaj żadnego innego klienta. Potwierdź krótko wynik.',
       'project-priorities': () => 'Sprawdź moje projekty i zadania. Tylko odczyt. Wskaż pięć najważniejszych działań, powody priorytetu, blokady i najbliższy konkretny krok. Niczego nie zmieniaj.',
       'process-check': () => 'Sprawdź proces o identyfikatorze ' + quoted(values.id) + '. Tylko odczyt. Podaj aktualny krok, ustalenia, elementy oczekujące, blokady i rekomendowany następny krok.',
       'website-create': () => 'Przygotuj nową wersję roboczą strony WWW. Nazwa projektu: ' + quoted(values.name) + '. Cel i zakres: ' + quoted(values.goal) + '. Customer ID: ' + quoted(values.customer) + '. Termin: ' + quoted(values.deadline) + '. Utwórz podgląd i wpis w rejestrze. Nie publikuj bez osobnego zatwierdzenia.',
@@ -656,6 +669,7 @@
     'task-create':{branch:'klienci',name:'Klienci',form:true,refresh:true},
     'task-complete':{branch:'klienci',name:'Klienci',refresh:true},
     'task-reopen':{branch:'klienci',name:'Klienci',refresh:true},
+    'client-not-customer':{branch:'klienci',name:'Klienci',refresh:true},
     'project-priorities':{branch:'klienci',name:'Klienci'},
     'process-check':{branch:'system',name:'System'},
     'website-create':{branch:'www',name:'WWW',form:true,refresh:true},
@@ -706,6 +720,10 @@
     const preset = {id:button.dataset.id || '', title:button.dataset.title || ''};
     if (action === 'task-complete') {
       confirmTaskComplete(preset);
+      return;
+    }
+    if (action === 'client-not-customer') {
+      confirmClientNotCustomer(preset);
       return;
     }
     if (action === 'customer-brief') {
