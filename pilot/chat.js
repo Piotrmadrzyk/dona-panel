@@ -546,7 +546,10 @@ function zapiszHist(rola,tresc){
   }).then(function(result){if(result.thread)upsertThread(result.thread);}).catch(function(){phase('Nie potwierdzono zapisu historii. Bieżący wynik pozostaje na ekranie.');});
 }
 function requestError(e){
-  return e&&e.message==='AUTH'?'Zaloguj się ponownie. Nie ponawiam zlecenia automatycznie.':'Nie potwierdzono wyniku. Zadanie mogło dotrzeć do systemu — nie ponawiaj go w ciemno. Sprawdź status przed kolejnym zleceniem.';
+  // A long turn (e.g. research) can outlast this fetch even though n8n finishes fine seconds
+  // or minutes later - Dona's server now saves her answer to this same conversation regardless,
+  // so the honest guidance is "check back here", not "nothing happened, don't retry blindly".
+  return e&&e.message==='AUTH'?'Zaloguj się ponownie. Nie ponawiam zlecenia automatycznie.':'Połączenie nie doczekało się odpowiedzi, ale zadanie mogło dotrzeć do systemu i nadal pracować. Nie zlecaj tego samego drugi raz — jeśli Dona skończy, jej odpowiedź pojawi się w tej rozmowie po odświeżeniu.';
 }
 async function enrichPanelAction(prepared){
   prepared=prepared||{};var action=prepared.clientAction;if(!action||!window.DonaFeatures)return prepared;
@@ -568,7 +571,12 @@ async function send(text){
   var prepared=window.DonaPanelActions&&window.DonaPanelActions.prepare?window.DonaPanelActions.prepare(text,{source:'chat'}):{backendText:text};
   lastText=text;lockPanel(true);add('me',text);zapiszHist('user',text);inp.value='';phase('Czekam na odpowiedź Dony…');
   var tip=add('sys','Dona odpowiada…');
-  try{prepared=await enrichPanelAction(prepared);var ans=await ask(prepared&&prepared.backendText||text);tip.remove();add('dona',ans);zapiszHist('dona',ans);phase('Odpowiedź otrzymana');speak(ans);return {ok:true,answer:ans};}
+  // Dona's own turn is no longer saved from here (was zapiszHist('dona',ans)): a slow request
+  // (e.g. research taking 5+ minutes) can outlast this fetch even though n8n finishes fine -
+  // the browser never gets here to save it. Panel Dona Apex now saves Dona's answer to history
+  // server-side, unconditionally, right before responding - saving it again here would just
+  // duplicate the message on every normal, fast turn.
+  try{prepared=await enrichPanelAction(prepared);var ans=await ask(prepared&&prepared.backendText||text);tip.remove();add('dona',ans);phase('Odpowiedź otrzymana');speak(ans);return {ok:true,answer:ans};}
   catch(e){tip.remove();add('sys',requestError(e));phase('Wynik niepotwierdzony');return {ok:false,error:e&&e.message||'UNKNOWN'};}
   finally{lockPanel(false);}
 }
@@ -593,9 +601,10 @@ async function executeBranch(branchId,branchName,text){
   var tip=add('sys',selected.name+': czekam na wynik…');
   document.querySelectorAll('[data-branch="'+selected.id+'"]').forEach(function(n){n.classList.add('running');});
   try{
-    var j=await panelPost(BRANCH_URL,{haslo:sessionPw,galaz:selected.id,polecenie:withBrand(text),tryb:selected.id==='research'?'szybka':''});
+    var j=await panelPost(BRANCH_URL,{haslo:sessionPw,galaz:selected.id,polecenie:withBrand(text),tryb:selected.id==='research'?'szybka':'',conversation_id:panelConversationId});
     if(typeof j.answer!=='string'||!j.answer.trim())throw new Error('EMPTY_RESPONSE');
-    add('dona','['+selected.name+']\n'+j.answer);zapiszHist('dona','['+selected.name+']\n'+j.answer);
+    // Saved server-side now (see send()'s comment above) - not zapiszHist'd again here.
+    add('dona','['+selected.name+']\n'+j.answer);
     phase(j.ok===false?'Gałąź zgłosiła problem — sprawdź odpowiedź':'Otrzymano odpowiedź: '+selected.name);
     return j;
   }catch(e){add('sys',requestError(e));phase('Wynik niepotwierdzony');return {ok:false,error:e&&e.message||'UNKNOWN'};}
