@@ -242,6 +242,23 @@
     });
     dialog.showModal();
   }
+  // "Usuń" (10.09): mirror confirmMailArchive, but moves to Gmail Trash (usun_wiadomosc /
+  // Email Safe Trash, plan/apply/undo) instead of just clearing INBOX - a real destructive-
+  // feeling action needed its own dedicated tool too, not the package-based poczta action.
+  function confirmMailTrash(mail){
+    if(!mail.messageId){toast('Ta wiadomość nie ma jeszcze zapisanego identyfikatora Gmaila — odśwież dane i spróbuj ponownie.');return;}
+    const dialog=ensureMailDialog();
+    dialog.innerHTML='<div class="system-dialog-head"><div><span>POTWIERDŹ</span><h2>Usunąć tę wiadomość?</h2><p>'+escape(mail.title||mail.id)+' (od '+escape(mail.sender||'nieznanego nadawcy')+') trafi do Kosza Gmaila i zniknie stamtąd po ok. 30 dniach — tak jak w zwykłym Gmailu. Do tego czasu można ją przywrócić osobną prośbą do DONY. Dotyczy WYŁĄCZNIE tej jednej wiadomości.</p></div><button type="button" class="icon-button" data-mail-dialog-close aria-label="Zamknij">×</button></div><div class="system-dialog-actions"><button type="button" class="secondary" data-mail-dialog-close>Anuluj</button><button type="button" class="primary" data-mail-trash-confirm>Tak, usuń</button></div>';
+    dialog.querySelectorAll('[data-mail-dialog-close]').forEach(b=>b.addEventListener('click',()=>dialog.close()));
+    dialog.querySelector('[data-mail-trash-confirm]').addEventListener('click',async()=>{
+      dialog.close();
+      const prompt='Usuń WYŁĄCZNIE tę jedną wiadomość: message_id="'+mail.messageId+'" (temat: "'+mail.title+'", od '+(mail.sender||'nieznanego nadawcy')+'). Użyj narzędzia usun_wiadomosc w trybie apply z dokładnie tym jednym message_id — NIE używaj akcji archiwizuj ani żadnej innej akcji pakietowej w narzędziu poczta. Nie ruszaj żadnej innej wiadomości. Potwierdź krótko wynik.';
+      toast('DONA przenosi tę wiadomość do kosza — potwierdzenie zobaczysz w rozmowie.');
+      try{const result=await window.Dona.runBranch('poczta','Poczta',prompt);if(!result||result.ok===false)toast('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');else if(state.view==='mail')loadData();}
+      catch(err){toast('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');}
+    });
+    dialog.showModal();
+  }
   function ensureClientDialog(){let dialog=$('addClientDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='addClientDialog';dialog.className='system-dialog';document.body.appendChild(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});}return dialog;}
   function showAddClient(){
     const dialog=ensureClientDialog();
@@ -264,7 +281,7 @@
     $('detailType').textContent=({approvals:'DO ZATWIERDZENIA',leads:'ZAPYTANIE',offers:'OFERTA',clients:'KLIENT',tasks:'ZADANIE',meetings:'SPOTKANIE',files:'DOKUMENT',mails:'WIADOMOŚĆ'})[collection]||'SZCZEGÓŁY';$('detailTitle').textContent=r.title||r.name||r.id;
     const fields=Object.keys(fieldLabels).filter(k=>r[k]!==undefined&&r[k]!==null&&r[k]!==''&&!['title','name','description','id'].includes(k));
     $('detailBody').innerHTML='<dl class="detail-fields">'+fields.map(k=>'<dt>'+fieldLabels[k]+'</dt><dd>'+escape(k==='status'?statusText(r[k]):k==='amount'?money(r):/At$|^date$|^end$/.test(k)?formatDate(r[k],true):r[k])+'</dd>').join('')+'</dl>'+(r.preview||r.description?'<div class="detail-text">'+escape(r.preview||r.description)+'</div>':'')+(collection==='approvals'?'<p class="detail-note">Otwierasz podgląd prośby. Zatwierdzenie i wykonanie odbywa się przez dotychczasową obsługę zgód DONY.</p>':'');
-    $('detailActions').replaceChildren();const link=safeUrl(r.url);if(link){const a=el('a','Otwórz dokument ↗','secondary');a.href=link;a.target='_blank';a.rel='noopener noreferrer';$('detailActions').append(a);}if(collection==='approvals'){const edit=el('button','Edytuj','secondary');edit.onclick=()=>{dialog.close();window.DonaCommand.revise('approval',id);};$('detailActions').append(edit);}if(collection==='meetings'&&r.date&&!/CANCEL/i.test(r.status)){const reschedule=el('button','Zmień termin','secondary');reschedule.onclick=()=>{dialog.close();showReschedule(r);};$('detailActions').append(reschedule);}if(collection==='mails'){const reply=el('button','Przygotuj odpowiedź','secondary');reply.onclick=()=>{dialog.close();showMailReply(r);};$('detailActions').append(reply);const archive=el('button','Zarchiwizuj','secondary');archive.onclick=()=>{dialog.close();confirmMailArchive(r);};$('detailActions').append(archive);}const b=el('button','Omów z DONĄ','primary');b.onclick=()=>{dialog.close();discuss(collection,id);};$('detailActions').append(b);dialog.showModal();
+    $('detailActions').replaceChildren();const link=safeUrl(r.url);if(link){const a=el('a','Otwórz dokument ↗','secondary');a.href=link;a.target='_blank';a.rel='noopener noreferrer';$('detailActions').append(a);}if(collection==='approvals'){const edit=el('button','Edytuj','secondary');edit.onclick=()=>{dialog.close();window.DonaCommand.revise('approval',id);};$('detailActions').append(edit);}if(collection==='meetings'&&r.date&&!/CANCEL/i.test(r.status)){const reschedule=el('button','Zmień termin','secondary');reschedule.onclick=()=>{dialog.close();showReschedule(r);};$('detailActions').append(reschedule);}if(collection==='mails'){const reply=el('button','Przygotuj odpowiedź','secondary');reply.onclick=()=>{dialog.close();showMailReply(r);};$('detailActions').append(reply);const archive=el('button','Zarchiwizuj','secondary');archive.onclick=()=>{dialog.close();confirmMailArchive(r);};$('detailActions').append(archive);const trash=el('button','Usuń','secondary');trash.onclick=()=>{dialog.close();confirmMailTrash(r);};$('detailActions').append(trash);}const b=el('button','Omów z DONĄ','primary');b.onclick=()=>{dialog.close();discuss(collection,id);};$('detailActions').append(b);dialog.showModal();
   }
   document.querySelectorAll('[data-icon]').forEach(n=>n.innerHTML=icon(n.dataset.icon));
   $('loginForm').onsubmit=e=>{e.preventDefault();$('pwBtn').click();};

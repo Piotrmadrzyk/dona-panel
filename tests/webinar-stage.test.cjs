@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.5/);
-  assert.match(html,/workspace\.js\?v=6\.0\.11/);
+  assert.match(html,/workspace\.js\?v=6\.0\.12/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -80,6 +80,18 @@ test('single-message mail archiving uses a dedicated per-message tool, never the
   assert.match(workspace,/narzędzia archiwizuj_wiadomosc w trybie apply/);
   assert.match(workspace,/NIE używaj akcji archiwizuj w narzędziu poczta/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
+});
+
+test('single-message mail deletion moves to Gmail Trash via its own dedicated tool, distinct from archive',()=>{
+  assert.match(workspace,/function confirmMailTrash/);
+  assert.match(workspace,/data-mail-trash-confirm/);
+  assert.match(workspace,/el\('button','Usuń'/);
+  assert.match(workspace,/trafi do Kosza Gmaila i zniknie stamtąd po ok\. 30 dni/);
+  // Must require the real Gmail message_id, same guard as archive.
+  assert.match(workspace,/if\(!mail\.messageId\)\{toast\('Ta wiadomość nie ma jeszcze zapisanego identyfikatora Gmaila/);
+  // Must route through the dedicated trash tool, never the package-based poczta action.
+  assert.match(workspace,/narzędzia usun_wiadomosc w trybie apply/);
+  assert.match(workspace,/NIE używaj akcji archiwizuj ani żadnej innej akcji pakietowej w narzędziu poczta/);
 });
 
 test('adding a client is a real CRM form, not the chat-prose button it used to be',()=>{
