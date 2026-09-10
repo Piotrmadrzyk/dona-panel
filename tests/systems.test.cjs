@@ -183,3 +183,17 @@ test('global search matches words in any order/position, not only the whole phra
   // Empty query still means "match everything" (used for the no-query overview state).
   assert.ok(textMatch('   ',['cokolwiek']));
 });
+
+test('research library shows a clear "what happens" button and truncates long raw prompts as the title',()=>{
+  const panel=boot(),data=fixture();
+  data.researches=[{id:'r1',topic:'Bardzo dlugi, surowy prompt uzytkownika ktory ma znacznie wiecej niz sto czterdziesci znakow i normalnie renderowalby sie jako ogromny, nieprzerwany naglowek zajmujacy caly ekran bez sensu',summary:'Wynik badania',highConfidenceClaims:4,updatedAt:'2026-09-10T08:00:00Z'}];
+  panel.api.render('researchhub',data,false);
+  // Piotr (10.09): "co za przycisk 'kontynuuj'? co mam kontynuowac?" - label must say the action.
+  assert.match(panel.view.innerHTML,/Sprawdź co się zmieniło/);
+  assert.doesNotMatch(panel.view.innerHTML,/>Kontynuuj</);
+  // The full topic must still reach data-title for the actual DONA prompt, even though the
+  // visible heading is truncated.
+  assert.match(panel.view.innerHTML,/data-title="Bardzo dlugi, surowy prompt/);
+  const h4Match=panel.view.innerHTML.match(/<h4>([^<]*)<\/h4>/);
+  assert.ok(h4Match && h4Match[1].length<=141,'heading must be truncated, not a wall of raw prompt text');
+});
