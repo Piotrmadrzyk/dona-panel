@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.4/);
-  assert.match(html,/workspace\.js\?v=6\.0\.10/);
+  assert.match(html,/workspace\.js\?v=6\.0\.11/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -57,15 +57,15 @@ test('rescheduling a meeting is a real form, not a chat prose request, and never
   assert.match(workspace,/window\.Dona\.run\(prompt\)/);
 });
 
-test('mail detail offers self-service reply drafting, routed through DONA for the single named message',()=>{
+test('mail detail offers self-service reply drafting, routed through DONA for the single named message, and now really lands in Skrzynka decyzji',()=>{
   assert.match(workspace,/function showMailReply/);
   assert.match(workspace,/collection==='mails'/);
   assert.match(workspace,/Przygotuj odpowiedź/);
-  // Reply must stay a draft to review in chat - never a direct send. The tool only
-  // returns text (it doesn't write to PM_approvals yet), so the copy must not claim
-  // it lands in Skrzynka decyzji - a live test showed DONA repeating that same false claim.
-  assert.match(workspace,/To ma być tylko propozycja do przejrzenia w rozmowie — nie wysyłaj niczego/);
-  assert.doesNotMatch(workspace,/szkic wróci do zatwierdzenia w Skrzynce decyzji/);
+  // 10.09: the "draft" action in Inbox Zero now files a real approval request (Approval
+  // Service, same proven path as the Recepcja Poczty pilot) - copy must say so accurately,
+  // not the earlier "just chat, nothing lands anywhere" placeholder.
+  assert.match(workspace,/wyśle do zatwierdzenia.*Skrzynce decyzji/);
+  assert.match(workspace,/Szkic ma trafić do zatwierdzenia w Skrzynce decyzji/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
 });
 
