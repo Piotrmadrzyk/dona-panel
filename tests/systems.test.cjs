@@ -137,10 +137,23 @@ test('write prompts identify exact records and preserve approval boundaries',()=
   const website=prompts.promptFor('website-create',{name:'Landing',goal:'Leady',customer:'customer-1',deadline:'2026-09-12'});
   const reminders=prompts.promptFor('reminders-preview',{});
   const onboarding=prompts.promptFor('onboarding-create',{name:'Nowy klient',service:'Obsługa AI',start:'2026-09-10'});
+  const reopen=prompts.promptFor('task-reopen',{id:'task-42',title:'Raport'});
   assert.match(task,/task-42/);assert.match(task,/Nie zmieniaj żadnego innego zadania/);
   assert.match(website,/Nie publikuj bez osobnego zatwierdzenia/);
   assert.match(reminders,/Nie wysyłaj żadnej wiadomości/);
   assert.match(onboarding,/sprawdź duplikat/i);assert.match(onboarding,/Nic[^\n]*nie wysyłaj ani nie publikuj/);
+  assert.match(reopen,/task-42/);assert.match(reopen,/status=OPEN/);assert.match(reopen,/Nie zmieniaj żadnego innego zadania/);
+});
+
+test('completed tasks get a self-service "Przywróć" (reopen) option, no chat required',()=>{
+  const panel=boot(),data=fixture();
+  data.tasks=[
+    {id:'task-open',title:'Otwarte',status:'TODO',date:'2026-09-10T08:00:00Z'},
+    {id:'task-done',title:'Zamknięte przez pomyłkę',status:'DONE',completedAt:'2026-09-09T08:00:00Z',clientName:'Klient'}
+  ];
+  panel.api.render('projects',data,false);
+  assert.match(panel.view.innerHTML,/Zakończone \(1\)/);
+  assert.match(panel.view.innerHTML,/data-system-action="task-reopen" data-id="task-done"/);
 });
 
 test('closing a task asks for confirmation instead of dispatching immediately',()=>{

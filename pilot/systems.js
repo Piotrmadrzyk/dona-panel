@@ -167,6 +167,7 @@
     const processes = brandRows('processes');
     const tasks = brandRows('tasks');
     const openTasks = tasks.filter(task => !done(task.status));
+    const doneTasks = tasks.filter(task => done(task.status));
     const overdue = openTasks.filter(task => task.date && +new Date(task.date) < Date.now());
     const blocked = processes.filter(process => process.state && process.state.blocked && process.state.blocked.length);
     let html = hero('projects', 'SYSTEM 01 · DOWOŻENIE', 'Od procesu do konkretnego zadania', 'Widzisz, co jest w toku, na czym stoi praca i co wymaga Twojej decyzji.', primary('Dodaj zadanie', 'task-create') + secondary('Zapytaj o priorytety', 'project-priorities'),
@@ -176,7 +177,7 @@
       stat('Procesy w toku', String(processes.filter(item => !done(item.status)).length), processes.length + ' wszystkich') +
       stat('Otwarte zadania', String(openTasks.length), overdue.length + ' po terminie', overdue.length ? 'warn' : '') +
       stat('Blokady', String(blocked.length), blocked.length ? 'wymagają uwagi' : 'brak zapisanych blokad', blocked.length ? 'danger' : 'good') +
-      stat('Zakończone', String(tasks.filter(task => done(task.status)).length), 'zadania w odczycie') + '</div>';
+      stat('Zakończone', String(doneTasks.length), 'zadania w odczycie') + '</div>';
     html += '<div class="system-layout system-layout--wide"><section class="system-panel"><div class="system-section-head"><div><span>AKTYWNE PROCESY</span><h3>Przebieg pracy</h3></div><b>' + processes.length + '</b></div>';
     html += processes.length ? '<div class="process-list">' + processes.map(process => {
       const waiting = process.state && process.state.waiting ? process.state.waiting : [];
@@ -188,6 +189,11 @@
       const isLate = task.date && +new Date(task.date) < Date.now();
       return '<article class="task-card ' + (isLate ? 'is-late' : '') + '"><div class="task-check">' + icon('check') + '</div><div><div class="task-meta"><span>' + escape(task.priority || 'bez priorytetu') + '</span><time>' + escape(date(task.date, true)) + '</time></div><h4>' + escape(task.title) + '</h4><p>' + escape(short(task.description, 180) || task.clientName || 'Bez dodatkowego opisu.') + '</p><small>' + escape([task.clientName, task.owner].filter(Boolean).join(' · ')) + '</small></div><button class="task-done" data-system-action="task-complete" data-id="' + escape(task.id) + '" data-title="' + escape(task.title) + '">Zamknij</button></article>';
     }).join('') + '</div>' : empty('Wszystko wykonane', 'Nie ma otwartych zadań w aktualnym odczycie.');
+    if (doneTasks.length) {
+      html += '<details class="task-done-list"><summary>Zakończone (' + doneTasks.length + ') · przywróć pomyłkowo zamknięte</summary><div class="task-list">' + doneTasks.slice().sort((a,b) => (+new Date(b.completedAt||b.date) || 0) - (+new Date(a.completedAt||a.date) || 0)).slice(0,20).map(task => {
+        return '<article class="task-card is-done"><div class="task-check">' + icon('check') + '</div><div><div class="task-meta"><span>' + escape(statusLabel(task.status)) + '</span><time>' + escape(date(task.completedAt || task.date, true)) + '</time></div><h4>' + escape(task.title) + '</h4><small>' + escape([task.clientName, task.owner].filter(Boolean).join(' · ')) + '</small></div><button class="secondary" data-system-action="task-reopen" data-id="' + escape(task.id) + '" data-title="' + escape(task.title) + '">Przywróć</button></article>';
+      }).join('') + '</div></details>';
+    }
     html += '</section></div>';
     byId('viewContent').innerHTML = html;
   }
@@ -609,6 +615,7 @@
     const prompts = {
       'task-create': () => 'Utwórz w Agent Project Management nowe zadanie. Tytuł: ' + quoted(values.title) + '. Opis i kryterium wyniku: ' + quoted(values.description) + '. Termin: ' + quoted(values.due) + '. Priorytet: ' + quoted(values.priority) + '. Customer ID: ' + quoted(values.customer) + '. Po wykonaniu podaj identyfikator i potwierdzony status zapisu.',
       'task-complete': () => 'Oznacz zadanie o identyfikatorze ' + quoted(values.id) + ' jako zakończone. Tytuł kontrolny: ' + quoted(values.title) + '. Nie zmieniaj żadnego innego zadania. Podaj potwierdzony wynik.',
+      'task-reopen': () => 'Przywróć zadanie o identyfikatorze ' + quoted(values.id) + ' do statusu otwartego (aktualizuj, status=OPEN). Tytuł kontrolny: ' + quoted(values.title) + '. To zostało omyłkowo zamknięte i ma wrócić na listę otwartych zadań. Nie zmieniaj żadnego innego zadania. Podaj potwierdzony wynik.',
       'project-priorities': () => 'Sprawdź moje projekty i zadania. Tylko odczyt. Wskaż pięć najważniejszych działań, powody priorytetu, blokady i najbliższy konkretny krok. Niczego nie zmieniaj.',
       'process-check': () => 'Sprawdź proces o identyfikatorze ' + quoted(values.id) + '. Tylko odczyt. Podaj aktualny krok, ustalenia, elementy oczekujące, blokady i rekomendowany następny krok.',
       'website-create': () => 'Przygotuj nową wersję roboczą strony WWW. Nazwa projektu: ' + quoted(values.name) + '. Cel i zakres: ' + quoted(values.goal) + '. Customer ID: ' + quoted(values.customer) + '. Termin: ' + quoted(values.deadline) + '. Utwórz podgląd i wpis w rejestrze. Nie publikuj bez osobnego zatwierdzenia.',
@@ -636,6 +643,7 @@
   const actionConfig = {
     'task-create':{branch:'klienci',name:'Klienci',form:true,refresh:true},
     'task-complete':{branch:'klienci',name:'Klienci',refresh:true},
+    'task-reopen':{branch:'klienci',name:'Klienci',refresh:true},
     'project-priorities':{branch:'klienci',name:'Klienci'},
     'process-check':{branch:'system',name:'System'},
     'website-create':{branch:'www',name:'WWW',form:true,refresh:true},
