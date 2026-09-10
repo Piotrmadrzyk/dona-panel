@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.4/);
-  assert.match(html,/workspace\.js\?v=6\.0\.4/);
+  assert.match(html,/workspace\.js\?v=6\.0\.5/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -44,4 +44,15 @@ test('webinar demo keeps both graphical Facebook drafts visible across brand fil
   assert.match(workspace,/state\.demo&&\['dona','connections','social'\]\.includes\(v\)\?state\.data/);
   assert.match(workspace,/site-previews\/silverandglass\.webp/);
   assert.match(workspace,/site-previews\/edwardjanusz\.webp/);
+});
+
+test('rescheduling a meeting is a real form, not a chat prose request, and never executes directly',()=>{
+  assert.match(workspace,/function showReschedule/);
+  assert.match(workspace,/type="datetime-local" name="newDate" required/);
+  assert.match(workspace,/collection==='meetings'&&r\.date&&!\/CANCEL\/i\.test\(r\.status\)/);
+  assert.match(workspace,/Zmień termin/);
+  // The prompt must force DONA through read-then-plan (etag) and land in Skrzynka decyzji - never a direct write.
+  assert.match(workspace,/potwierdzić dokładny event_uid i etag/);
+  assert.match(workspace,/NIE wykonuj zmiany automatycznie, ma trafić do Skrzynki decyzji/);
+  assert.match(workspace,/window\.Dona\.run\(prompt\)/);
 });
