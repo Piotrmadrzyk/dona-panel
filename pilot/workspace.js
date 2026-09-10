@@ -98,7 +98,7 @@
     catch(e){if(request!==state.request)return;state.error=e.message==='AUTH'?'Zaloguj się ponownie.':'Nie udało się pobrać danych. Rozmowa z DONĄ nadal korzysta z dotychczasowego połączenia.';}
     finally{if(request===state.request){state.loading=false;$('refreshBtn').disabled=false;render();}}
   }
-  function navigate(){const name=location.hash.slice(1)||'dona';state.view=labels[name]?name:'today';state.search='';state.filter='';state.accountFilter='';$('app').classList.remove('nav-open');$('navScrim').hidden=true;$('menuToggle').setAttribute('aria-expanded','false');render();$('main').scrollTop=0;}
+  function navigate(){const name=location.hash.slice(1)||'dona';state.view=labels[name]?name:'today';state.search='';state.filter='';state.accountFilter='';$('app').classList.remove('nav-open');$('navScrim').hidden=true;$('menuToggle').setAttribute('aria-expanded','false');$('detailDialog').close();render();$('main').scrollTop=0;}
   function render(){
     document.getElementById("app").classList.toggle("in-presence",state.view==='dona');
     window.DonaLiveOps?.setActive?.(state.view==='operations',state.demo);

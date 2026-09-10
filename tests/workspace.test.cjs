@@ -72,6 +72,23 @@ test('a message re-ingested twice under the same id only appears once',()=>{
   const r=run(snapshotSource,f);
   assert.equal(r.mails.length,1);
 });
+test('test invoice fixtures are excluded, and a hard-cut snippet gets an ellipsis',()=>{
+  const f=fixture();
+  f['Read Invoices']=[
+    {id:1,numer_faktury:'FV/2026/09/1',klient:'Klient Realny',kwota:100},
+    {id:2,numer_faktury:'FV/2026/08/TEST1',klient:'Testowy Klient',kwota:1500.5,status:'oplacona (test - do usuniecia)'}
+  ];
+  f['Read Mail']=[
+    {id:1,tenant_id:'PM',mail_id:'m1',subject:'Krótka',snippet:'Krótka wiadomość.'},
+    {id:2,tenant_id:'PM',mail_id:'m2',subject:'Długa',snippet:'x'.repeat(1200)}
+  ];
+  const r=run(snapshotSource,f);
+  assert.deepEqual(r.invoices.map(i=>i.id),['FV/2026/09/1']);
+  assert.equal(r.mails.find(m=>m.id==='m1').snippet,'Krótka wiadomość.');
+  const long=r.mails.find(m=>m.id==='m2').snippet;
+  assert.equal(long.length,1001);
+  assert.ok(long.endsWith('…'));
+});
 test('unsafe URLs are removed and missing monetary values stay unknown',()=>{
   const f=fixture();f['Read Offers']=[{id:1,client_id:'PM',offer_id:'one',drive_link:'javascript:alert(1)'},{id:2,client_id:'PM',offer_id:'two',total_netto:0,drive_link:'https://example.com/file'}];const r=run(snapshotSource,f);assert.equal(r.offers[0].url,'');assert.equal(r.offers[0].amount,null);assert.equal(r.offers[1].amount,0);assert.equal(r.offers[1].url,'https://example.com/file');
 });

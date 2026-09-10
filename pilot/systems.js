@@ -329,7 +329,7 @@
     const scoped = categoryTypes ? index.filter(item => categoryTypes.includes(item.type)) : index;
     const results = scoped.filter(item => !query || textMatch(query, [item.haystack])).slice(0,50);
     const label = query ? 'dla „' + escape(query) + '”' : 'w kategorii „' + escape(state.searchCategory) + '”';
-    container.innerHTML = '<div class="search-results-head"><strong>' + results.length + ' wyników</strong><span>' + label + '</span></div>' + (results.length ? '<div class="search-results">' + results.map(item => '<article><span class="search-type">' + escape(item.type) + '</span><div><h3>' + escape(item.title) + '</h3><p>' + escape(short(item.detail,180)) + '</p></div><button class="secondary" data-system-route="' + escape(item.route) + '">Otwórz</button></article>').join('') + '</div>' : empty('Brak wyniku w snapshotcie', 'Uruchom głębokie szukanie, aby sprawdzić także Dysk Google, pocztę i powiązania.'));
+    container.innerHTML = '<div class="search-results-head"><strong>' + results.length + ' wyników</strong><span>' + label + '</span></div>' + (results.length ? '<div class="search-results">' + results.map(item => '<article><span class="search-type">' + escape(item.type) + '</span><div><h3>' + escape(item.title) + '</h3><p>' + escape(short(item.detail,180)) + '</p></div><button class="secondary" data-system-route="' + escape(item.route) + '"' + (item.type === 'Klient' ? ' data-select-customer="' + escape(item.id) + '"' : '') + '>Otwórz</button></article>').join('') + '</div>' : empty('Brak wyniku w snapshotcie', 'Uruchom głębokie szukanie, aby sprawdzić także Dysk Google, pocztę i powiązania.'));
   }
 
   function renderDocuments() {
@@ -714,6 +714,7 @@
   document.addEventListener('click', event => {
     const route = event.target.closest('[data-system-route]');
     if (route) {
+      if (route.dataset.selectCustomer) state.selectedCustomer = route.dataset.selectCustomer;
       root.Dona.navigate(route.dataset.systemRoute);
       return;
     }
