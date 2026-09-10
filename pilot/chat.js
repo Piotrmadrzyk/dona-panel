@@ -505,7 +505,11 @@ function selectConversation(id){
 }
 async function panelPost(url,body,timeout){
   if(isDemo)throw new Error("DEMO");
-  var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort();},timeout||165000);
+  // Default raised from 165s: a real "szybka" research turn alone takes ~3.5min end to end
+  // (observed live), so 165s aborted the browser fetch while n8n kept working and finished
+  // fine seconds later - DONA looked broken when she wasn't. 650s clears every backend
+  // ceiling in the chain (Panel Dona Apex 600s, Agent Researchu 900s).
+  var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort();},timeout||650000);
   var tracked=!body.probe&&((url===CHAT_URL&&body.wiadomosc)||url===BRANCH_URL);
   var operationId=tracked?'op-'+Date.now()+'-'+Math.random().toString(36).slice(2):null;
   var operationLabel=body.galaz?'Gałąź: '+body.galaz:'Dona';

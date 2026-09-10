@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.4/);
-  assert.match(html,/workspace\.js\?v=6\.0\.8/);
+  assert.match(html,/workspace\.js\?v=6\.0\.9/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -61,8 +61,11 @@ test('mail detail offers self-service reply drafting, routed through DONA for th
   assert.match(workspace,/function showMailReply/);
   assert.match(workspace,/collection==='mails'/);
   assert.match(workspace,/Przygotuj odpowiedź/);
-  // Reply must stay a draft into Skrzynka decyzji - never a direct send.
-  assert.match(workspace,/To ma być tylko szkic do zatwierdzenia w Skrzynce decyzji — nie wysyłaj niczego/);
+  // Reply must stay a draft to review in chat - never a direct send. The tool only
+  // returns text (it doesn't write to PM_approvals yet), so the copy must not claim
+  // it lands in Skrzynka decyzji - a live test showed DONA repeating that same false claim.
+  assert.match(workspace,/To ma być tylko propozycja do przejrzenia w rozmowie — nie wysyłaj niczego/);
+  assert.doesNotMatch(workspace,/szkic wróci do zatwierdzenia w Skrzynce decyzji/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
 });
 
