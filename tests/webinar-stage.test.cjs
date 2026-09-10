@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.4/);
-  assert.match(html,/workspace\.js\?v=6\.0\.6/);
+  assert.match(html,/workspace\.js\?v=6\.0\.7/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -69,4 +69,15 @@ test('mail detail offers self-service reply drafting and archiving, both routed 
   assert.match(workspace,/dokładnie tę jedną wiadomość/);
   assert.match(workspace,/nie proponuj ani nie wykonuj archiwizacji żadnych innych maili/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
+});
+
+test('adding a client is a real CRM form, not the chat-prose button it used to be',()=>{
+  assert.match(workspace,/function showAddClient/);
+  assert.doesNotMatch(workspace,/data-prompt="Chcę dodać klienta/);
+  assert.match(workspace,/data-add-client/);
+  assert.match(workspace,/name="nazwa" required/);
+  // Must dedupe against existing customers via resolve_identity, not blindly insert.
+  assert.match(workspace,/customer_ops, resolve_identity/);
+  assert.match(workspace,/połącz się z nim zamiast/);
+  assert.match(workspace,/window\.Dona\.runBranch\('klienci','Klienci',prompt\)/);
 });
