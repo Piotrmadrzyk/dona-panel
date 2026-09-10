@@ -58,6 +58,12 @@ test('calendar review UI requires an explicit destructive confirmation',()=>{
   assert.match(source,/Sprawdziłem kalendarz, termin i powiadomienia/);
 });
 
+test('"Poproś o zmianę" shows the human-readable preview, never a raw actionPayload JSON dump',()=>{
+  const source=fs.readFileSync('pilot/command.js','utf8');
+  assert.doesNotMatch(source,/JSON\.stringify\(r\.actionPayload/);
+  assert.match(source,/const currentText=kind==='social'\?r\.text:\(r\.preview\|\|r\.description\|\|/);
+});
+
 test('current weather uses device location only after an explicit weather question',()=>{
   const f=setup(),result=f.actions.prepare('Dona, jaka jest pogoda?',{source:'voice'});
   assert.equal(result.view,'weather');

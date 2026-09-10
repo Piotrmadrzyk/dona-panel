@@ -48,7 +48,9 @@ function requestRevision(kind,id,prefill='',dispatched=false){
  const r=(kind==='social'?data?.socialPosts:data?.approvals)?.find(x=>x.id===id);if(!r||!window.DonaFeatures)return;
  const raw=((r.type||'')+' '+(r.actionType||'')).toLocaleLowerCase('pl');let branchId='system',branchName='System';
  if(kind==='social'){branchId='marketing';branchName='Marketing';}else if(/ofert|wycen|sprzeda/.test(raw)){branchId='sprzedaz';branchName='Sprzedaż';}else if(/www|stron/.test(raw)){branchId='www';branchName='WWW';}else if(/mail|email|wiadomo|poczt/.test(raw)){branchId='poczta';branchName='Poczta';}
- const currentText=kind==='social'?r.text:JSON.stringify(r.actionPayload||{tytul:r.title,tresc:r.preview||r.description},null,2);
+ // r.preview is already the human-readable version of the payload (built server-side) -
+ // showing raw actionPayload JSON here read like a debug dump, not something an owner should see.
+ const currentText=kind==='social'?r.text:(r.preview||r.description||'Treść tej operacji nie ma zapisanego podglądu — opisz zmianę poniżej, DONA odczyta pełne dane przed przygotowaniem poprawki.');
  if(dialog.open)dialog.close();window.DonaFeatures.openRevision({branchId,branchName,subject:(r.title||r.id)+' · '+id,context:currentText,prefill,dispatched});
 }
 function requestedSocialRevision(detail){
