@@ -63,6 +63,16 @@ test('QA/harness test fixtures never reach the owner panel as real processes',()
   const r=run(snapshotSource,f);
   assert.deepEqual(r.processes.map(p=>p.id),['p1']);
 });
+test('demo/test website assets never appear in Strony WWW as real sites',()=>{
+  const f=fixture();
+  f['Read Assets']=[
+    {id:1,client_id:'PM',asset_id:'site-real',title:'Strona — Probatum',campaign_id:'probatum-relaunch',status:'PUBLISHED'},
+    {id:2,client_id:'PM',asset_id:'site-demo',title:'Strona — Kancelaria Prawna Zawadzcy i Wspólnicy',campaign_id:'demo-kancelaria-zawadzcy',status:'PUBLISHED'},
+    {id:3,client_id:'PM',asset_id:'site-test',title:'Strona — TEST - Naucz się stolarki w jeden weekend',campaign_id:'TEST-e2e-publikacja-1708',status:'PUBLISHED'}
+  ];
+  const r=run(snapshotSource,f);
+  assert.deepEqual(r.assets.map(a=>a.id),['site-real']);
+});
 test('a message re-ingested twice under the same id only appears once',()=>{
   const f=fixture();
   f['Read Mail']=[
