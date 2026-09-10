@@ -87,7 +87,16 @@
       return String(value) + ' ' + (currency || '');
     }
   };
-  const textMatch = (query, values) => values.filter(Boolean).join(' ').toLocaleLowerCase('pl').includes(query.toLocaleLowerCase('pl'));
+  // Piotr (10.09): szukał "aga lewandowska" i dostał "nie znalazłam nic", mimo że ma jedną
+  // realną klientkę Agnieszkę Lewandowską w bazie. Stare dopasowanie sprawdzało całą frazę
+  // jako jeden ciągły podciąg - "kowalski nowak" nigdy nie trafi w rekord "Nowak Kowalski"
+  // ani w jakikolwiek rekord, gdzie słowa nie stoją dokładnie w tej kolejności obok siebie.
+  // Teraz każde słowo z zapytania musi wystąpić GDZIEKOLWIEK w danych, niezależnie od kolejności.
+  const textMatch = (query, values) => {
+    const haystack = values.filter(Boolean).join(' ').toLocaleLowerCase('pl');
+    const tokens = query.toLocaleLowerCase('pl').split(/\s+/).filter(Boolean);
+    return tokens.length ? tokens.every(token => haystack.includes(token)) : true;
+  };
   const short = (value, max) => {
     const normalized = String(value || '').replace(/\s+/g, ' ').trim();
     return normalized.length > max ? normalized.slice(0, max - 1) + '…' : normalized;
@@ -760,5 +769,5 @@
     if (button) handleAction(button);
   });
 
-  root.DonaSystems = {views:views, descriptions:descriptions, render:render, buildSearchIndex:buildSearchIndex, _test:{withDemo:withDemo,promptFor:promptFor,statusLabel:statusLabel,handleAction:handleAction}};
+  root.DonaSystems = {views:views, descriptions:descriptions, render:render, buildSearchIndex:buildSearchIndex, _test:{withDemo:withDemo,promptFor:promptFor,statusLabel:statusLabel,handleAction:handleAction,textMatch:textMatch}};
 })(window);

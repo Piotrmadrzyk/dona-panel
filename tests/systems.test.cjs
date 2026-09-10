@@ -169,3 +169,17 @@ test('demo fixtures cover every new backend collection',()=>{
   const data=panel.api._test.withDemo({tasks:[],clients:[]},true);
   for(const key of ['processes','assets','campaigns','customerMemory','nextActions','invoices','subscriptions','subscriptionUsage','researches','competitorObservations','playbooks'])assert.ok(data[key].length,key);
 });
+
+test('global search matches words in any order/position, not only the whole phrase as one substring',()=>{
+  const panel=boot();
+  const textMatch=panel.api._test.textMatch;
+  // Piotr (10.09): searched "aga lewandowska" for his one real client "Agnieszka Lewandowska"
+  // and got "nie znalazłam nic". The old whole-phrase substring match required the exact
+  // sequence "aga lewandowska" to appear literally - reordered/partial words never matched
+  // anything, even when every individual word the user typed is genuinely present.
+  assert.ok(textMatch('lewandowska agnieszka',['Agnieszka Lewandowska']));
+  assert.ok(textMatch('kowalski nowak',['Nowak Kowalski Sp. z o.o.']));
+  assert.ok(!textMatch('kowalski zupelnie inne',['Nowak Kowalski Sp. z o.o.']));
+  // Empty query still means "match everything" (used for the no-query overview state).
+  assert.ok(textMatch('   ',['cokolwiek']));
+});
