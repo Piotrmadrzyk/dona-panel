@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.4/);
-  assert.match(html,/workspace\.js\?v=6\.0\.9/);
+  assert.match(html,/workspace\.js\?v=6\.0\.10/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -69,10 +69,17 @@ test('mail detail offers self-service reply drafting, routed through DONA for th
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
 });
 
-test('single-message mail archiving stays removed - it bulk-archived 79 unrelated emails in a live test',()=>{
-  assert.doesNotMatch(workspace,/function confirmMailArchive/);
-  assert.doesNotMatch(workspace,/data-mail-archive-confirm/);
-  assert.doesNotMatch(workspace,/>Zarchiwizuj</);
+test('single-message mail archiving uses a dedicated per-message tool, never the package-based action that once bulk-archived 79 unrelated emails',()=>{
+  assert.match(workspace,/function confirmMailArchive/);
+  assert.match(workspace,/data-mail-archive-confirm/);
+  assert.match(workspace,/el\('button','Zarchiwizuj'/);
+  // Must require the real Gmail message_id captured on the mail row, not the internal mail_id.
+  assert.match(workspace,/if\(!mail\.messageId\)/);
+  assert.match(workspace,/message_id="'\+mail\.messageId\+'"/);
+  // Must route through the dedicated single-message tool, and explicitly forbid the package action.
+  assert.match(workspace,/narzędzia archiwizuj_wiadomosc w trybie apply/);
+  assert.match(workspace,/NIE używaj akcji archiwizuj w narzędziu poczta/);
+  assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
 });
 
 test('adding a client is a real CRM form, not the chat-prose button it used to be',()=>{
