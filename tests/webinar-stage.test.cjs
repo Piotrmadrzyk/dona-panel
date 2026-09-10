@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=5\.2\.3/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.4/);
-  assert.match(html,/workspace\.js\?v=6\.0\.7/);
+  assert.match(html,/workspace\.js\?v=6\.0\.8/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -57,18 +57,19 @@ test('rescheduling a meeting is a real form, not a chat prose request, and never
   assert.match(workspace,/window\.Dona\.run\(prompt\)/);
 });
 
-test('mail detail offers self-service reply drafting and archiving, both routed through DONA for a single named message',()=>{
+test('mail detail offers self-service reply drafting, routed through DONA for the single named message',()=>{
   assert.match(workspace,/function showMailReply/);
-  assert.match(workspace,/function confirmMailArchive/);
   assert.match(workspace,/collection==='mails'/);
   assert.match(workspace,/Przygotuj odpowiedź/);
-  assert.match(workspace,/Zarchiwizuj/);
   // Reply must stay a draft into Skrzynka decyzji - never a direct send.
   assert.match(workspace,/To ma być tylko szkic do zatwierdzenia w Skrzynce decyzji — nie wysyłaj niczego/);
-  // Archive must target exactly the one message shown, not a bulk sweep.
-  assert.match(workspace,/dokładnie tę jedną wiadomość/);
-  assert.match(workspace,/nie proponuj ani nie wykonuj archiwizacji żadnych innych maili/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
+});
+
+test('single-message mail archiving stays removed - it bulk-archived 79 unrelated emails in a live test',()=>{
+  assert.doesNotMatch(workspace,/function confirmMailArchive/);
+  assert.doesNotMatch(workspace,/data-mail-archive-confirm/);
+  assert.doesNotMatch(workspace,/>Zarchiwizuj</);
 });
 
 test('adding a client is a real CRM form, not the chat-prose button it used to be',()=>{
