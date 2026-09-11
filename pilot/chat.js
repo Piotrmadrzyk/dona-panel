@@ -503,7 +503,7 @@ function selectConversation(id){
   if(!(id==='PM'||/^thread-[a-f0-9-]{20,80}$/i.test(id)))return;
   panelConversationId=id;lsSet('pm_panel_conversation_id',id);renderThreadList();document.getElementById('assistant').classList.remove('threads-open');loadConversation(id);
 }
-async function panelPost(url,body,timeout){
+async function panelPost(url,body,timeout,simple){
   if(isDemo)throw new Error("DEMO");
   // Default raised from 165s: a real "szybka" research turn alone takes ~3.5min end to end
   // (observed live), so 165s aborted the browser fetch while n8n kept working and finished
@@ -515,7 +515,7 @@ async function panelPost(url,body,timeout){
   var operationLabel=body.galaz?'Gałąź: '+body.galaz:'Dona';
   if(tracked)emit('operation',{id:operationId,status:'pending',label:operationLabel,question:String(body.wiadomosc||body.polecenie||'').slice(0,500)});
   try{
-    var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal,cache:'no-store'});
+    var opts={method:'POST',body:JSON.stringify(body),signal:ctrl.signal,cache:'no-store'};if(!simple)opts.headers={'Content-Type':'application/json'};var r=await fetch(url,opts);
     var raw=await r.text(),j;try{j=JSON.parse(raw);}catch(e){throw new Error('INVALID_RESPONSE');}
     if(r.status===401||j.error==='auth'){
       lsDel(KEY);sessionPw='';if(rtSession)endLive(true);openGate();throw new Error('AUTH');
@@ -765,7 +765,7 @@ window.Dona={
   version:panelVersion,isDemo:isDemo,
   setContext:function(id,name){contextBrand=['probatum','silverandglass','edwardjanusz'].includes(id)?id:'';contextName=contextBrand?String(name||id):'';},
   isAuthenticated:function(){return authenticated;},
-  request:function(path,body,timeout){if(!authenticated||isDemo)return Promise.reject(new Error('AUTH'));return panelPost(API+'/'+path,Object.assign({},body,{haslo:sessionPw}),timeout);},
+  request:function(path,body,timeout){if(!authenticated||isDemo)return Promise.reject(new Error('AUTH'));return panelPost(API+'/'+path,Object.assign({},body,{haslo:sessionPw}),timeout,path==='dona-workspace');},
   draft:function(text){setInput(text);emit('open-chat');},
   run:function(text){return send(text);},
   branch:function(name){openBranch({nm:name});},
