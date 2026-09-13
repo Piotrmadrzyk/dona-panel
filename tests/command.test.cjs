@@ -14,6 +14,13 @@ test('health distinguishes stale Zoho data, missed tasks and uncertain publicati
 test('history distinguishes approval from execution and only links recorded publications',()=>{const d={approvals:[{id:1,title:'Email',status:'APPROVED',approvedAt:'2026-09-08T09:00Z'}],socialPosts:[{id:2,title:'Post',status:'PUBLISHED',publishedAt:'2026-09-08T10:00Z',publishedUrl:'https://facebook.com/post'}]};const h=M.history(d);assert.equal(h[0].status,'PUBLISHED');assert.equal(h[1].status,'APPROVED');assert.equal(h[1].url,undefined);});
 test('write API requires password, trusted origin and server identity',()=>{const body={haslo:'test-only',operation:'decision'};const f=(b=body,origin='https://dona.probatum.pl')=>run(auth,{'Workspace Request':[{body:b,headers:{origin}}]},[{nazwa:'panel_haslo',wartosc:'test-only'}]);assert.equal(f().authorized,true);assert.equal(f({...body,tenant_id:'OTHER'}).statusCode,403);assert.equal(f(body,'https://evil.example').statusCode,403);assert.equal(f({...body,haslo:'wrong'}).statusCode,401);assert.equal(f({...body,operation:'publish'}).statusCode,400);});
 test('social decision checks exact text, image hash, owner page and current status',()=>{const r=post(),b={operation:'decision',kind:'social',id:r.post_key,revision:r.caption_hash,action:'approve'};assert.equal(decide(b,r).status,'APPROVED');assert.equal(decide({...b,action:'reject'},r).status,'REJECTED');for(const changed of [{caption:'changed'},{image_sha256:'b'.repeat(64)},{fb_page_id:'OTHER'},{status:'PUBLISHING'},{status:'PUBLISHED'}])assert.equal(decide(b,{...r,...changed}).ok,false);assert.equal(decide({...b,revision:'b'.repeat(64)},r).error,'stale_content');});
+test('an expired or stale APPROVED post can be rejected or re-approved, not just a DRAFT one',()=>{
+  const r=post();r.status='APPROVED';r.approved_hash=r.caption_hash;
+  const approveAgain={operation:'decision',kind:'social',action:'approve',id:r.post_key,revision:r.caption_hash};
+  assert.equal(decide(approveAgain,r).status,'APPROVED');
+  assert.equal(decide({...approveAgain,action:'reject'},r).status,'REJECTED');
+  for(const deadState of ['REJECTED','PUBLISHED','PUBLISHING'])assert.equal(decide(approveAgain,{...r,status:deadState}).error,'stale_content');
+});
 test('publish_social requires an APPROVED post with a matching hash and a known brand page',()=>{
   const approved=post();approved.status='APPROVED';approved.approved_hash=approved.caption_hash;
   const b={operation:'publish_social',id:approved.post_key,revision:approved.approved_hash};

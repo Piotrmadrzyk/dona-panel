@@ -29,7 +29,7 @@ if (b.kind==='social') {
   const page=allowed[r.profile_key];
   if(!page||r.fb_page_id!==page.id)return deny('scope',403);
   const digest=hash(JSON.stringify([r.profile_key,r.fb_page_id,r.source_url,r.image_url,r.image_sha256,r.caption]));
-  if(r.status!=='DRAFT'||r.caption_hash!==b.revision||digest!==b.revision)return deny('stale_content');
+  if(!['DRAFT','APPROVED'].includes(r.status)||r.caption_hash!==b.revision||digest!==b.revision)return deny('stale_content');
   if(!r.source_url.startsWith(page.host)||!r.image_url.startsWith(page.host)||!/^[a-f0-9]{64}$/.test(r.image_sha256||''))return deny('invalid_material');
   return [{json:{ok:true,kind:'social',rowId:r.id,id:r.post_key,brandId:r.profile_key,previousStatus:r.status,profileKey:r.profile_key,pageId:r.fb_page_id,sourceUrl:r.source_url,imageUrl:r.image_url,captionHash:digest,caption:r.caption,imageHash:r.image_sha256,now,status:b.action==='approve'?'APPROVED':'REJECTED',title:b.action==='approve'?'Zatwierdzono post: '+String(r.source_title||r.post_key).slice(0,180):'Odrzucono szkic posta',approvedHash:b.action==='approve'?digest:''}}];
 }
