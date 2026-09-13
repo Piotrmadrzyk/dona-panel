@@ -6,6 +6,16 @@ if (!ctx.authorized || ctx.tenantId !== 'PM') return deny('auth',401);
 const hash = s => crypto.createHash('sha256').update(String(s)).digest('hex');
 const now = new Date().toISOString();
 const brands = ['','probatum','silverandglass','edwardjanusz'];
+if (b.operation === 'publish_social') {
+  if (typeof b.id !== 'string' || b.id.length > 160 || !/^[a-f0-9]{64}$/.test(b.revision || '')) return deny('invalid_publish', 400);
+  const rows = $('Read Social Target').all().map(i => i.json).filter(r => r.post_key === b.id);
+  if (rows.length !== 1) return deny('not_found', 404);
+  const r = rows[0];
+  const allowedPages = { edwardjanusz: '61594093026807', silverandglass: '61593755021660' };
+  if (!allowedPages[r.profile_key] || r.fb_page_id !== allowedPages[r.profile_key]) return deny('scope', 403);
+  if (r.status !== 'APPROVED' || r.approved_hash !== b.revision) return deny('stale_content', 409);
+  return [{json:{ok:true,kind:'publish',id:r.post_key,profileKey:r.profile_key,now}}];
+}
 if (b.operation === 'save_memory') {
   if (typeof b.text !== 'string' || !b.text.trim() || b.text.length > 6000 || !brands.includes(b.brandId||'') || !/^[a-zA-Z0-9-]{12,80}$/.test(b.requestId||'')) return deny('invalid_memory',400);
   if (b.sourceUrl && !/^https:\/\/[^\s<>"']+$/.test(b.sourceUrl)) return deny('invalid_source',400);

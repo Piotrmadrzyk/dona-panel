@@ -10,7 +10,7 @@ const authorized = !!stored && !!password && password.length <= 256 && crypto.ti
 );
 let error = authorized ? '' : 'auth';
 let statusCode = authorized ? 200 : 401;
-if (authorized && !['decision','save_memory'].includes(body.operation)) { error = 'operation_not_allowed'; statusCode = 400; }
+if (authorized && !['decision','save_memory','publish_social'].includes(body.operation)) { error = 'operation_not_allowed'; statusCode = 400; }
 if (authorized && ['tenant_id','tenantId','role','rola','user_id','userId'].some(key => Object.prototype.hasOwnProperty.call(body,key))) {
   error = 'client_identity_not_allowed'; statusCode = 403;
 }
