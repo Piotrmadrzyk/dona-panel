@@ -3,6 +3,10 @@
 function plain(value){return String(value||'').toLocaleLowerCase('pl').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 let pendingWeatherPeriod='';
 const routes=[
+ {view:'orders',test:/\b(zlecen\w*|zadani\w*|wyniki pracy)\b/},
+ {view:'media',test:/\b(rolk\w*|materialy marketingowe|biblioteka materialow)\b/},
+ {view:'campaigns',test:/\b(kampani\w*)\b/},
+ {view:'sales',test:/\b(sprzedaz\w*|leady|szanse sprzedazy)\b/},
  {view:'operations',test:/\b(prac\w* agent\w*|co rob\w* agenc\w*|agenci|live ops|liveops|operacj\w* dony)\b/},
  {view:'mail',test:/\b(poczt\w*|mail\w*|wiadomosc\w*|skrzynk\w*)\b/},
  {view:'calendar',test:/\b(kalendarz\w*|spotkani\w*|termin\w*|grafik\w*)\b/},
@@ -13,7 +17,7 @@ const routes=[
  {view:'maps',test:/\b(mapa|mapy|mapie|mape|tras\w*|nawigacj\w*|lokalizacj\w*)\b/},
  {view:'youtube',test:/\b(youtube|transkrypcj\w*|map[ae] mysli|film\w*)\b/},
  {view:'recipes',test:/\b(receptur\w*|przepis\w*)\b/},
- {view:'marketing',test:/\b(stron\w*|www|realizacj\w*|portfolio)\b/},
+ {view:'websites',test:/\b(stron\w*|www|realizacj\w*|portfolio)\b/},
  {view:'knowledge',test:/\b(wiedz\w*|pamie\w*|co wiesz)\b/},
  {view:'today',test:/\b(poranny brief|pulpit|dzisiaj|moj dzien)\b/}
 ];

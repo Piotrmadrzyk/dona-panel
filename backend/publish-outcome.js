@@ -1,0 +1,7 @@
+const raw=$input.first().json;
+const translations={stale_content:'Treść zmieniła się od wyświetlenia. Odśwież post i wybierz aktualną wersję.',OWNER_EXACT_CONTENT_CHANGED:'Treść zmieniła się od wyświetlenia. Odśwież post.',BUFFER_CHANNEL_NOT_READY:'Profil nie jest połączony z Buffer. Otwórz Połączenia.',CLAIM_NOT_ACQUIRED:'Ten post jest już w trakcie wysyłania. Sprawdź jego status.',APPROVED_IMAGE_CHANGED:'Zdjęcie źródłowe uległo zmianie. Odśwież materiał.',INVALID_APPROVED_MATERIAL:'Nie potwierdzono zgodności zdjęcia i źródła z tą marką.',BUFFER_RESULT_UNCONFIRMED_DO_NOT_RETRY:'Brak pewnego wyniku. Sprawdź status tego posta przed ponowieniem.'};
+const confirmed=raw.status==='PUBLISHED'&&raw.published===true&&/^https:\/\//.test(raw.published_url||'');
+if(confirmed)return [{json:{ok:true,statusCode:200,status:'PUBLISHED',published:true,publishedUrl:raw.published_url,answer:'Post opublikowany. Możesz otworzyć go na Facebooku.'}}];
+if(raw.status==='BUFFER_ACCEPTED')return [{json:{ok:true,statusCode:200,status:'BUFFER_ACCEPTED',published:false,answer:'Buffer przyjął post. Potwierdzenie i link do publikacji pojawią się po odczycie statusu.'}}];
+const code=String(typeof raw.error==='object'?raw.error.message||'UNKNOWN':raw.error||raw.last_error||'UNKNOWN').split('\n')[0].slice(0,160);
+return [{json:{ok:false,statusCode:200,status:raw.status||'UNKNOWN',published:false,errorCode:code,answer:translations[code]||raw.message||'Nie potwierdzono publikacji. Sprawdź status w rozmowie z Doną.'}}];

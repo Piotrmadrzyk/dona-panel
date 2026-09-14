@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#202630">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>DONA — Twój dzień</title>
+  <title>DONA — Pulpit firmy</title>
   <link rel="stylesheet" href="./workspace.css?v=6.0.1">
   <link rel="stylesheet" href="./voice.css?v=5.1.0">
   <link rel="stylesheet" href="./centre.css?v=5.2.3">
@@ -15,18 +15,21 @@
   <link rel="stylesheet" href="./trace.css?v=5.2.2">
   <link rel="stylesheet" href="./liveops.css?v=1.1.0">
   <link rel="stylesheet" href="./systems.css?v=6.0.3">
+  <link rel="stylesheet" href="./business.css?v=7.0.0">
   <script defer src="./voice-audio.js?v=4.1.0"></script>
-  <script defer src="./chat.js?v=4.3.3-hotfix"></script>
+  <script defer src="./chat.js?v=7.0.0"></script>
   <script defer src="./particles.js?v=5.0.0"></script>
-  <script defer src="./centre.js?v=5.2.3"></script>
+  <script defer src="./centre.js?v=7.0.0"></script>
   <script defer src="./command-model.js?v=5.0.0"></script>
-  <script defer src="./command.js?v=5.2.3"></script>
+  <script defer src="./command.js?v=7.0.0"></script>
   <script defer src="./features.js?v=5.3.4"></script>
-  <script defer src="./panel-actions.js?v=5.2.0"></script>
+  <script defer src="./panel-actions.js?v=7.0.0"></script>
   <script defer src="./trace.js?v=5.2.2"></script>
   <script defer src="./liveops.js?v=1.1.0"></script>
   <script defer src="./systems.js?v=6.0.7"></script>
-  <script defer src="./workspace.js?v=6.0.12"></script>
+  <script defer src="./business-model.js?v=7.0.0"></script>
+  <script defer src="./business.js?v=7.0.0"></script>
+  <script defer src="./workspace.js?v=7.0.0"></script>
   <script defer src="./voice.js?v=5.1.0"></script>
 </head>
 <body>
@@ -43,52 +46,61 @@
       <button class="primary" id="pwBtn" type="button">Otwórz panel <span aria-hidden="true">→</span></button>
       <div class="err" id="pwErr" role="alert"></div>
       <a class="demo-link" href="?demo=1">Zobacz wygląd na danych przykładowych</a>
-      <a class="legacy-link" href="../">Wróć do obecnego panelu</a>
+      <a class="legacy-link" href="../legacy.html">Poprzedni widok rozmowy</a>
     </form>
-    <div class="login-note">DONA · wersja pilotażowa</div>
+    <div class="login-note">DONA · Twoja firma w jednym miejscu</div>
   </div>
-  <div class="app" id="app" inert>
+  <div class="app chat-collapsed" id="app" inert>
     <button class="nav-scrim" id="navScrim" aria-label="Zamknij menu" hidden></button>
     <aside class="sidebar" id="sidebar" aria-label="Menu główne">
       <a class="brand" href="#today" aria-label="DONA — strona główna"><span class="brand-mark" aria-hidden="true">D</span><span><strong>DONA</strong><small>Twój asystent biznesowy</small></span></a>
       <div class="company"><span class="company-monogram">P</span><span><strong id="companyName">Probatum</strong><small>Przestrzeń firmowa</small></span><span class="company-lock" data-icon="lock"></span></div>
       <label class="workspace-select"><span>Przestrzeń</span><select id="workspaceBrand" aria-label="Wybierz markę"></select></label>
       <nav id="mainNav">
-        <a href="#dona" data-view="dona"><span data-icon="headset"></span>Przestrzeń Dony</a>
-        <a href="#today" data-view="today" aria-current="page"><span data-icon="home"></span>Poranny brief</a>
-        <a href="#mail" data-view="mail"><span data-icon="mail"></span>Poczta</a>
-        <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Skrzynka decyzji <span class="nav-count" id="approvalCount" hidden></span></a>
-        <a href="#inquiries" data-view="inquiries"><span data-icon="mail"></span>Zapytania <span class="nav-count" id="inquiryCount" hidden></span></a>
-        <a href="#offers" data-view="offers"><span data-icon="file"></span>Oferty</a>
-        <a href="#clients" data-view="clients"><span data-icon="users"></span>Klienci</a>
-        <a href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Kalendarz spotkań</a>
-        <a href="#files" data-view="files"><span data-icon="folder"></span>Pliki</a>
-        <div class="nav-label">CENTRUM BIZNESU</div>
-        <a href="#projects" data-view="projects"><span data-icon="check-square"></span>Projekty i zadania</a>
+        <a href="#today" data-view="today"><span data-icon="home"></span>Pulpit firmy</a>
+        <a href="#orders" data-view="orders"><span data-icon="check-square"></span>Zlecenia i wyniki</a>
+        <div class="nav-label">TWORZENIE I PROMOCJA</div>
+        <a href="#social" data-view="social"><span data-icon="media"></span>Publikacje Facebook</a>
+        <a href="#media" data-view="media"><span data-icon="folder"></span>Rolki i materiały</a>
+        <a href="#campaigns" data-view="campaigns"><span data-icon="chart"></span>Kampanie</a>
         <a href="#websites" data-view="websites"><span data-icon="globe"></span>Strony WWW</a>
-        <a href="#customer" data-view="customer"><span data-icon="users"></span>Karta klienta</a>
-        <a href="#searchall" data-view="searchall"><span data-icon="search"></span>Szukaj wszędzie</a>
-        <a href="#documents" data-view="documents"><span data-icon="file"></span>Centrum dokumentów</a>
-        <a href="#finance" data-view="finance"><span data-icon="wallet"></span>Finanse i abonamenty</a>
-        <a href="#researchhub" data-view="researchhub"><span data-icon="bookmark"></span>Research i konkurencja</a>
-        <a href="#onboarding" data-view="onboarding"><span data-icon="grid"></span>Nowy klient</a>
-        <div class="nav-label">DONA I JEJ PRACA</div>
-        <a href="#spaces" data-view="spaces"><span data-icon="grid"></span>Twoje marki</a>
-        <a href="#operations" data-view="operations"><span data-icon="pulse"></span>Praca Dony <span class="nav-live-dot" aria-hidden="true"></span></a>
-        <a href="#health" data-view="health"><span data-icon="shield"></span>Centrum usterek</a>
-        <a href="#knowledge" data-view="knowledge"><span data-icon="bookmark"></span>Co Dona wie</a>
-        <a href="#connections" data-view="connections"><span data-icon="globe"></span>Połączenia</a>
-        <a href="#social" data-view="social"><span data-icon="media"></span>Posty Facebook</a>
-        <a href="#activity" data-view="activity"><span data-icon="list"></span>Historia działań</a>
-        <div class="nav-label">TWOJE NARZĘDZIA</div>
-        <a href="#recipes" data-view="recipes"><span data-icon="file"></span>Receptury</a>
-        <a href="#youtube" data-view="youtube"><span data-icon="media"></span>YouTube → wiedza</a>
-        <a href="#drive" data-view="drive"><span data-icon="folder"></span>Dysk Google</a>
-        <a href="#weather" data-view="weather"><span data-icon="globe"></span>Pogoda</a>
-        <a href="#maps" data-view="maps"><span data-icon="globe"></span>Mapy i trasy</a>
-        <a href="#marketing" data-view="marketing"><span data-icon="chart"></span>Marketing i WWW</a>
-        <a href="#tools" data-view="tools"><span data-icon="grid"></span>Wszystkie narzędzia</a>
-        <a href="#history" data-view="history"><span data-icon="history"></span>Historia rozmowy</a>
+        <div class="nav-label">TWOJA FIRMA</div>
+        <a href="#sales" data-view="sales"><span data-icon="wallet"></span>Sprzedaż</a>
+        <a href="#clients" data-view="clients"><span data-icon="users"></span>Klienci</a>
+        <a href="#mail" data-view="mail"><span data-icon="mail"></span>Poczta</a>
+        <a href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Kalendarz</a>
+        <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Do decyzji <span class="nav-count" id="approvalCount" hidden></span></a>
+        <details><summary>Sprzedaż i administracja</summary>
+          <a href="#inquiries" data-view="inquiries">Zapytania <span class="nav-count" id="inquiryCount" hidden></span></a>
+          <a href="#offers" data-view="offers">Oferty</a>
+          <a href="#customer" data-view="customer">Karta klienta</a>
+          <a href="#onboarding" data-view="onboarding">Nowy klient</a>
+          <a href="#finance" data-view="finance">Finanse i abonamenty</a>
+          <a href="#documents" data-view="documents">Dokumenty</a>
+          <a href="#files" data-view="files">Pliki i analizy</a>
+          <a href="#projects" data-view="projects">Projekty i zadania</a>
+        </details>
+        <details><summary>Wiedza i narzędzia</summary>
+          <a href="#searchall" data-view="searchall">Szukaj wszędzie</a>
+          <a href="#knowledge" data-view="knowledge">Wiedza Dony</a>
+          <a href="#researchhub" data-view="researchhub">Research i konkurencja</a>
+          <a href="#youtube" data-view="youtube">YouTube → wiedza</a>
+          <a href="#drive" data-view="drive">Dysk Google</a>
+          <a href="#recipes" data-view="recipes">Receptury</a>
+          <a href="#weather" data-view="weather">Pogoda</a>
+          <a href="#maps" data-view="maps">Mapy i trasy</a>
+          <a href="#marketing" data-view="marketing">Narzędzia marketingu</a>
+          <a href="#tools" data-view="tools">Wszystkie narzędzia</a>
+        </details>
+        <details><summary>Dona i ustawienia firmy</summary>
+          <a href="#dona" data-view="dona">Rozmowa z Doną</a>
+          <a href="#spaces" data-view="spaces">Twoje marki</a>
+          <a href="#connections" data-view="connections">Połączenia</a>
+          <a href="#health" data-view="health">Problemy do rozwiązania</a>
+          <a href="#operations" data-view="operations">Przebieg pracy Dony</a>
+          <a href="#activity" data-view="activity">Historia działań</a>
+          <a href="#history" data-view="history">Historia rozmowy</a>
+        </details>
       </nav>
       <div class="sidebar-bottom"><a href="#settings" data-view="settings"><span data-icon="settings"></span>Ustawienia</a><div class="profile"><span class="avatar">PM</span><span><strong>Piotr</strong><small>Właściciel</small></span><button id="logoutBtn" class="icon-button" aria-label="Wyloguj" title="Wyloguj"><span data-icon="logout"></span></button></div></div>
     </aside>
@@ -103,7 +115,7 @@
           <button class="icon-button" id="refreshBtn" title="Odśwież dane" aria-label="Odśwież dane"><span data-icon="refresh"></span></button><span class="clock" id="clock"></span>
         </div>
       </header>
-      <main id="main" tabindex="-1"><div class="page-heading"><span class="eyebrow" id="pageEyebrow"></span><div class="title-row"><h1 id="pageTitle">Dzień dobry, Piotrze.</h1><div id="pageAction"></div></div><p id="pageSubtitle">Twoje sprawy w jednym miejscu.</p></div><div id="connectionBanner" role="status" aria-live="polite"></div><section class="agent-trace" id="agentTrace" aria-live="polite" aria-label="Przebieg pracy DONY" hidden></section><div id="viewContent"></div><footer class="page-footer"><span id="dataStamp">Dane pojawią się po zalogowaniu.</span><a href="../">Obecny panel <span aria-hidden="true">↗</span></a></footer></main>
+      <main id="main" tabindex="-1"><div class="page-heading"><span class="eyebrow" id="pageEyebrow"></span><div class="title-row"><h1 id="pageTitle">Dzień dobry, Piotrze.</h1><div id="pageAction"></div></div><p id="pageSubtitle">Twoje sprawy w jednym miejscu.</p></div><div id="connectionBanner" role="status" aria-live="polite"></div><section class="agent-trace" id="agentTrace" aria-live="polite" aria-label="Przebieg pracy DONY" hidden></section><div id="viewContent"></div><footer class="page-footer"><span id="dataStamp">Dane pojawią się po zalogowaniu.</span><a href="../legacy.html">Poprzedni widok <span aria-hidden="true">↗</span></a></footer></main>
     </div>
     <aside class="assistant panel" id="assistant" aria-label="Rozmowa z DONĄ">
       <nav class="thread-rail" id="threadRail" aria-label="Historia rozmów">
@@ -120,6 +132,7 @@
       </section>
     </aside>
   </div>
+  <nav class="biz-mobile-nav" aria-label="Skróty na telefonie"><a href="#today" data-view="today"><span aria-hidden="true">⌂</span>Pulpit</a><a href="#orders" data-view="orders"><span aria-hidden="true">☷</span>Zlecenia</a><a href="#social" data-view="social"><span aria-hidden="true">▣</span>Publikacje</a><a href="#media" data-view="media"><span aria-hidden="true">▷</span>Materiały</a><a href="#sales" data-view="sales"><span aria-hidden="true">↗</span>Sprzedaż</a></nav>
   <div class="live" id="live" role="dialog" aria-modal="true" aria-labelledby="voiceTitle" data-state="connect">
     <div class="voice-atmosphere" aria-hidden="true"></div>
     <header class="lhead">

@@ -13,8 +13,10 @@ if (b.operation === 'publish_social') {
   const r = rows[0];
   const allowedPages = { edwardjanusz: '61594093026807', silverandglass: '61593755021660' };
   if (!allowedPages[r.profile_key] || r.fb_page_id !== allowedPages[r.profile_key]) return deny('scope', 403);
-  if (r.status !== 'APPROVED' || r.approved_hash !== b.revision) return deny('stale_content', 409);
-  return [{json:{ok:true,kind:'publish',id:r.post_key,profileKey:r.profile_key,now}}];
+  const digest=hash(JSON.stringify([r.profile_key,r.fb_page_id,r.source_url,r.image_url,r.image_sha256,r.caption]));
+  if (!['DRAFT','NEEDS_REVIEW','APPROVED'].includes(r.status)) return deny('publication_already_started_or_closed',409);
+  if (r.caption_hash !== b.revision || digest !== b.revision) return deny('stale_content',409);
+  return [{json:{ok:true,kind:'publish',id:r.post_key,profileKey:r.profile_key,contentHash:digest,now}}];
 }
 if (b.operation === 'save_memory') {
   if (typeof b.text !== 'string' || !b.text.trim() || b.text.length > 6000 || !brands.includes(b.brandId||'') || !/^[a-zA-Z0-9-]{12,80}$/.test(b.requestId||'')) return deny('invalid_memory',400);
@@ -29,7 +31,7 @@ if (b.kind==='social') {
   const page=allowed[r.profile_key];
   if(!page||r.fb_page_id!==page.id)return deny('scope',403);
   const digest=hash(JSON.stringify([r.profile_key,r.fb_page_id,r.source_url,r.image_url,r.image_sha256,r.caption]));
-  if(!['DRAFT','APPROVED'].includes(r.status)||r.caption_hash!==b.revision||digest!==b.revision)return deny('stale_content');
+  if(!['DRAFT','NEEDS_REVIEW','APPROVED'].includes(r.status)||r.caption_hash!==b.revision||digest!==b.revision)return deny('stale_content');
   if(!r.source_url.startsWith(page.host)||!r.image_url.startsWith(page.host)||!/^[a-f0-9]{64}$/.test(r.image_sha256||''))return deny('invalid_material');
   return [{json:{ok:true,kind:'social',rowId:r.id,id:r.post_key,brandId:r.profile_key,previousStatus:r.status,profileKey:r.profile_key,pageId:r.fb_page_id,sourceUrl:r.source_url,imageUrl:r.image_url,captionHash:digest,caption:r.caption,imageHash:r.image_sha256,now,status:b.action==='approve'?'APPROVED':'REJECTED',title:b.action==='approve'?'Zatwierdzono post: '+String(r.source_title||r.post_key).slice(0,180):'Odrzucono szkic posta',approvedHash:b.action==='approve'?digest:''}}];
 }

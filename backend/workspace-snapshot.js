@@ -45,7 +45,12 @@ function cleanPreview(value) {
 }
 const configs = read('Tenant Configuration','client_id','configuration');
 if(configs.length!==1)throw new Error('TENANT_CONFIGURATION_UNAVAILABLE');
-const customers=read('Read Customers','client_id','clients');
+// Piotr (10.09): tabela klientow byla w 100% smieciowymi rekordami z Recepcji Poczty
+// (Google Tag Manager, Apple, sady...) - naprawiony u zrodla (patrz Recepcja Poczty), ale
+// istniejace 19 rekordow zostaje w tabeli, oznaczane recznie przez Done (update_customer,
+// status=NIE_KLIENT) zamiast kasowane - odfiltruj je tutaj, tak jak juz jest to widoczne.
+const customersRaw=read('Read Customers','client_id','clients');
+const customers=customersRaw.filter(function(r){ return text(r.status).toUpperCase()!=='NIE_KLIENT'; });
 const names=new Map(customers.map(r=>[text(r.customer_id),text(r.nazwa||r.firma_nazwa)]));
 const clientName=id=>names.get(text(id))||'';
 const approvalTypes={SEND_EMAIL_REPLY_RECEPCJA_POCZTY:'Odpowiedź na wiadomość',EMAIL_SEND:'Wiadomość do wysłania',SEND_EMAIL:'Wiadomość do wysłania',ZOHO_EVENT_CREATE:'Dodanie spotkania do Zoho',ZOHO_EVENT_UPDATE:'Zmiana spotkania w Zoho',ZOHO_EVENT_DELETE:'Anulowanie spotkania w Zoho',PUBLISH_PAGE:'Publikacja strony',PUBLISH:'Publikacja',DELETE:'Usunięcie danych'};
@@ -71,20 +76,67 @@ const tasks=read('Read Tasks','tenant_id','tasks').filter(r=>!/^\[TEST/i.test(te
 // Test/harness fixtures (requested_by starting with "test-") are QA artifacts,
 // never real business processes - they must never reach the owner's panel.
 const processes=read('Read Processes','tenant_id','processes').filter(r=>!/^test-/i.test(text(r.requested_by))&&!/^\[TEST/i.test(text(r.opis))).map(r=>({id:text(r.proces_id),title:text(r.opis||r.typ||r.proces_id),type:text(r.typ),description:text(r.opis,4000),currentStep:text(r.krok_obecny,4000),status:text(r.status),state:processState(r.stan_json),requestedBy:text(r.requested_by),result:text(r.wynik,5000),createdAt:text(r.utworzono||r.createdAt),updatedAt:text(r.ostatnia_aktywnosc||r.updatedAt)}));
-// Test-harness and sales-demo landing pages (campaign_id "test-..."/"demo-...", or a "TEST" title)
-// are QA/showcase artifacts, not Piotr's real sites - never show them in his Strony WWW list.
-const assets=read('Read Assets','client_id','assets').map(r=>({id:text(r.asset_id),title:text(r.title||r.asset_id),type:text(r.asset_type),status:text(r.status),publishStatus:text(r.publish_status),approvalStatus:text(r.approval_status),legalStatus:text(r.legal_status),qualityStatus:text(r.qc_status),campaignId:text(r.campaign_id),provider:text(r.provider),version:number(r.version),previewUrl:url(r.preview_url),sourceUrl:url(r.source_data_location),storage:text(r.storage_url,1000),publishedAt:text(r.published_at),createdAt:text(r.utworzono||r.createdAt),updatedAt:text(r.aktualizacja||r.updatedAt)})).filter(r=>r.id&&!/^(?:demo|test)-/i.test(r.campaignId)&&!/\bTEST\b/i.test(r.title));
+
+// Durable work queue: only the authenticated owner's business jobs, never worker tokens.
+const jobRows=$('Read Work Jobs').all().map(i=>i.json);
+const jobsReadFailed=jobRows.some(r=>r.error);
+const workJobsStatus={ok:!jobsReadFailed,checkedAt:new Date().toISOString(),message:jobsReadFailed?'Nie udało się odczytać zleceń. Odśwież widok; zapisane zadania pozostają w systemie.':''};
+if(jobRows.filter(r=>r.job_id).length>100)truncated.push('workJobs');
+const workJobs=jobRows.filter(r=>r.job_id&&r.tenant_id===tenant&&!/^test-/i.test(text(r.requested_by))&&!/^\[TEST/i.test(text(r.brief))).slice(0,100).map(r=>{
+ const result=parse(r.result);
+ const needsInspection=r.status==='PROCESSING'&&Number.isFinite(Date.parse(r.started_at))&&Date.now()-Date.parse(r.started_at)>30*60000;
+ const realFile=r.status==='PREVIEW_READY'&&result.sukces===true&&result.mp4_dostepny===true&&result.is_mock!==true&&result.stored_on_drive===true;
+ const output=realFile?url(result.storage_url||result.mp4_url):'';
+ const source=url(r.website_url);
+ let brandId='';try{const host=new URL(source).hostname.replace(/^www\./,'');brandId=host==='probatum.pl'?'probatum':host==='silverandglass.pl'?'silverandglass':host==='edwardjanusz.pl'?'edwardjanusz':'';}catch{}
+ return {id:text(r.job_id),type:'REEL',title:text(r.reel_headline||r.brief||'Rolka',180),brief:text(r.brief,4000),brandId,websiteUrl:source,status:needsInspection?'NEEDS_INSPECTION':text(r.status),message:text(result.wiadomosc,3000),errorCode:text(result.blad_silnika||result.error),resultUrl:output,hasRealFile:!!output,assetId:text(result.reel_asset_id),createdAt:text(r.created_at),updatedAt:text(r.updated_at),startedAt:text(r.started_at),finishedAt:text(r.finished_at),canResume:r.status==='QUEUED'};
+});
+
+const assets=read('Read Assets','client_id','assets').filter(r=>!/^TEST/i.test(text(r.asset_type))&&!/^(TEST|MOCK)/i.test(text(r.status))&&!/^(test|demo)[-_]/i.test(text(r.campaign_id))&&!/\bTEST\b/i.test(text(r.title))).map(r=>({id:text(r.asset_id),title:text(r.title||r.asset_id),type:text(r.asset_type),status:text(r.status),publishStatus:text(r.publish_status),approvalStatus:text(r.approval_status),legalStatus:text(r.legal_status),qualityStatus:text(r.qc_status),campaignId:text(r.campaign_id),provider:text(r.provider),version:number(r.version),previewUrl:url(r.preview_url),sourceUrl:url(r.source_data_location),storage:text(r.storage_url,1000),publishedAt:text(r.published_at),createdAt:text(r.utworzono||r.createdAt),updatedAt:text(r.aktualizacja||r.updatedAt)})).filter(r=>r.id);
 const campaigns=readOwnerTable('Read Campaigns','campaigns').map(r=>({id:text(r.campaign_id||r.kampania_id||r.form_key),name:text(r.nazwa||r.campaign_id||r.kampania_id),clientId:text(r.klient_id),clientName:text(r.client_name)||clientName(r.klient_id),type:text(r.typ),status:text(r.status),stage:text(r.current_stage),objective:text(r.objective),channels:text(r.kanaly),nextAction:text(r.next_action),landingStatus:text(r.landing_page_status),approvalStatus:text(r.approval_status),qualityStatus:text(r.qc_status),legalStatus:text(r.legal_status),budget:number(r.budzet_netto),targetDate:text(r.data_docelowa),createdAt:text(r.utworzono||r.createdAt),updatedAt:text(r.aktualizacja||r.updatedAt)})).filter(r=>r.id);
 const customerMemory=read('Read Customer Memory','client_id','customerMemory').map(r=>({id:text(r.memory_id),customerId:text(r.customer_id),clientName:clientName(r.customer_id),key:text(r.memory_key),value:text(r.wartosc,6000),domain:text(r.domain),kind:text(r.rodzaj),status:text(r.status),confidence:text(r.confidence),sourceType:text(r.source_type),sourceExcerpt:text(r.source_excerpt,1200),validFrom:text(r.valid_from),validTo:text(r.valid_to),createdAt:text(r.utworzono||r.createdAt),updatedAt:text(r.aktualizacja||r.updatedAt)})).filter(r=>r.id);
 const nextActions=read('Read Next Actions','client_id','nextActions').map(r=>({id:text(r.action_id),customerId:text(r.customer_id),clientName:clientName(r.customer_id),title:text(r.action),reason:text(r.reason,3000),status:text(r.status),date:text(r.due_at),autonomy:text(r.autonomy),confidence:text(r.confidence),result:text(r.wynik,3000),source:text(r.zrodlo),createdAt:text(r.utworzono||r.createdAt),updatedAt:text(r.aktualizacja||r.updatedAt)})).filter(r=>r.id);
 // PM_dokumenty is a personal-project table for this owner pilot. klient_id identifies a business customer, not the owner.
-const files=readOwnerTable('Read Documents','files').map(r=>({id:text(r.dokument_id),title:text(r.nazwa_pliku||r.temat||r.dokument_id),type:text(r.typ_dokumentu),status:text(r.status),clientName:clientName(r.klient_id),projectId:text(r.projekt_id),source:text(r.zrodlo),fileId:text(r.drive_file_id),qualityStatus:text(r.qc_status),url:driveUrl(r.drive_link),createdAt:text(r.utworzono||r.createdAt)})).filter(r=>r.id);
+const NOISY_DOC_TYPES=['MEDIA_TRANSCRIPT','MEDIA_SUMMARY','TEST'];
+const files=readOwnerTable('Read Documents','files').filter(r=>!NOISY_DOC_TYPES.includes(text(r.typ_dokumentu))).map(r=>({id:text(r.dokument_id),title:text(r.nazwa_pliku||r.temat||r.dokument_id),type:text(r.typ_dokumentu),status:text(r.status),clientName:clientName(r.klient_id),projectId:text(r.projekt_id),source:text(r.zrodlo),fileId:text(r.drive_file_id),qualityStatus:text(r.qc_status),url:driveUrl(r.drive_link),createdAt:text(r.utworzono||r.createdAt)})).filter(r=>r.id);
 // Test fixtures are marked in their own invoice number (e.g. "FV/2026/08/TEST1") -
 // same fail-closed exclusion already applied to test-harness processes.
 const invoices=readOwnerTable('Read Invoices','invoices').map(r=>({id:text(r.numer_faktury),number:text(r.numer_faktury),clientName:text(r.klient),email:text(r.email_klienta),amount:number(r.kwota),currency:text(r.waluta)||'PLN',status:text(r.status),dueAt:text(r.termin_platnosci),lastReminderAt:text(r.data_ostatniego_przypomnienia),reminderCount:number(r.liczba_przypomnien)||0,description:text(r.opis,3000),createdBy:text(r.utworzono_przez),createdAt:text(r.createdAt)})).filter(r=>r.id&&!/TEST/i.test(r.number));
 const subscriptions=readOwnerTable('Read Subscriptions','subscriptions').map(r=>({id:text(r.service_id),name:text(r.nazwa||r.service_id),category:text(r.kategoria),account:text(r.konto),plan:text(r.plan),amount:number(r.cena),currency:text(r.waluta)||'PLN',billingPeriod:text(r.okres_rozliczeniowy),renewalDate:text(r.data_odnowienia),status:text(r.status),active:r.aktywny===true,autoRenew:r.auto_renew===true,dashboardUrl:url(r.dashboard_url),note:text(r.notatka,2000),updatedAt:text(r.aktualizacja||r.updatedAt),createdAt:text(r.utworzono||r.createdAt)})).filter(r=>r.id);
 const subscriptionUsage=readOwnerTable('Read Subscription Usage','subscriptionUsage').map(r=>({id:text(r.odczyt_id),serviceId:text(r.service_id),source:text(r.source),plan:text(r.plan),confidence:text(r.confidence),metric:text(r.limit_nazwa),unit:text(r.jednostka),used:number(r.used),total:number(r.total),remaining:number(r.remaining),remainingPercent:number(r.remaining_percent),cost:number(r.koszt),status:text(r.status),error:text(r.blad,1000),collectedAt:text(r.collected_at||r.createdAt),resetAt:text(r.reset_at)})).filter(r=>r.id);
-const researches=readOwnerTable('Read Research','researches').map(r=>({id:text(r.temat_klucz),topic:text(r.temat||r.temat_klucz),summary:text(r.podsumowanie,7000),mode:text(r.tryb),projectId:text(r.projekt_id),clientName:clientName(r.klient_id),highConfidenceClaims:number(r.liczba_twierdzen_wysoka_pewnosc),createdAt:text(r.createdAt),updatedAt:text(r.updatedAt)})).filter(r=>r.id);
+// Piotr (10.09): 'Dona miala miec cala wiedze z tego kompa... ta lista jest glupia'. Prawdziwa
+// baza wiedzy (Dysk/Poczta/Kalendarz/podsumowania sesji Claude Code) zyje w PM_wiedza_fragmenty,
+// zupelnie osobno od PM_drugi_mozg/PM_project_memory ktore panel juz pokazywal - stad wrazenie
+// ze Dona 'nic nie wie'. Odfiltruj stary format wielo-czesciowy (sprzed naprawy z tej samej nocy)
+// i fragmenty ktore wygladaja na binarny smiec (np. zakodowany base64 zalacznik z transkryptu),
+// zeby nie powtorzyc bledu z Centrum dokumentow/Research (szum zamiast tresci).
+const KNOWLEDGE_OLD_FORMAT=/czesc\s*\d+\s*\/\s*\d+/i;
+function looksLikeBinaryGarbage(value){
+  var s=String(value||'');
+  if(s.length<80)return false;
+  var head=s.slice(0,200);
+  var whitespace=(head.match(/\s/g)||[]).length;
+  return whitespace/head.length<0.02;
+}
+const knowledgeFragmentsRaw=readOwnerTable('Read Wiedza Fragmenty','knowledgeFragments');
+const knowledgeFragments=knowledgeFragmentsRaw.filter(function(r){
+  var tytul=text(r.tytul);
+  if(KNOWLEDGE_OLD_FORMAT.test(tytul))return false;
+  if(looksLikeBinaryGarbage(r.fragment))return false;
+  return true;
+}).map(r=>({id:text(r.chunk_hash),title:text(r.tytul,240),text:text(r.fragment,4000),source:text(r.zrodlo),sourceRef:text(r.zrodlo_id),createdAt:text(r.utworzono)})).filter(r=>r.id||r.text);
+const RESEARCH_QA_MARKERS=/^\[TEST|bramki dowodowej/i;
+const researchesRaw=readOwnerTable('Read Research','researches');
+const researchesSeen=new Set();
+const researches=researchesRaw.filter(function(r){
+  if(text(r.tryb)!=='A')return false; // Tryb B = automatyczne sprawdzenie nadawcy maila, nie jego research rynkowy
+  var temat=text(r.temat||r.temat_klucz);
+  if(RESEARCH_QA_MARKERS.test(temat))return false;
+  var key=temat.toLowerCase().trim();
+  if(researchesSeen.has(key))return false;
+  researchesSeen.add(key);
+  return true;
+}).map(r=>({id:text(r.temat_klucz),topic:text(r.temat||r.temat_klucz),summary:text(r.podsumowanie,7000),mode:text(r.tryb),projectId:text(r.projekt_id),clientName:clientName(r.klient_id),highConfidenceClaims:number(r.liczba_twierdzen_wysoka_pewnosc),createdAt:text(r.createdAt),updatedAt:text(r.updatedAt)})).filter(r=>r.id);
 const competitorObservations=readOwnerTable('Read Competitor Observations','competitorObservations').map(r=>({id:text(r.obserwacja_id),competitor:text(r.konkurent),area:text(r.obszar),summary:text(r.skrot,4000),whatChanged:text(r.co_sie_zmienilo,4000),changed:r.zmiana===true,weight:text(r.waga),date:text(r.czas||r.createdAt)})).filter(r=>r.id);
 const playbooks=readOwnerTable('Read Playbooks','playbooks').map(r=>({id:text(r.playbook_id),name:text(r.nazwa||r.playbook_id),sector:text(r.branza),readiness:number(r.gotowosc),active:r.aktywny===true,tone:text(r.ton_marki,2000),defaultCta:text(r.cta_domyslne),modules:simpleList(r.moduly),missing:text(r.czego_brakuje,2000),updatedAt:text(r.aktualizacja||r.updatedAt)})).filter(r=>r.id);
 const mediaAnalyses=read('Read Media Registry','tenant_id','mediaAnalyses').map(r=>{
@@ -103,10 +155,10 @@ const socialPosts=socialRows('Read Social Posts','socialPosts').map(r=>({id:text
 const connections=[{id:'workspace',name:'Dane panelu',status:'READ_OK',detail:'Ten odczyt danych zakończył się powodzeniem.',source:'dona-workspace'},
 {id:'calendar',name:'Kalendarz Google',status:configs[0].calendar_id?'CONFIGURED':'UNKNOWN',detail:configs[0].calendar_id?'Wybrany kalendarz: '+text(configs[0].calendar_id)+'. Dostęp do Google nie był sprawdzany w tym odczycie.':'Brak identyfikatora kalendarza w konfiguracji.',source:'PM_tenant_config'},
 {id:'brain',name:'Drugi mózg',status:'READ_OK',detail:'Odczytano '+memory.length+' wpisów dla Twojej przestrzeni.',source:'PM_drugi_mozg'},
-...socialProfiles.map(p=>{const buffer=p.connection==='BUFFER_CONNECTED'&&!!p.bufferChannelId;return {id:p.id,name:p.name+' · Facebook',status:buffer?'READ_OK':p.connection==='META_NOT_CONNECTED'?'NOT_CONNECTED':p.enabled?'CONFIGURED':'PAUSED',detail:buffer?'Kanał Buffer został odczytany i przypisany do właściwej strony. Automatyczna publikacja pozostaje wyłączona; każdy materiał wymaga zatwierdzenia dokładnej treści.':p.connection==='META_NOT_CONNECTED'?'Brak połączenia z Meta lub Buffer. Posty nie mogą się publikować.':p.enabled?'Publikacja włączona w konfiguracji. Ten odczyt nie sprawdza tokenu ani wykonania harmonogramu.':'Publikacja wyłączona.',source:buffer?'Buffer API + PM_social_profiles':p.source};})];
+...socialProfiles.map(p=>{const buffer=p.connection==='BUFFER_CONNECTED'&&!!p.bufferChannelId;return {id:p.id,name:p.name+' · Facebook',status:buffer?'READ_OK':p.connection==='META_NOT_CONNECTED'?'NOT_CONNECTED':p.enabled?'CONFIGURED':'PAUSED',detail:buffer?'Kanał Buffer został odczytany i przypisany do właściwej strony. Harmonogram jest osobnym ustawieniem. Polecenie właściciela lub przycisk „Publikuj teraz” publikuje wskazaną wersję posta.':p.connection==='META_NOT_CONNECTED'?'Brak połączenia z Meta lub Buffer. Posty nie mogą się publikować.':p.enabled?'Publikacja włączona w konfiguracji. Ten odczyt nie sprawdza tokenu ani wykonania harmonogramu.':'Publikacja wyłączona.',source:buffer?'Buffer API + PM_social_profiles':p.source};})];
 // A message can be re-ingested with the same mail_id by a re-run sync; keep one copy.
 const mailsSeen=new Set();
-const mails=read('Read Mail','tenant_id','mails').map(r=>({id:text(r.mail_id),title:text(r.subject),sender:text(r.sender_email||r.sender),snippet:textCut(r.tresc||r.snippet,1000),status:text(r.status),waiting:text(r.waiting_status),date:text(r.czas||r.createdAt),brandId:brand(r),account:text(r.mailbox_adres||r.konto||r.mailbox_id)})).filter(m=>!m.id||!mailsSeen.has(m.id)&&mailsSeen.add(m.id));
+const mails=read('Read Mail','tenant_id','mails').map(r=>({id:text(r.mail_id),messageId:text(r.message_id),title:text(r.subject),sender:text(r.sender_email||r.sender),snippet:textCut(r.tresc||r.snippet,1000),status:text(r.status),waiting:text(r.waiting_status),date:text(r.czas||r.createdAt),brandId:brand(r),account:text(r.mailbox_adres||r.konto||r.mailbox_id)})).filter(m=>!m.id||!mailsSeen.has(m.id)&&mailsSeen.add(m.id));
 const mailboxSync=read('Read Mail Sync','tenant_id','mailboxSync').map(r=>({id:text(r.sync_id),name:text(r.mailbox_adres),status:text(r.status),checkedAt:text(r.ostatni_sync),error:!!r.blad}));
 const permanentMemory=read('Read Project Memory','tenant_id','permanentMemory').map(r=>({id:text(r.pamiec_id),brandId:brand(r),text:text(r.fakt,6000),type:text(r.typ),status:text(r.status),tags:text(r.domain),source:'Pamięć projektowa',sourceRef:text(r.source_id||r.zrodlo),updatedAt:text(r.aktualizacja||r.updatedAt),readOnly:true}));
 const workHistory=read('Read Panel Events','tenant_id','workHistory').map(r=>({id:text(r.event_id),title:text(r.title),kind:text(r.kind),status:text(r.status),referenceId:text(r.reference_id),brandId:text(r.brand_id),date:text(r.occurred_at)}));
@@ -115,4 +167,16 @@ const zoho=calendarRows.filter(r=>r.provider==='zoho'&&text(r.calendar_id)!=='ow
 connections.push({id:'zoho',name:'Zoho Calendar',status:zoho.length?(zoho.every(c=>c.status==='READ_OK')?'READ_OK':'ERROR'):'NOT_CONNECTED',detail:zoho.length?'Ostatnia synchronizacja: '+text(zoho[0].checkedAt)+'. Widok pokazuje zapisany wynik synchronizacji.':'Połącz konto Zoho, aby pobierać spotkania. Kalendarz Google jest osobną integracją.',source:'Zoho Calendar API'});
 
 for(const collection of [leads,offers,clients,meetings,tasks,processes,assets,campaigns,files,researches,activity,mediaAnalyses])for(const item of collection)if(!item.brandId)item.brandId='';
-return [{json:{ok:true,generatedAt:new Date().toISOString(),context:{tenantId:tenant,name:text(configs[0].nazwa)||'Probatum',userName:'Piotr',role:'OWNER'},approvals,leads,offers,clients,meetings,tasks,processes,assets,campaigns,customerMemory,nextActions,files,invoices,subscriptions,subscriptionUsage,researches,competitorObservations,playbooks,mediaAnalyses,activity,memory,permanentMemory,socialProfiles,socialPosts,connections,mails,mailboxSync,workHistory,calendar:{provider:'zoho',status:zoho.length?'CONFIGURED':'NOT_CONNECTED',calendars:zoho},meta:{limit:cap,truncated,mode:'owner_pilot',readOnly:true}}}];
+// GA4 pageview/user/session snapshot per owned site (probatum/edwardjanusz/silverandglass),
+// collected daily by 'PM Agent OS - Zbieranie: statystyki_www (GA4, codziennie)'. Keep only the
+// most recent row per site - the table accumulates history, the panel only needs the latest.
+const wwwStatsRows=read('Read WWW Stats','tenant_id','wwwStats');
+const wwwStats={};
+for(const r of wwwStatsRows){
+  const site=text(r.strona);
+  if(!site)continue;
+  const existing=wwwStats[site];
+  if(existing && new Date(existing.zebrano)>=new Date(r.zebrano))continue;
+  wwwStats[site]={odslony:number(r.odslony),uzytkownicy:number(r.uzytkownicy),sesje:number(r.sesje),zakres:text(r.zakres),zebrano:text(r.zebrano)};
+}
+return [{json:{ok:true,generatedAt:new Date().toISOString(),context:{tenantId:tenant,name:text(configs[0].nazwa)||'Probatum',userName:'Piotr',role:'OWNER'},approvals,leads,offers,clients,meetings,tasks,processes,workJobs,workJobsStatus,assets,campaigns,customerMemory,nextActions,files,invoices,subscriptions,subscriptionUsage,researches,competitorObservations,playbooks,mediaAnalyses,activity,memory,permanentMemory,knowledgeFragments,socialProfiles,socialPosts,connections,mails,mailboxSync,workHistory,wwwStats,calendar:{provider:'zoho',status:zoho.length?'CONFIGURED':'NOT_CONNECTED',calendars:zoho},meta:{limit:cap,truncated,mode:'owner_pilot',readOnly:true}}}];

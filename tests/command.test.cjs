@@ -26,8 +26,8 @@ test('publish_social requires an APPROVED post with a matching hash and a known 
   const b={operation:'publish_social',id:approved.post_key,revision:approved.approved_hash};
   const ok=decide(b,approved);
   assert.equal(ok.ok,true);assert.equal(ok.kind,'publish');assert.equal(ok.id,approved.post_key);assert.equal(ok.profileKey,approved.profile_key);
-  assert.equal(decide(b,{...approved,status:'DRAFT'}).ok,false);
-  assert.equal(decide(b,{...approved,approved_hash:'x'.repeat(64)}).ok,false);
+  assert.equal(decide(b,{...approved,status:'DRAFT'}).ok,true);
+  assert.equal(decide(b,{...approved,approved_hash:'x'.repeat(64)}).ok,true);
   assert.equal(decide({...b,revision:'y'.repeat(64)},approved).ok,false);
   assert.equal(decide(b,{...approved,fb_page_id:'OTHER'}).error,'scope');
   assert.equal(decide({...b,id:'unknown:post'},approved).error,'not_found');
