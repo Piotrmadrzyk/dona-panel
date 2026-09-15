@@ -1,0 +1,18 @@
+{
+  "endpoint": "https://pmresearch.app.n8n.cloud/webhook/dona-claude-runner",
+  "runnerId": "piotr-mac",
+  "pollSeconds": 30,
+  "maxRunMinutes": 45,
+  "maxOutputBytes": 2000000,
+  "keychainService": "dona-claude-runner",
+  "keychainAccount": "piotr-mac",
+  "allowedRoots": [
+    "/Users/PIOTR/Projekty"
+  ],
+  "projects": {
+    "dona-panel": { "path": "/Users/PIOTR/Projekty/dona-panel" },
+    "canon": { "path": "/Users/PIOTR/Projekty/canon" },
+    "zenit": { "path": "/Users/PIOTR/Projekty/zenit" },
+    "nikon": { "path": "/Users/PIOTR/Projekty/nikon" }
+  }
+}
