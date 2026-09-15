@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="./trace.css?v=5.2.2">
   <link rel="stylesheet" href="./liveops.css?v=1.1.0">
   <link rel="stylesheet" href="./systems.css?v=6.0.3">
-  <link rel="stylesheet" href="./business.css?v=7.0.0">
+  <link rel="stylesheet" href="./business.css?v=7.1.0">
   <script defer src="./voice-audio.js?v=4.1.0"></script>
   <script defer src="./chat.js?v=7.0.0"></script>
   <script defer src="./particles.js?v=5.0.0"></script>
@@ -28,8 +28,8 @@
   <script defer src="./liveops.js?v=1.1.0"></script>
   <script defer src="./systems.js?v=6.0.7"></script>
   <script defer src="./business-model.js?v=7.0.0"></script>
-  <script defer src="./business.js?v=7.0.1"></script>
-  <script defer src="./workspace.js?v=7.0.0"></script>
+  <script defer src="./business.js?v=7.1.0"></script>
+  <script defer src="./workspace.js?v=7.1.0"></script>
   <script defer src="./voice.js?v=5.1.0"></script>
 </head>
 <body>
@@ -70,29 +70,11 @@
         <a href="#mail" data-view="mail"><span data-icon="mail"></span>Poczta</a>
         <a href="#calendar" data-view="calendar"><span data-icon="calendar"></span>Kalendarz</a>
         <a href="#approvals" data-view="approvals"><span data-icon="check-square"></span>Do decyzji <span class="nav-count" id="approvalCount" hidden></span></a>
-        <details><summary>Sprzedaż i administracja</summary>
-          <a href="#inquiries" data-view="inquiries">Zapytania <span class="nav-count" id="inquiryCount" hidden></span></a>
-          <a href="#offers" data-view="offers">Oferty</a>
-          <a href="#customer" data-view="customer">Karta klienta</a>
-          <a href="#onboarding" data-view="onboarding">Nowy klient</a>
-          <a href="#finance" data-view="finance">Finanse i abonamenty</a>
-          <a href="#documents" data-view="documents">Dokumenty</a>
-          <a href="#files" data-view="files">Pliki i analizy</a>
-          <a href="#projects" data-view="projects">Projekty i zadania</a>
-        </details>
-        <details><summary>Wiedza i narzędzia</summary>
-          <a href="#searchall" data-view="searchall">Szukaj wszędzie</a>
-          <a href="#knowledge" data-view="knowledge">Wiedza Dony</a>
-          <a href="#researchhub" data-view="researchhub">Research i konkurencja</a>
-          <a href="#youtube" data-view="youtube">YouTube → wiedza</a>
-          <a href="#drive" data-view="drive">Dysk Google</a>
-          <a href="#recipes" data-view="recipes">Receptury</a>
-          <a href="#weather" data-view="weather">Pogoda</a>
-          <a href="#maps" data-view="maps">Mapy i trasy</a>
-          <a href="#marketing" data-view="marketing">Narzędzia marketingu</a>
-          <a href="#tools" data-view="tools">Wszystkie narzędzia</a>
-        </details>
-        <details><summary>Dona i ustawienia firmy</summary>
+        <div class="nav-label">NA CO DZIEŃ</div>
+        <a href="#weather" data-view="weather"><span aria-hidden="true" class="nav-emoji">☀</span>Pogoda</a>
+        <a href="#maps" data-view="maps"><span aria-hidden="true" class="nav-emoji">⌖</span>Mapy i trasy</a>
+        <a href="#tools" data-view="tools"><span data-icon="grid"></span><strong>Wszystkie funkcje</strong></a>
+        <details><summary>System Dony</summary>
           <a href="#dona" data-view="dona">Rozmowa z Doną</a>
           <a href="#spaces" data-view="spaces">Twoje marki</a>
           <a href="#connections" data-view="connections">Połączenia</a>
@@ -132,7 +114,7 @@
       </section>
     </aside>
   </div>
-  <nav class="biz-mobile-nav" aria-label="Skróty na telefonie"><a href="#today" data-view="today"><span aria-hidden="true">⌂</span>Pulpit</a><a href="#orders" data-view="orders"><span aria-hidden="true">☷</span>Zlecenia</a><a href="#social" data-view="social"><span aria-hidden="true">▣</span>Publikacje</a><a href="#media" data-view="media"><span aria-hidden="true">▷</span>Materiały</a><a href="#sales" data-view="sales"><span aria-hidden="true">↗</span>Sprzedaż</a></nav>
+  <nav class="biz-mobile-nav" aria-label="Główne menu na telefonie"><a href="#today" data-view="today"><span aria-hidden="true">⌂</span>Pulpit</a><a href="#orders" data-view="orders"><span aria-hidden="true">☷</span>Zlecenia</a><button class="biz-mobile-create" type="button" data-business-new="task" aria-label="Zleć nowe zadanie Donie"><span aria-hidden="true">＋</span>Zleć</button><a href="#tools" data-view="tools"><span aria-hidden="true">▦</span>Narzędzia</a><button type="button" data-chat aria-label="Otwórz rozmowę z Doną"><span aria-hidden="true">✦</span>Dona</button></nav>
   <div class="live" id="live" role="dialog" aria-modal="true" aria-labelledby="voiceTitle" data-state="connect">
     <div class="voice-atmosphere" aria-hidden="true"></div>
     <header class="lhead">

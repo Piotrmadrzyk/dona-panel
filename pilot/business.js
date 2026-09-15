@@ -19,6 +19,7 @@
   let data=null,demo=false,view='',filter='all',query='',busy=false,lastFeedback='';
   const notices=()=>'<div class="biz-feedback" role="status" '+(lastFeedback?'':'hidden')+'>'+E(lastFeedback)+'</div>';
   const feedback=text=>{lastFeedback=text;document.querySelectorAll('.biz-feedback').forEach(n=>{n.textContent=text;n.hidden=!text;});};
+  const everyday=()=>'<section class="biz-everyday" aria-label="Szybkie funkcje"><div><span class="biz-kicker">SZYBKIE FUNKCJE</span><h2>Na co dzień</h2></div><nav>'+[['weather','☀','Pogoda'],['maps','⌖','Mapy'],['mail','✉','Poczta'],['calendar','▦','Kalendarz'],['tools','▦','Wszystkie']].map(([id,symbol,label])=>'<a href="#'+id+'"><span aria-hidden="true">'+symbol+'</span><strong>'+label+'</strong></a>').join('')+'</nav></section>';
   function reason(job){
     if(job.status==='NEEDS_INSPECTION')return 'To zlecenie trwa ponad 30 minut. Dona powinna sprawdzić przebieg przed kolejną płatną próbą.';
     if(/CREDITS/.test(job.errorCode||''))return 'Dostawca wideo zgłosił brak kredytów. Po uzupełnieniu konta zleć Donie dalszy krok.';
@@ -28,7 +29,7 @@
   function renderHome(){
     const stats=M.metrics(data,brand()),work=M.orders(data,brand()),attention=work.filter(j=>M.blocked(j.status)),active=work.filter(j=>!M.finished(j.status)&&!M.blocked(j.status));
     const meetings=window.DonaModel.calendar(data,brand()).filter(m=>Date.parse(m.end||m.date)>Date.now()).slice(0,3);
-    const html='<section class="biz-hero"><div><span class="biz-kicker">DONA · '+E(brandName(brand()))+'</span><h2>Czym dziś się zajmiemy?</h2><p>Jedno polecenie. Zapisane zlecenie. Wynik, do którego możesz wrócić.</p></div><button class="biz-talk" data-chat>Napisz do Dony <span>↗</span></button></section>'+notices()+
+    const html='<section class="biz-hero"><div><span class="biz-kicker">DONA · '+E(brandName(brand()))+'</span><h2>Czym dziś się zajmiemy?</h2><p>Jedno polecenie. Zapisane zlecenie. Wynik, do którego możesz wrócić.</p></div><button class="biz-talk" data-chat>Napisz do Dony <span>↗</span></button></section>'+notices()+everyday()+
       '<div class="biz-shortcuts">'+[['reel','01','Stwórz rolkę','Pomysł → gotowy materiał'],['post','02','Przygotuj posty','Treść i materiały marki'],['website','03','Zbuduj stronę','Brief → podgląd strony'],['campaign','04','Zaplanuj kampanię','Cel, kanały i materiały']].map(([k,n,t,c])=>'<button data-business-new="'+k+'"><span>'+n+'</span><strong>'+t+'</strong><small>'+c+'</small><b aria-hidden="true">↗</b></button>').join('')+'</div>'+
       '<div class="biz-metrics">'+[['orders',stats.work,'W trakcie'],['social',stats.drafts,'Posty do przejrzenia'],['orders',stats.blocked,'Wymaga działania'],['clients',stats.clients,'Klienci w widoku']].map(([href,n,t])=>'<a href="#'+href+'"><strong>'+n+'</strong><span>'+t+'</span></a>').join('')+'</div>'+
       (data.workJobsStatus?.ok===false?'<div class="biz-warning">'+E(data.workJobsStatus.message)+'</div>':'')+
