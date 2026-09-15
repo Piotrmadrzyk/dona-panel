@@ -7,8 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { runProcess } from './pilot-process.mjs';
 import { childEnvironment } from './model-router.mjs';
 const report={modelTaskStarted:false,queueTouched:false,isolationVerified:false,checks:[]};
+const selected=process.argv.slice(2);
+const engines=selected.length===0?['claude','codex']:selected;
 let root;
 try {
+  if(engines.some(e=>!['claude','codex'].includes(e))) throw new Error('INVALID_ENGINE');
   if(process.platform!=='darwin') throw new Error('MACOS_REQUIRED');
   const cli=fileURLToPath(new URL('./isolation/node_modules/@anthropic-ai/sandbox-runtime/dist/cli.js',import.meta.url));
   const pkg=JSON.parse(await readFile(new URL('./isolation/node_modules/@anthropic-ai/sandbox-runtime/package.json',import.meta.url),'utf8'));
@@ -20,7 +23,7 @@ try {
   const workspace=join(root,'workspace'); await mkdir(workspace,{mode:0o700});
   const canary=join(root,'private-canary.txt');
   await writeFile(canary,'SYNTHETIC_PRIVATE_CANARY',{mode:0o600});
-  for(const engine of ['claude','codex']) {
+  for(const engine of engines) {
     console.error(`Sprawdzam ${engine} w ograniczonym środowisku…`);
     let binary;
     for(const dir of dirs) {
@@ -45,7 +48,10 @@ console.log(denied?'DONA_CANARY_DENIED':'DONA_CANARY_ACCESSIBLE');if(!denied)pro
     if(!boundary.ok || boundary.stdout.trim()!=='DONA_CANARY_DENIED') {
       report.checks.push({engine,passed:false,reason:'BOUNDARY_NOT_CONFIRMED'});continue;
     }
-    const args=engine==='claude'?['auth','status']:['login','status'];
+    const variants=engine==='codex'?['default','ignore_user_config']:['default'];
+    for(const variant of variants) {
+    const args=engine==='claude'?['auth','status']:
+      [...(variant==='ignore_user_config'?['--ignore-user-config']:[]),'login','status'];
     const result=await runProcess({executable:node,args:[cli,'--settings',config,binary,...args],cwd:workspace,env,timeoutMs:30000});
     let authenticated=false,statusReadable=false;
     if(engine==='claude') {
@@ -60,13 +66,28 @@ console.log(denied?'DONA_CANARY_DENIED':'DONA_CANARY_ACCESSIBLE');if(!denied)pro
     const reason=authenticated&&result.ok?'AUTH_VISIBLE':result.timedOut?'TIMEOUT':statusReadable?'AUTH_NOT_VISIBLE'
       :/Operation not permitted|Permission denied|EACCES|EPERM/.test(output)?'ACCESS_DENIED'
       :/Cannot find module|ERR_MODULE_NOT_FOUND/.test(output)?'CLI_DEPENDENCY_BLOCKED':'CLI_STATUS_UNREADABLE';
-    report.checks.push({engine,passed:authenticated&&result.ok,canaryDenied:true,statusReadable,reason,exitCode:result.exitCode});
+    // Emit only fixed labels, never provider output, local paths or credential values.
+    const diagnosticFlags=[
+      ['permission_denied',/operation not permitted|permission denied|EACCES|EPERM|os error (?:1|13)\b/i],
+      ['missing_file',/no such file|ENOENT|os error 2\b/i],
+      ['configuration',/config(?:uration|\.toml)?/i],
+      ['keychain',/keychain|securityd|SecItem/i],
+      ['credentials',/credential|auth\.json|authentication/i],
+      ['temporary_directory',/temp(?:orary)? dir|\.tmp|mkdtemp/i],
+      ['logging',/log directory|log file|logging|tracing/i],
+      ['dependency',/cannot find module|ERR_MODULE_NOT_FOUND|missing optional dependency/i],
+      ['unsupported_option',/unexpected argument|unknown option|unrecognized option/i],
+      ['sandbox',/sandbox|seatbelt|mach-lookup/i],
+    ].filter(([,pattern])=>pattern.test(output)).map(([label])=>label);
+    report.checks.push({engine,variant,passed:authenticated&&result.ok,canaryDenied:true,statusReadable,reason,
+      exitCode:result.exitCode,diagnosticFlags,outputPresent:output.trim().length>0});
+    }
   }
-  report.passed=report.checks.length===2&&report.checks.every(c=>c.passed);
+  report.passed=report.checks.length>0&&report.checks.every(c=>c.passed);
   report.note='Authentication visibility only. No model execution or complete isolation approval.';
 } catch(error) {
   report.passed=false;
-  report.error=['MACOS_REQUIRED','RUNTIME_VERSION_MISMATCH'].includes(error.message)?error.message:'CHECK_SETUP_FAILED';
+  report.error=['MACOS_REQUIRED','RUNTIME_VERSION_MISMATCH','INVALID_ENGINE'].includes(error.message)?error.message:'CHECK_SETUP_FAILED';
 } finally {if(root)await rm(root,{recursive:true,force:true});}
 console.log(JSON.stringify(report,null,2));
 if(!report.passed)process.exitCode=1;
