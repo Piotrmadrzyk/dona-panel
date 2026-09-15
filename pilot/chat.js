@@ -451,7 +451,7 @@
   }
 
 
-var panelVersion = '7.3.0';
+var panelVersion = '7.3.1';
 var panelConversationId = lsGet('pm_panel_conversation_id') || 'PM';
 var panelBusyCount = 0, rtSession = null, rtSequence = 0;
 var BRANCH_URL = API + '/dona-panel-branch';
