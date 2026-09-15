@@ -42,7 +42,7 @@
   Object.assign(labels,window.DonaCentre.views,window.DonaCommand.views,window.DonaFeatures?.views||{},window.DonaLiveOps?.views||{},window.DonaSystems?.views||{},window.DonaBusiness?.views||{});
   const descriptions = Object.assign({mail:'Wiadomości zapisane przez system DONY. Poproś ją o aktualny odczyt skrzynki lub przygotowanie odpowiedzi.',approvals:'Przejrzyj przygotowane materiały i zdecyduj o kolejnym kroku.',inquiries:'Zapytania zapisane przez Twoje formularze i procesy sprzedażowe.',offers:'Oferty, kwoty i aktualny etap pracy z klientem.',clients:'Historia kontaktu i następny krok dla każdej relacji.',calendar:'Spotkania z Zoho i wydarzenia zapisane przez Donę. Wybierz źródło oraz widok.',files:'Foldery analiz zapisane przez DONĘ na Google Drive oraz dokumenty zarejestrowane w systemie.',marketing:'Przygotuj treści, materiały i strony z narzędziami, które już masz.',tools:'Wszystkie funkcje Dony w jednym, prostym katalogu.',history:'Twoja dotychczasowa rozmowa z panelu — dostępna także tutaj.',settings:'Twoja przestrzeń, głos i połączenia z obecną DONĄ.'},window.DonaFeatures?.descriptions||{},window.DonaLiveOps?.descriptions||{},window.DonaSystems?.descriptions||{},window.DonaBusiness?.descriptions||{});
   const statusNames = {REQUESTED:'Czeka na decyzję',APPROVED:'Zatwierdzone',REJECTED:'Odrzucone',EXPIRED:'Wygasłe',DRAFT:'Szkic',SENT:'Wysłana',ACCEPTED:'Zaakceptowana',WON:'Wygrana',LOST:'Przegrana',NEW:'Nowe',NOWY:'Nowe',NOWA:'Nowa',QUALIFIED:'Zakwalifikowane',CONFIRMED:'Potwierdzone',CANCELLED:'Odwołane',CANCELED:'Odwołane',DONE:'Zakończone',COMPLETED:'Zakończone',SUCCESS:'Ukończone',PARTIAL:'Częściowe',UNKNOWN:'Do sprawdzenia',ACTIVE:'Aktywny',AKTYWNY:'Aktywny',OPEN:'Otwarte',TODO:'Do wykonania',DO_ZROBIENIA:'Do wykonania',IN_PROGRESS:'W trakcie',W_TRAKCIE:'W trakcie',WYSLANA:'Wysłana',GOTOWA:'Gotowa',ODPOWIEDZIAL:'Odpowiedział',SCHEDULED:'Zaplanowane',PENDING:'Oczekujące',ERROR:'Błąd',FAILED:'Błąd',NURTURING:'Dalszy kontakt'};
-  const state = {view:'today',data:null,loading:false,error:'',filter:'',search:'',demo:window.Dona.isDemo,request:0};
+  const state = {view:'today',data:null,loading:false,refreshQueued:false,error:'',filter:'',search:'',demo:window.Dona.isDemo,request:0};
   const fieldLabels = {name:'Nazwa',title:'Temat',sender:'Nadawca',account:'Konto pocztowe',snippet:'Podgląd',email:'E-mail',phone:'Telefon',status:'Status',amount:'Kwota netto',currency:'Waluta',createdAt:'Utworzono',date:'Termin',end:'Zakończenie',clientName:'Klient',nextAction:'Następny krok',nextActionAt:'Termin kontaktu',source:'Źródło',expiresAt:'Ważne do',type:'Rodzaj',description:'Opis',id:'Identyfikator',location:'Miejsce'};
   const done = (status) => /^(DONE|COMPLETED|CANCELLED|CANCELED|ZAKONCZONE|ZAKOŃCZONE|ANULOWANE|WYSLANA|SENT|EXECUTED|REJECTED|EXPIRED)$/i.test(status || '');
   const statusText = (s) => statusNames[String(s).toUpperCase()] || String(s || 'Brak statusu').replace(/_/g,' ').toLowerCase();
@@ -74,7 +74,7 @@
     ],leads:[{id:'demo-lead-1',name:'Anna Kowalska',title:'Projekt mieszkania · 68 m²',email:'anna@example.com',status:'NEW',source:'Formularz na stronie',createdAt:ago(30),description:'Projekt mieszkania, salon z kuchnią i dwie sypialnie.'},{id:'demo-lead-2',name:'Michał Nowak',title:'Aranżacja biura',email:'michal@example.com',status:'QUALIFIED',source:'E-mail',createdAt:ago(120),description:'Zapytanie o projekt biura i harmonogram.'},{id:'demo-lead-3',name:'Joanna Wiśniewska',title:'Konsultacja wnętrzarska',email:'joanna@example.com',status:'NEW',createdAt:ago(180),source:'Formularz na stronie'},{id:'demo-lead-4',name:'Pracownia Forma',title:'Projekt lokalu usługowego',email:'biuro@example.com',status:'NEW',createdAt:ago(230),source:'Polecenie'}],offers:[{id:'demo-offer-1',title:'Projekt biura — Nowak Studio',clientName:'Nowak Studio',amount:8900,currency:'PLN',status:'DRAFT',createdAt:ago(140),description:'Projekt funkcjonalny, wizualizacje i dokumentacja.'},{id:'demo-offer-2',title:'Projekt lokalu — Forma',clientName:'Pracownia Forma',amount:12500,currency:'PLN',status:'SENT',createdAt:ago(2800),description:'Projekt wnętrza lokalu usługowego.'}],clients:[{id:'demo-client-1',name:'Nowak Studio',email:'michal@example.com',status:'ACTIVE',nextAction:'Rozmowa o projekcie',nextActionAt:later(80)},{id:'demo-client-2',name:'Pracownia Forma',email:'biuro@example.com',status:'ACTIVE',nextAction:'Omówić przesłaną ofertę',nextActionAt:later(180)},{id:'demo-client-3',name:'Anna Kowalska',email:'anna@example.com',status:'NEW',nextAction:'Uzupełnić zakres projektu'}],meetings:[{id:'demo-meeting-1',title:'Rozmowa o projekcie',clientName:'Nowak Studio',date:later(80),end:later(110),status:'CONFIRMED',location:'Online'}],tasks:[{id:'demo-task-1',title:'Sprawdzić ofertę dla Nowak Studio',description:'Zakres i harmonogram projektu biura',date:later(60),status:'TODO'},{id:'demo-task-2',title:'Przypomnieć się w sprawie oferty',description:'Pracownia Forma',date:later(180),status:'TODO'}],files:[{id:'demo-file-1',title:'Oferta — projekt biura.pdf',type:'Oferta',status:'GOTOWA',createdAt:ago(140)},{id:'demo-file-2',title:'Brief projektu mieszkania.pdf',type:'Brief',status:'GOTOWA',createdAt:ago(200)}],mediaAnalyses:[{id:'demo-media-1',title:'Jak zamienić nagranie w wiedzę firmy',sourceUrl:'https://www.youtube.com/watch?v=aqz-KE-bpKQ',status:'SUCCESS',folderUrl:'',processedAt:ago(25),transcriptCharacters:18420,files:[],stages:{transcript:true,summary:true,mindMap:true,metadata:true}}],activity:[{id:'demo-event-1',title:'Uporządkowano nowe zapytania',date:ago(15)},{id:'demo-event-2',title:'Uzupełniono historię klienta',date:ago(40)}],meta:{truncated:[]}};
   }
   async function loadData(){
-    if(state.loading)return;
+    if(state.loading){state.refreshQueued=true;return;}
     if(state.demo){
       const checkedAt=new Date().toISOString();
       state.data=Object.assign(demoData(),{memory:[{id:'demo-note',text:'Przykładowa zasada: publikujemy wyłącznie po zatwierdzeniu materiału.',type:'zasada',status:'ACTIVE',tags:'publikacja',source:'Dane demonstracyjne',updatedAt:checkedAt}],socialProfiles:[],socialPosts:[],connections:[{id:'demo-buffer',name:'Buffer · dwie strony Facebook',status:'DEMO',detail:'Przykładowy widok połączenia. Tryb demo nie odpytuje prawdziwego konta Buffer.',source:'Dane demonstracyjne'}]});
@@ -96,7 +96,7 @@
     const request=++state.request;state.loading=true;state.error='';$('refreshBtn').disabled=true;render();
     try{const result=await window.Dona.request('dona-workspace',{operation:'snapshot'},45000);if(request!==state.request)return;if(result.ok!==true||!result.context||!Array.isArray(result.approvals))throw new Error('INVALID_RESPONSE');state.data=result;}
     catch(e){if(request!==state.request)return;state.error=e.message==='AUTH'?'Zaloguj się ponownie.':'Nie udało się pobrać danych. Rozmowa z DONĄ nadal korzysta z dotychczasowego połączenia.';}
-    finally{if(request===state.request){state.loading=false;$('refreshBtn').disabled=false;render();}}
+    finally{if(request===state.request){state.loading=false;$('refreshBtn').disabled=false;render();if(state.refreshQueued){state.refreshQueued=false;void loadData();}}}
   }
   function navigate(){const name=location.hash.slice(1)||'today';state.view=labels[name]?name:'today';state.search='';state.filter='';state.accountFilter='';$('app').classList.remove('nav-open');$('navScrim').hidden=true;$('menuToggle').setAttribute('aria-expanded','false');$('detailDialog').close();render();$('main').scrollTop=0;}
   function render(){
@@ -269,13 +269,18 @@
       e.preventDefault();
       const values=Object.fromEntries(new FormData(e.currentTarget).entries());
       const reply=String(values.reply||'').trim();if(!reply){e.currentTarget.reportValidity();return;}
-      dialog.close();
+      const form=e.currentTarget,submit=form.querySelector('[type="submit"]');
+      if(submit.disabled)return;
+      submit.disabled=true;submit.textContent='Przekazuję odpowiedź…';
+      let feedback=form.querySelector('[data-mail-feedback]');
+      if(!feedback){feedback=document.createElement('p');feedback.dataset.mailFeedback='';feedback.className='detail-note';feedback.setAttribute('role','status');form.appendChild(feedback);}
+      feedback.textContent='Poczekaj na wynik. Treść odpowiedzi pozostaje w formularzu.';
       const mailTarget=String(mail.messageId||mail.id||'');
       const daneJson=JSON.stringify({manual_reply_text:reply});
       const prompt='Utwórz dokładnie tę ręcznie napisaną odpowiedź jako szkic do wiadomości o identyfikatorze '+mail.id+' (message_id="'+(mail.messageId||'')+'", temat: "'+mail.title+'", od '+(mail.sender||'nieznanego nadawcy')+'). Treść odpowiedzi Piotra: '+JSON.stringify(reply)+'. Wywołaj narzędzie poczta dokładnie raz z argumentami: action="draft", parametr='+JSON.stringify(mailTarget)+', dane='+JSON.stringify(daneJson)+'. Pole manual_reply_text ma pozostać bez przeredagowania. Szkic ma trafić do Skrzynki decyzji — nie wysyłaj niczego bez zatwierdzenia.';
-      toast('Odpowiedź trafia do Skrzynki decyzji.');
-      try{const result=await window.Dona.runBranch('poczta','Poczta',prompt);if(!result||result.ok===false)toast('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');else if(state.view==='mail')loadData();}
-      catch(err){toast('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');}
+      const uncertain=()=>{feedback.textContent='Nie potwierdzono wyniku. Twoja odpowiedź pozostaje tutaj. Sprawdź rozmowę i Skrzynkę decyzji przed ponowną próbą.';submit.textContent='Sprawdź wynik przed ponowieniem';};
+      try{const result=await window.Dona.runBranch('poczta','Poczta',prompt);if(!result||result.ok===false)uncertain();else{feedback.textContent='Dona odpowiedziała. Sprawdź w rozmowie, czy szkic został zapisany. Treść możesz nadal skopiować z formularza.';submit.textContent='Polecenie przekazane';if(state.view==='mail')loadData();}}
+      catch(err){uncertain();}
     });
     dialog.showModal();
   }
@@ -361,7 +366,7 @@
   window.addEventListener('dona:phase',e=>{$('assistantStatus').textContent=state.demo?'Podgląd interfejsu':/czekam|zlecenie|prac/i.test(e.detail||'')?'Czekam na wynik z systemu':'Rozmowa z DONĄ';});
   window.addEventListener('dona:refresh',loadData);
   window.addEventListener('dona:rerender',render);
-  window.addEventListener('dona:auth',e=>{if(e.detail.authenticated||e.detail.demo)loadData();else{state.request++;state.data=null;state.loading=false;state.error='';$('refreshBtn').disabled=false;$('detailDialog').close();$('assistant').classList.remove('has-messages');render();}});
+  window.addEventListener('dona:auth',e=>{if(e.detail.authenticated||e.detail.demo)loadData();else{state.request++;state.data=null;state.loading=false;state.refreshQueued=false;state.error='';$('refreshBtn').disabled=false;$('detailDialog').close();const mailDialog=$('mailActionDialog');if(mailDialog){mailDialog.close();mailDialog.replaceChildren();}$('assistant').classList.remove('has-messages');render();}});
   const observer=new MutationObserver(()=>{$('assistant').classList.toggle('has-messages',$('log').children.length>0);if(state.view==='history')renderHistory();});observer.observe($('log'),{childList:true});
   navigate();if(state.demo){$('assistantStatus').textContent='Podgląd interfejsu';loadData();}else if(window.Dona.isAuthenticated())loadData();
 })();
