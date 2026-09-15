@@ -1,0 +1,2869 @@
+{
+  "checkedAt": "2026-09-15T18:11:33.669Z",
+  "scope": "Workflow metadata only; active does not prove end-to-end functionality",
+  "projects": [
+    {
+      "name": "Dona",
+      "count": 292,
+      "active": 205,
+      "workflows": [
+        {
+          "id": "2RxFcOexRfx3w2MH",
+          "name": "DONA — Router pilot: enroll Mac key hash",
+          "active": false,
+          "updatedAt": "2026-09-15T16:48:39.829Z",
+          "folderId": null
+        },
+        {
+          "id": "EEdT1Jgcp5mDRo2k",
+          "name": "DONA — Router pilot: database QA (rollback)",
+          "active": false,
+          "updatedAt": "2026-09-15T16:43:27.325Z",
+          "folderId": null
+        },
+        {
+          "id": "Z2RRu3ze01yQyqc5",
+          "name": "DONA — Router pilot: scoped gateway",
+          "active": true,
+          "updatedAt": "2026-09-15T16:43:10.752Z",
+          "folderId": null
+        },
+        {
+          "id": "1ZqBBxJt4uu7TEFU",
+          "name": "PM Agent OS — Approval Service",
+          "active": true,
+          "updatedAt": "2026-09-15T07:08:33.966Z",
+          "folderId": null
+        },
+        {
+          "id": "2xBVEzhyNgAywy7C",
+          "name": "PM Agent OS — Agent Researchu",
+          "active": true,
+          "updatedAt": "2026-09-15T07:06:11.263Z",
+          "folderId": null
+        },
+        {
+          "id": "TG2L7ZlaNFcP0vB5",
+          "name": "DONA — Zanfia: bezpieczny odczyt",
+          "active": true,
+          "updatedAt": "2026-09-15T07:05:29.041Z",
+          "folderId": null
+        },
+        {
+          "id": "krcO4JxDOe7bBlgg",
+          "name": "PM Agent OS — Narzedzie: Podglad rolki ze zdjec / render z obrazow (Krok 17b)",
+          "active": true,
+          "updatedAt": "2026-09-15T07:04:26.567Z",
+          "folderId": null
+        },
+        {
+          "id": "vE77e9dXD2e93jBW",
+          "name": "PM Agent OS — Dona (orkiestrator, PRODUKCJA)",
+          "active": true,
+          "updatedAt": "2026-09-15T04:45:43.189Z",
+          "folderId": null
+        },
+        {
+          "id": "KR37p3WKDunpM2Jg",
+          "name": "PM Agent OS — Agent Email",
+          "active": true,
+          "updatedAt": "2026-09-15T04:34:55.854Z",
+          "folderId": null
+        },
+        {
+          "id": "rDRKogvAja7tYnQp",
+          "name": "PM Agent OS — Gałąź: Poczta",
+          "active": true,
+          "updatedAt": "2026-09-15T04:34:06.480Z",
+          "folderId": null
+        },
+        {
+          "id": "uMo8vngkBACorLLb",
+          "name": "PM Agent OS — Inbox Zero (Etap 3L)",
+          "active": true,
+          "updatedAt": "2026-09-15T04:33:50.429Z",
+          "folderId": null
+        },
+        {
+          "id": "19vk3sWcuU76pojJ",
+          "name": "PM Agent OS — Panel Dona (Apex)",
+          "active": true,
+          "updatedAt": "2026-09-15T04:28:06.484Z",
+          "folderId": null
+        },
+        {
+          "id": "ObpDDShSy1rw11KK",
+          "name": "PM Agent OS — Gałąź: Marketing i treści",
+          "active": true,
+          "updatedAt": "2026-09-15T04:21:26.993Z",
+          "folderId": null
+        },
+        {
+          "id": "DzxH9eIg7l6M0gQ5",
+          "name": "DONA — Panel: szybki upload zdjęć do rolek",
+          "active": true,
+          "updatedAt": "2026-09-15T04:15:16.081Z",
+          "folderId": null
+        },
+        {
+          "id": "ECFeLd87q4vRNeXx",
+          "name": "PM Agent OS — Reels Orchestrator",
+          "active": true,
+          "updatedAt": "2026-09-15T04:07:36.780Z",
+          "folderId": null
+        },
+        {
+          "id": "2x8JIYNHGu43seJc",
+          "name": "DONA — Rolki: zlecenia i status",
+          "active": true,
+          "updatedAt": "2026-09-15T04:07:24.837Z",
+          "folderId": null
+        },
+        {
+          "id": "QdyWx6Gudc4S00m7",
+          "name": "DONA Panel — Workspace API (pilot)",
+          "active": true,
+          "updatedAt": "2026-09-15T04:05:30.727Z",
+          "folderId": null
+        },
+        {
+          "id": "c2tCjZakdgmS7lX8",
+          "name": "DONA — Claude Code: status i wyniki",
+          "active": true,
+          "updatedAt": "2026-09-15T04:03:10.921Z",
+          "folderId": null
+        },
+        {
+          "id": "EZGJIPd70YVOp9ER",
+          "name": "DONA — Claude Code Runner API",
+          "active": true,
+          "updatedAt": "2026-09-15T03:52:05.908Z",
+          "folderId": null
+        },
+        {
+          "id": "zcThn9n1D8Jf1I6u",
+          "name": "PM Agent OS — Narzedzie: zlec_claude",
+          "active": true,
+          "updatedAt": "2026-09-15T03:48:04.382Z",
+          "folderId": null
+        },
+        {
+          "id": "Z5DN5LLkjudFOl5u",
+          "name": "DONA — Admin: Claude Runner Schema",
+          "active": false,
+          "updatedAt": "2026-09-15T03:46:57.458Z",
+          "folderId": null
+        },
+        {
+          "id": "WRo95VQNwbb3Ww6f",
+          "name": "PM — Archiwista v1",
+          "active": true,
+          "updatedAt": "2026-09-15T03:11:39.593Z",
+          "folderId": null
+        },
+        {
+          "id": "5Fl6KoSPcpASmJ3w",
+          "name": "PM Agent OS — Email Safe Trash (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-09-15T03:01:30.052Z",
+          "folderId": null
+        },
+        {
+          "id": "vkSzzL8g71m7qvvw",
+          "name": "DONA — Naprawa: test wyboru i ochrony przed duplikatem",
+          "active": false,
+          "updatedAt": "2026-09-14T20:55:11.528Z",
+          "folderId": null
+        },
+        {
+          "id": "mILGt8TyRMEf6NZg",
+          "name": "DONA Panel — decyzje i pamięć",
+          "active": true,
+          "updatedAt": "2026-09-14T20:46:32.750Z",
+          "folderId": null
+        },
+        {
+          "id": "2zPjo6vflAd4wqJ3",
+          "name": "DONA — Naprawa: test zapisu backupu 2026-09-14",
+          "active": false,
+          "updatedAt": "2026-09-14T20:31:52.567Z",
+          "folderId": null
+        },
+        {
+          "id": "j0p2adIqTmxhR8Vc",
+          "name": "PM Agent OS — Zarzadzanie Procesami",
+          "active": true,
+          "updatedAt": "2026-09-14T20:18:31.088Z",
+          "folderId": null
+        },
+        {
+          "id": "vGfxn4NPkAaCsYyP",
+          "name": "DONA — Facebook: przygotowanie postów z kolekcji",
+          "active": true,
+          "updatedAt": "2026-09-14T19:59:00.754Z",
+          "folderId": null
+        },
+        {
+          "id": "j781hsS6dVKdWFxh",
+          "name": "DONA — Facebook: kolejka i publikacja przez Buffer",
+          "active": true,
+          "updatedAt": "2026-09-14T19:57:33.798Z",
+          "folderId": null
+        },
+        {
+          "id": "mB9KBdct8oASmJ2h",
+          "name": "PM Agent OS — Reels Production Studio",
+          "active": true,
+          "updatedAt": "2026-09-14T19:56:44.503Z",
+          "folderId": null
+        },
+        {
+          "id": "XWk2iI3uCSTsCBOg",
+          "name": "DONA Workspace — verification and brand onboarding",
+          "active": false,
+          "updatedAt": "2026-09-11T11:30:04.866Z",
+          "folderId": null
+        },
+        {
+          "id": "ZQ4JBXTYy1o30BeL",
+          "name": "DONA Panel — zapamiętaj urządzenie 20260908",
+          "active": false,
+          "updatedAt": "2026-09-11T11:25:40.723Z",
+          "folderId": null
+        },
+        {
+          "id": "aiF9P3qwGvd0K3VK",
+          "name": "PM Agent OS — Gałąź: Klienci i leady",
+          "active": true,
+          "updatedAt": "2026-09-10T22:26:25.121Z",
+          "folderId": null
+        },
+        {
+          "id": "iHbH7DTWSt8mb1g1",
+          "name": "PM Agent OS — Recepcja Poczty v1 (PILOT)",
+          "active": true,
+          "updatedAt": "2026-09-10T21:41:32.540Z",
+          "folderId": null
+        },
+        {
+          "id": "8yt0kn3vEHUWkvEo",
+          "name": "PM Agent OS — Dyspozytor gałęzi",
+          "active": true,
+          "updatedAt": "2026-09-10T21:17:33.316Z",
+          "folderId": null
+        },
+        {
+          "id": "gaH6JsiPG1BwhcZA",
+          "name": "PM Agent OS — Email Safe Archive (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-09-10T19:27:20.692Z",
+          "folderId": null
+        },
+        {
+          "id": "d4OhOH35yHNgv028",
+          "name": "PM Agent OS — Zbieranie: statystyki_www (GA4, codziennie)",
+          "active": true,
+          "updatedAt": "2026-09-10T17:13:22.861Z",
+          "folderId": null
+        },
+        {
+          "id": "QLYT5hw0zXDvOxMx",
+          "name": "PM Agent OS — Gałąź: WWW i kampanie",
+          "active": true,
+          "updatedAt": "2026-09-10T17:10:29.328Z",
+          "folderId": null
+        },
+        {
+          "id": "TUQetzdQZBbPxXdm",
+          "name": "PM Agent OS — Narzędzie: statystyki_www (GA4)",
+          "active": true,
+          "updatedAt": "2026-09-10T17:06:43.090Z",
+          "folderId": null
+        },
+        {
+          "id": "kboZndeoXDr4Z5l9",
+          "name": "PM Agent OS — Gałąź: System",
+          "active": true,
+          "updatedAt": "2026-09-10T11:10:28.476Z",
+          "folderId": null
+        },
+        {
+          "id": "OWKLVTeCcFGKpPe6",
+          "name": "PM Agent OS — Narzedzie: skrzynka_decyzji",
+          "active": true,
+          "updatedAt": "2026-09-10T05:15:48.426Z",
+          "folderId": null
+        },
+        {
+          "id": "u4YWxI2RYNP3expl",
+          "name": "DONA Panel — Media i Dysk",
+          "active": true,
+          "updatedAt": "2026-09-10T04:13:58.248Z",
+          "folderId": null
+        },
+        {
+          "id": "fOfhGUpVWl5KOxgq",
+          "name": "DONA Panel — wątki rozmów",
+          "active": true,
+          "updatedAt": "2026-09-10T04:13:35.655Z",
+          "folderId": null
+        },
+        {
+          "id": "p2hXCEq58bpbHDdH",
+          "name": "DONA Panel — Live Ops",
+          "active": true,
+          "updatedAt": "2026-09-10T04:13:12.797Z",
+          "folderId": null
+        },
+        {
+          "id": "FukjFPaG8Ov9ou54",
+          "name": "Akademia — Generuj kod dostępu (TEST, bez Vercela)",
+          "active": false,
+          "updatedAt": "2026-09-09T20:50:13.953Z",
+          "folderId": null
+        },
+        {
+          "id": "uYmC9YnxCnuUFXpi",
+          "name": "DONA — polecenie Piotra: dwa zatwierdzone posty",
+          "active": false,
+          "updatedAt": "2026-09-09T18:28:32.105Z",
+          "folderId": null
+        },
+        {
+          "id": "PYTFD5GP59sxgqL9",
+          "name": "DONA — recover two rejected FB attempts",
+          "active": false,
+          "updatedAt": "2026-09-09T18:27:56.675Z",
+          "folderId": null
+        },
+        {
+          "id": "qLjTnqtyXj1DKq5E",
+          "name": "DONA Panel — Zoho Calendar",
+          "active": true,
+          "updatedAt": "2026-09-09T17:03:40.529Z",
+          "folderId": null
+        },
+        {
+          "id": "jDW2QM45nGgA8vuw",
+          "name": "DONA — Zoho Calendar: plan i wykonanie po zgodzie",
+          "active": true,
+          "updatedAt": "2026-09-09T17:03:31.195Z",
+          "folderId": null
+        },
+        {
+          "id": "wSEdB2IdN7MgL7KK",
+          "name": "DONA Panel — QA niezawodności 20260909",
+          "active": false,
+          "updatedAt": "2026-09-09T13:45:28.042Z",
+          "folderId": null
+        },
+        {
+          "id": "9ic31OlPApYFlzAp",
+          "name": "PM Agent OS — Wiedza: Zasil z Dysku Google",
+          "active": true,
+          "updatedAt": "2026-09-09T10:57:16.095Z",
+          "folderId": null
+        },
+        {
+          "id": "5awqETJTHxNgLEYW",
+          "name": "DONA Wiedza — QA przypisania fragmentów 20260909",
+          "active": false,
+          "updatedAt": "2026-09-09T10:56:07.922Z",
+          "folderId": null
+        },
+        {
+          "id": "xoBXZ11VZCiZ9REn",
+          "name": "PM Agent OS — Document Generator (Etap 3D.2)",
+          "active": true,
+          "updatedAt": "2026-09-09T09:15:38.512Z",
+          "folderId": null
+        },
+        {
+          "id": "NOVrc2bJvF8s4oQa",
+          "name": "PM Agent OS — Media Intelligence",
+          "active": true,
+          "updatedAt": "2026-09-09T09:15:06.589Z",
+          "folderId": null
+        },
+        {
+          "id": "3XJNAUnxNNueuFuE",
+          "name": "DONA — Buffer: diagnostyka połączenia",
+          "active": false,
+          "updatedAt": "2026-09-08T23:28:51.286Z",
+          "folderId": null
+        },
+        {
+          "id": "BsvmclW76aPzOxO8",
+          "name": "PM Agent OS — Narzedzie: otworz_link",
+          "active": true,
+          "updatedAt": "2026-09-08T22:01:47.501Z",
+          "folderId": null
+        },
+        {
+          "id": "IpqR8bV0o8jY0jvB",
+          "name": "DONA Panel — QA funkcji 20260907",
+          "active": false,
+          "updatedAt": "2026-09-08T05:23:51.565Z",
+          "folderId": null
+        },
+        {
+          "id": "JxodoShVwWHVuaTC",
+          "name": "PM Agent OS — Jednorazowe: Pobierz zdjecia Edward Janusz na Dysk",
+          "active": false,
+          "updatedAt": "2026-09-07T22:27:39.101Z",
+          "folderId": null
+        },
+        {
+          "id": "cqUoOnVUryqOhKwJ",
+          "name": "DONA Panel — przygotowanie domeny Probatum",
+          "active": false,
+          "updatedAt": "2026-09-07T20:46:45.027Z",
+          "folderId": null
+        },
+        {
+          "id": "HdeLS4FY1ZFoYnoS",
+          "name": "DONA — Facebook: publikacja zatwierdzonych postów",
+          "active": false,
+          "updatedAt": "2026-09-07T20:16:20.372Z",
+          "folderId": null
+        },
+        {
+          "id": "5nO6hJZZ3EGiLhWm",
+          "name": "DONA Panel — Publish pilot (manual)",
+          "active": false,
+          "updatedAt": "2026-09-07T19:34:15.574Z",
+          "folderId": null
+        },
+        {
+          "id": "R98fBVoxFTsE3fSy",
+          "name": "PM Agent OS — Self-Audit V1 (ETAP 0B)",
+          "active": true,
+          "updatedAt": "2026-09-07T16:32:03.142Z",
+          "folderId": null
+        },
+        {
+          "id": "ljgHBeWnuk2G6k5h",
+          "name": "PM Agent OS — Deployment Check (FIX 8)",
+          "active": true,
+          "updatedAt": "2026-09-07T16:12:30.315Z",
+          "folderId": null
+        },
+        {
+          "id": "Ijb8Ya0OCt9SuO5P",
+          "name": "PM Agent OS — Campaign Watchdog (ETAP 3D)",
+          "active": true,
+          "updatedAt": "2026-09-07T16:05:07.172Z",
+          "folderId": null
+        },
+        {
+          "id": "zVjHWhkNBviHkD7w",
+          "name": "PM Agent OS — Serwisant (diagnoza awarii)",
+          "active": true,
+          "updatedAt": "2026-09-07T15:55:56.408Z",
+          "folderId": null
+        },
+        {
+          "id": "selRub7t4RuIpIFB",
+          "name": "PM Agent OS — Landing Page Builder (Etap 3D)",
+          "active": true,
+          "updatedAt": "2026-09-07T15:53:28.055Z",
+          "folderId": null
+        },
+        {
+          "id": "CYWPUUUctKfkoMEt",
+          "name": "PM Agent OS — Gałąź: Media",
+          "active": true,
+          "updatedAt": "2026-09-07T15:29:25.924Z",
+          "folderId": null
+        },
+        {
+          "id": "nZnYz9ISC1VonOvQ",
+          "name": "PM Agent OS — Media AI Router",
+          "active": false,
+          "updatedAt": "2026-09-07T15:21:39.496Z",
+          "folderId": null
+        },
+        {
+          "id": "4U1f6IFbcVJtuPUF",
+          "name": "PM Agent OS — Media AI — Callback Handler",
+          "active": false,
+          "updatedAt": "2026-09-07T15:17:39.769Z",
+          "folderId": null
+        },
+        {
+          "id": "OtM5PSSxWqXJTmZT",
+          "name": "PM Agent OS — Media AI — Submagic",
+          "active": false,
+          "updatedAt": "2026-09-07T15:12:48.551Z",
+          "folderId": null
+        },
+        {
+          "id": "xzLsXdmbGYBtdzL2",
+          "name": "PM Agent OS — Media AI — OpusClip",
+          "active": false,
+          "updatedAt": "2026-09-07T15:09:37.815Z",
+          "folderId": null
+        },
+        {
+          "id": "pSE3spYB06i1mZz3",
+          "name": "PM Agent OS — Media AI — Descript",
+          "active": false,
+          "updatedAt": "2026-09-07T15:05:44.276Z",
+          "folderId": null
+        },
+        {
+          "id": "L1Rm37d3fkMRMPUf",
+          "name": "PM Agent OS — Agent Content",
+          "active": true,
+          "updatedAt": "2026-09-07T12:23:12.382Z",
+          "folderId": null
+        },
+        {
+          "id": "9UYCGE9LicKFdlx0",
+          "name": "PM Agent OS — Quality Service",
+          "active": true,
+          "updatedAt": "2026-09-07T12:23:05.264Z",
+          "folderId": null
+        },
+        {
+          "id": "52dmzcs4tiTLIWYs",
+          "name": "PM Agent OS — Narzedzie: Tlumacz (Krok 18)",
+          "active": true,
+          "updatedAt": "2026-09-07T07:49:00.162Z",
+          "folderId": null
+        },
+        {
+          "id": "B5pzuzpqVkI1drfy",
+          "name": "Deploy Dona Panel v2",
+          "active": false,
+          "updatedAt": "2026-09-07T07:13:59.474Z",
+          "folderId": null
+        },
+        {
+          "id": "owlJQgh574rhYx6t",
+          "name": "PM Agent OS — DONA (Telegram, panel i urządzenia)",
+          "active": true,
+          "updatedAt": "2026-09-07T05:43:56.410Z",
+          "folderId": null
+        },
+        {
+          "id": "JfZQfxKw9PBYoZuS",
+          "name": "PM Agent OS — Agency Onboarding",
+          "active": true,
+          "updatedAt": "2026-09-06T23:31:12.299Z",
+          "folderId": null
+        },
+        {
+          "id": "3b6KBYihQHnNGkd0",
+          "name": "PM Agent OS — Client Briefing & Watchdog Scheduler (Etap 3J)",
+          "active": true,
+          "updatedAt": "2026-09-06T23:27:01.889Z",
+          "folderId": null
+        },
+        {
+          "id": "0Y45X7cNLbFBQVkc",
+          "name": "PM Agent OS — Narzedzie: zapisz_do_wiedzy",
+          "active": true,
+          "updatedAt": "2026-09-06T23:27:00.997Z",
+          "folderId": null
+        },
+        {
+          "id": "YKMnQXFrdGIowq1r",
+          "name": "PM Agent OS — Worker kolejki wiedzy",
+          "active": true,
+          "updatedAt": "2026-09-06T23:27:00.130Z",
+          "folderId": null
+        },
+        {
+          "id": "Z3gLRgQrSKUHyYfx",
+          "name": "PM Agent OS — Narzedzie: szukaj_w_wiedzy_v2",
+          "active": true,
+          "updatedAt": "2026-09-06T23:20:59.752Z",
+          "folderId": null
+        },
+        {
+          "id": "3ZnRBDUJ3Zs3wpNO",
+          "name": "Alerty usługowe - v0",
+          "active": true,
+          "updatedAt": "2026-09-06T23:13:30.642Z",
+          "folderId": null
+        },
+        {
+          "id": "eEDIhvb6aeD3ILbV",
+          "name": "PM Agent OS — Error Handler",
+          "active": true,
+          "updatedAt": "2026-09-06T23:11:36.841Z",
+          "folderId": null
+        },
+        {
+          "id": "aObf9da8fmra5lLd",
+          "name": "PM Agent OS — Licznik kosztów (codziennie)",
+          "active": true,
+          "updatedAt": "2026-09-06T23:01:30.605Z",
+          "folderId": null
+        },
+        {
+          "id": "79oYFQ5zLTXvN8oP",
+          "name": "PM Agent OS — Monitoring Aktywności Agentów",
+          "active": true,
+          "updatedAt": "2026-09-06T23:00:53.400Z",
+          "folderId": null
+        },
+        {
+          "id": "iLRr4dnhNoz9rfNa",
+          "name": "PM Agent OS — Raport Tygodniowy Biznesowy (Krok 14)",
+          "active": true,
+          "updatedAt": "2026-09-06T22:57:34.312Z",
+          "folderId": null
+        },
+        {
+          "id": "wKwGFnXoDhVhARMA",
+          "name": "PM Agent OS — Follow-up Scheduler (Etap 3E)",
+          "active": true,
+          "updatedAt": "2026-09-06T22:54:58.817Z",
+          "folderId": null
+        },
+        {
+          "id": "hCLcFsDcAAngUfIN",
+          "name": "PM Agent OS — Lead Sequence Engine (Etap 3E)",
+          "active": true,
+          "updatedAt": "2026-09-06T22:53:29.418Z",
+          "folderId": null
+        },
+        {
+          "id": "WtGSgVqx5WzFsxcs",
+          "name": "PM Agent OS — Lead Reply Detection (Etap 3E)",
+          "active": true,
+          "updatedAt": "2026-09-06T22:52:03.352Z",
+          "folderId": null
+        },
+        {
+          "id": "8GzVhFYljEfoH28s",
+          "name": "PM Agent OS — Narzędzie: semantyczna wiedza Gemini",
+          "active": true,
+          "updatedAt": "2026-09-06T21:51:38.057Z",
+          "folderId": null
+        },
+        {
+          "id": "SsVlFvKXfbfo6YlF",
+          "name": "DONA Core v2 — test rozmowy",
+          "active": false,
+          "updatedAt": "2026-09-06T21:46:09.692Z",
+          "folderId": null
+        },
+        {
+          "id": "8uAvueWtlnHYNF5k",
+          "name": "PM Agent OS — Narzedzie: OCR ekstrakcja dokumentow (Krok 15)",
+          "active": true,
+          "updatedAt": "2026-09-06T21:45:14.898Z",
+          "folderId": null
+        },
+        {
+          "id": "Ztp3VPrzQHdCCfD9",
+          "name": "PM Agent OS — Narzędzie: szukaj w starej wiedzy",
+          "active": true,
+          "updatedAt": "2026-09-06T21:41:44.486Z",
+          "folderId": null
+        },
+        {
+          "id": "X34K7DKPzXg9ya3e",
+          "name": "PM Agent OS — Gałąź: Serwis i Dev",
+          "active": true,
+          "updatedAt": "2026-09-06T21:36:57.038Z",
+          "folderId": null
+        },
+        {
+          "id": "5sdDCJqb2WDUFrt8",
+          "name": "PM Agent OS — Gałąź: Pieniądze i operacje",
+          "active": true,
+          "updatedAt": "2026-09-06T21:36:53.113Z",
+          "folderId": null
+        },
+        {
+          "id": "F1fzV1zySKtNvdbt",
+          "name": "PM Agent OS — Gałąź: Sprzedaż",
+          "active": true,
+          "updatedAt": "2026-09-06T21:36:35.508Z",
+          "folderId": null
+        },
+        {
+          "id": "UvpGRDotGz3A9jGH",
+          "name": "PM Agent OS — Gałąź: Dysk i dokumenty",
+          "active": true,
+          "updatedAt": "2026-09-06T21:36:31.896Z",
+          "folderId": null
+        },
+        {
+          "id": "CxfzCIgmhSakMfQI",
+          "name": "CHATGPT_ACCESS_TEST_20260906A",
+          "active": false,
+          "updatedAt": "2026-09-06T20:38:15.859Z",
+          "folderId": null
+        },
+        {
+          "id": "vzHsjaCEBEH4LwAv",
+          "name": "PM Agent OS — Wiedza: Inwentarz Dysku (odczyt, 3 lata)",
+          "active": false,
+          "updatedAt": "2026-09-06T07:46:53.690Z",
+          "folderId": null
+        },
+        {
+          "id": "6LchFKjF5YkL7U8n",
+          "name": "PM Agent OS — Wiedza: Setup pgvector (jednorazowy)",
+          "active": false,
+          "updatedAt": "2026-09-05T22:09:06.134Z",
+          "folderId": null
+        },
+        {
+          "id": "5auxmz4sz8HRmJ5M",
+          "name": "PM Agent OS — Kwalifikator leadów (Akwizytor v1)",
+          "active": true,
+          "updatedAt": "2026-09-05T21:52:35.510Z",
+          "folderId": null
+        },
+        {
+          "id": "PhYgGqwJGocUx31v",
+          "name": "PM Agent OS — Narzedzie: wyslij_do_podpisu (Documenso)",
+          "active": true,
+          "updatedAt": "2026-09-05T20:20:40.067Z",
+          "folderId": null
+        },
+        {
+          "id": "yrErmislQLsYa1SS",
+          "name": "TEST: Documenso pelny lancuch (zupa)",
+          "active": false,
+          "updatedAt": "2026-09-05T20:12:05.857Z",
+          "folderId": null
+        },
+        {
+          "id": "Stg1RKRaSiqO9Kw6",
+          "name": "PM Agent OS — Wiedza: Zasil z Poczty",
+          "active": true,
+          "updatedAt": "2026-09-05T18:46:55.981Z",
+          "folderId": null
+        },
+        {
+          "id": "G0p0k1wfdo9OpKXD",
+          "name": "PM Agent OS — Wiedza: Zasil z Kalendarza",
+          "active": true,
+          "updatedAt": "2026-09-05T18:43:08.355Z",
+          "folderId": null
+        },
+        {
+          "id": "GsMx5u1NWxxkLyeB",
+          "name": "PM Agent OS — Rezerwacje (rdzen)",
+          "active": true,
+          "updatedAt": "2026-09-05T16:49:10.631Z",
+          "folderId": null
+        },
+        {
+          "id": "se5FNEPT688Yzd7m",
+          "name": "PM Agent OS — Narzedzie: Zrzut strony WWW na obrazy (Krok 17c)",
+          "active": true,
+          "updatedAt": "2026-09-05T16:34:26.996Z",
+          "folderId": null
+        },
+        {
+          "id": "7eAOISgBgsIJsDaP",
+          "name": "PM Agent OS — Brama leadów (Akwizytor v1)",
+          "active": true,
+          "updatedAt": "2026-09-05T16:32:40.511Z",
+          "folderId": null
+        },
+        {
+          "id": "3XoLcNZQdoh0Jnyp",
+          "name": "PM Agent OS — Error handler (Brama leadów)",
+          "active": true,
+          "updatedAt": "2026-09-05T11:45:36.822Z",
+          "folderId": null
+        },
+        {
+          "id": "ZpQkL5NxTVREtNyk",
+          "name": "PM Panel — Deploy: przycisk zapamietaj",
+          "active": false,
+          "updatedAt": "2026-09-05T09:57:54.507Z",
+          "folderId": null
+        },
+        {
+          "id": "r8r7lhYobSiP4GU1",
+          "name": "PM Panel — Endpoint zapamietaj (drugi mozg)",
+          "active": true,
+          "updatedAt": "2026-09-05T09:50:43.639Z",
+          "folderId": null
+        },
+        {
+          "id": "tyg2gSL2tX2CkYj2",
+          "name": "PM Agent OS — Drugi Mozg",
+          "active": true,
+          "updatedAt": "2026-09-05T09:45:03.128Z",
+          "folderId": null
+        },
+        {
+          "id": "9rpgQU46sWQxlH7Q",
+          "name": "PM — Diag: struktura realizacji",
+          "active": false,
+          "updatedAt": "2026-09-05T08:44:26.869Z",
+          "folderId": null
+        },
+        {
+          "id": "4japzh5vFJ2pvnGZ",
+          "name": "PM — Cleanup: podglad testowy w2",
+          "active": false,
+          "updatedAt": "2026-09-05T07:56:41.810Z",
+          "folderId": null
+        },
+        {
+          "id": "4A30Ai3ERlgIh7z7",
+          "name": "PM — Cleanup: artefakty testowe repo pm-pages",
+          "active": false,
+          "updatedAt": "2026-09-05T07:08:50.795Z",
+          "folderId": null
+        },
+        {
+          "id": "1MyvQtNU6Dl6FmxD",
+          "name": "PM — Diag: drzewo repo pm-pages",
+          "active": false,
+          "updatedAt": "2026-09-05T07:05:01.204Z",
+          "folderId": null
+        },
+        {
+          "id": "bnPbQyKDPjItvAzM",
+          "name": "PM Panel — Deploy: sync rozmow",
+          "active": false,
+          "updatedAt": "2026-09-05T06:59:03.290Z",
+          "folderId": null
+        },
+        {
+          "id": "5y4apESit0D6as5a",
+          "name": "PM Panel — Endpoint historii rozmow",
+          "active": true,
+          "updatedAt": "2026-09-05T06:55:12.700Z",
+          "folderId": null
+        },
+        {
+          "id": "rHbdYAd8BGIcV5ms",
+          "name": "PM Panel — Deploy: premium glos (TTS)",
+          "active": false,
+          "updatedAt": "2026-09-05T06:51:03.198Z",
+          "folderId": null
+        },
+        {
+          "id": "1XlYtq6B9TbybZ5u",
+          "name": "PM Panel — Endpoint glosu Dony (TTS)",
+          "active": true,
+          "updatedAt": "2026-09-05T06:47:38.275Z",
+          "folderId": null
+        },
+        {
+          "id": "Tsj6SEHGESQJRBaJ",
+          "name": "PM Panel — Deploy: fix layoutu mobilnego",
+          "active": false,
+          "updatedAt": "2026-09-05T06:25:10.400Z",
+          "folderId": null
+        },
+        {
+          "id": "OI3N70FrIZpEuDKS",
+          "name": "PM Panel — Deploy: dodanie załączników",
+          "active": false,
+          "updatedAt": "2026-09-05T05:42:44.168Z",
+          "folderId": null
+        },
+        {
+          "id": "U10nEh8GXcE3bcZ5",
+          "name": "PM Panel — Odbior plikow (endpoint)",
+          "active": true,
+          "updatedAt": "2026-09-04T21:41:31.012Z",
+          "folderId": null
+        },
+        {
+          "id": "s2R7ANYQloNzCAUp",
+          "name": "PM Agent OS — Narzedzie: Zarzadca Dysku (twórz/zapisz/przenies)",
+          "active": false,
+          "updatedAt": "2026-09-04T18:31:08.073Z",
+          "folderId": null
+        },
+        {
+          "id": "NDnJsc3L0T2l7tTw",
+          "name": "PM Agent OS — Narzedzie: Strona z materialow (Drive)",
+          "active": false,
+          "updatedAt": "2026-09-04T18:14:30.428Z",
+          "folderId": null
+        },
+        {
+          "id": "92csmjNKyLT6XbST",
+          "name": "PM — Strona-CV: Bartosz Rosinski (szef kuchni)",
+          "active": false,
+          "updatedAt": "2026-09-04T17:38:15.907Z",
+          "folderId": null
+        },
+        {
+          "id": "fzsHV2nb8Ufrzulj",
+          "name": "PM — Lister folderu Drive (Bartek)",
+          "active": false,
+          "updatedAt": "2026-09-04T17:22:56.317Z",
+          "folderId": null
+        },
+        {
+          "id": "J44FmOiv048S5Ipv",
+          "name": "PM — Commit strony (pliki+obrazy) do pm-pages",
+          "active": true,
+          "updatedAt": "2026-09-04T16:58:44.193Z",
+          "folderId": null
+        },
+        {
+          "id": "o29Pyense1h5MqVh",
+          "name": "PM — Optymalizacja: ALTO Rooftop (odchudzenie)",
+          "active": false,
+          "updatedAt": "2026-09-04T15:23:50.090Z",
+          "folderId": null
+        },
+        {
+          "id": "uYyLvgDok4811IZc",
+          "name": "PM — Diag: dostep tokena GitHub",
+          "active": false,
+          "updatedAt": "2026-09-04T14:51:41.496Z",
+          "folderId": null
+        },
+        {
+          "id": "Jf8gm2RCyarmt29H",
+          "name": "PM Agent OS — Notify Piotr (ad-hoc)",
+          "active": true,
+          "updatedAt": "2026-09-04T14:31:23.728Z",
+          "folderId": null
+        },
+        {
+          "id": "OeDQB0yNsIgVwgFh",
+          "name": "PM — Showcase: ALTO Rooftop -> dona-panel (jednorazowy)",
+          "active": false,
+          "updatedAt": "2026-09-04T14:11:29.847Z",
+          "folderId": null
+        },
+        {
+          "id": "iAmZqy9rDBfMDqDh",
+          "name": "Deploy panelu Dona -> GitHub Pages",
+          "active": false,
+          "updatedAt": "2026-09-04T11:13:11.919Z",
+          "folderId": null
+        },
+        {
+          "id": "arTb9fNnIo2Inlv2",
+          "name": "PM Agent OS — Customer Ops (Etap 3F)",
+          "active": true,
+          "updatedAt": "2026-09-03T22:35:44.950Z",
+          "folderId": null
+        },
+        {
+          "id": "uc9X8qxliMZSbZRG",
+          "name": "PM Agent OS — Narzedzie: waliduj-nip",
+          "active": true,
+          "updatedAt": "2026-09-03T22:32:22.981Z",
+          "folderId": null
+        },
+        {
+          "id": "HW1aZb3IUStIRwLG",
+          "name": "PM — Zanfia Sync (customer_ops)",
+          "active": false,
+          "updatedAt": "2026-09-03T21:45:59.596Z",
+          "folderId": null
+        },
+        {
+          "id": "r8ofPjU4UzF5dS8Y",
+          "name": "PM Agent OS — Aparaty: wzbogacanie opisow",
+          "active": false,
+          "updatedAt": "2026-09-03T21:38:55.391Z",
+          "folderId": null
+        },
+        {
+          "id": "44p232BBH48gN7fg",
+          "name": "PM Product — Porządkowanie skrzynki (uniwersalne, wielo-klienckie) v1",
+          "active": false,
+          "updatedAt": "2026-09-03T20:31:28.857Z",
+          "folderId": null
+        },
+        {
+          "id": "NCLog6h6yktYcpk4",
+          "name": "PM — Porzadkowanie skrzynki piotr.aparat (jednorazowe)",
+          "active": false,
+          "updatedAt": "2026-09-03T19:57:02.877Z",
+          "folderId": null
+        },
+        {
+          "id": "nR8DDank0pqGL0wC",
+          "name": "PM Agent OS — Agent Konkurencji",
+          "active": true,
+          "updatedAt": "2026-09-03T18:47:15.840Z",
+          "folderId": null
+        },
+        {
+          "id": "Ue7fEDYSxZDEdN2M",
+          "name": "PM Agent OS — Kosztorysy (rdzen)",
+          "active": true,
+          "updatedAt": "2026-09-03T18:45:53.557Z",
+          "folderId": null
+        },
+        {
+          "id": "Wg6FqxS2Q9K1scBb",
+          "name": "Porządki w Gmailu — etykietowanie per nadawca",
+          "active": true,
+          "updatedAt": "2026-09-03T18:45:42.768Z",
+          "folderId": null
+        },
+        {
+          "id": "HwH2M5e12fug5xLW",
+          "name": "PM Agent OS — Lead Capture (Etap 3D)",
+          "active": true,
+          "updatedAt": "2026-09-03T18:39:21.265Z",
+          "folderId": null
+        },
+        {
+          "id": "PlTAfBsi6inHPglD",
+          "name": "Zielona Pergola — rezerwacje stolików",
+          "active": true,
+          "updatedAt": "2026-09-02T11:54:08.867Z",
+          "folderId": null
+        },
+        {
+          "id": "IpNGgJLHYiZU7PSF",
+          "name": "Zielona Pergola — formularz kontaktowy",
+          "active": true,
+          "updatedAt": "2026-09-02T11:53:37.528Z",
+          "folderId": null
+        },
+        {
+          "id": "qePjensdsyEEoBjw",
+          "name": "PM Agent OS — Email Label by Sender (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-26T22:28:05.289Z",
+          "folderId": null
+        },
+        {
+          "id": "pMiceLsFO0i0jgiN",
+          "name": "PM Agent OS — Email Housekeeping (auto-etykiety)",
+          "active": false,
+          "updatedAt": "2026-08-25T08:31:36.139Z",
+          "folderId": null
+        },
+        {
+          "id": "KJP83k6STKlVuD8Z",
+          "name": "PM Agent OS — Email Audit Batch (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-25T08:21:31.525Z",
+          "folderId": null
+        },
+        {
+          "id": "j1WkWw5UIaFn9drZ",
+          "name": "PM Agent OS — Email Label per Nadawca (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-25T06:37:11.246Z",
+          "folderId": null
+        },
+        {
+          "id": "TAtNZ3IJJMb0s8mI",
+          "name": "PM Agent OS — Marketing Campaign Manager (Etap 3D)",
+          "active": true,
+          "updatedAt": "2026-08-25T04:53:57.018Z",
+          "folderId": null
+        },
+        {
+          "id": "6USW6xliSPfG0meK",
+          "name": "PM Agent OS — Samorefleksja tygodniowa (Faza 7.6)",
+          "active": false,
+          "updatedAt": "2026-08-25T03:49:12.260Z",
+          "folderId": null
+        },
+        {
+          "id": "Ud6WyivIF1MdwuYo",
+          "name": "PM Agent OS — Retry Executor (FIX 10)",
+          "active": true,
+          "updatedAt": "2026-08-25T02:27:36.982Z",
+          "folderId": null
+        },
+        {
+          "id": "JKycoAIwYdohrAqC",
+          "name": "PM Agent OS — Lista rezerwowa",
+          "active": true,
+          "updatedAt": "2026-08-25T02:07:01.492Z",
+          "folderId": null
+        },
+        {
+          "id": "i0VAGaiVbMq2GWVG",
+          "name": "PM Agent OS — Narzedzie: Polityka prywatnosci i regulamin",
+          "active": true,
+          "updatedAt": "2026-08-25T01:51:45.915Z",
+          "folderId": null
+        },
+        {
+          "id": "eSg6tA1ZPfeU1HKh",
+          "name": "PM Agent OS — Transkrypcja mediow (most)",
+          "active": true,
+          "updatedAt": "2026-08-25T00:47:08.800Z",
+          "folderId": null
+        },
+        {
+          "id": "rlyHFKja9n2BLGga",
+          "name": "PM Panel — Most agentów (bezpośrednie wywołanie)",
+          "active": true,
+          "updatedAt": "2026-08-24T23:47:12.150Z",
+          "folderId": null
+        },
+        {
+          "id": "M5s1DzPNOIKX7Aly",
+          "name": "PM Agent OS — Poranny Brief (Dona)",
+          "active": false,
+          "updatedAt": "2026-08-24T23:12:03.462Z",
+          "folderId": null
+        },
+        {
+          "id": "R2l6imuyyw3eAc3A",
+          "name": "PM Agent OS — Windykator faktur - silnik (Krok 20b)",
+          "active": true,
+          "updatedAt": "2026-08-24T21:50:25.933Z",
+          "folderId": null
+        },
+        {
+          "id": "RHXNk1FfZCjCOCBH",
+          "name": "PM Narzedzie — wgraj plik na Dysk",
+          "active": true,
+          "updatedAt": "2026-08-24T18:03:29.812Z",
+          "folderId": null
+        },
+        {
+          "id": "qAYXNLW06t41gtn7",
+          "name": "PM Agent OS — Narzędzie: wypisz_materialy_medialne",
+          "active": true,
+          "updatedAt": "2026-08-24T13:06:22.491Z",
+          "folderId": null
+        },
+        {
+          "id": "OKwUHQOdIhhwKa1a",
+          "name": "PM Agent OS — Drive Audit Batch (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-24T13:04:52.712Z",
+          "folderId": null
+        },
+        {
+          "id": "gVOd79zy1JBlBv3X",
+          "name": "PM Agent OS — Narzędzie: wypisz_strony_i_kampanie",
+          "active": true,
+          "updatedAt": "2026-08-24T12:49:31.987Z",
+          "folderId": null
+        },
+        {
+          "id": "VrCORfvCkOk0uHhj",
+          "name": "PM Agent OS — Narzędzie: co_robi_claude",
+          "active": true,
+          "updatedAt": "2026-08-24T12:15:44.611Z",
+          "folderId": null
+        },
+        {
+          "id": "Psz8Sob0kYMjyB7L",
+          "name": "PM Współpraca — zrzut kolejki dla Claude od strony",
+          "active": false,
+          "updatedAt": "2026-08-24T11:50:15.575Z",
+          "folderId": null
+        },
+        {
+          "id": "QkypPCsJnzBF8X3r",
+          "name": "PM Panel — Strażnik pytań",
+          "active": false,
+          "updatedAt": "2026-08-24T10:28:57.095Z",
+          "folderId": null
+        },
+        {
+          "id": "tUQvUPYrSLeuTC6l",
+          "name": "PM Agent OS — Aparaty: katalogowanie zdjec",
+          "active": true,
+          "updatedAt": "2026-08-24T05:08:01.214Z",
+          "folderId": null
+        },
+        {
+          "id": "fZVZlpRSS2fI9cVt",
+          "name": "PM Agent OS — Aparaty: rozpoznaj i opisz (v2)",
+          "active": true,
+          "updatedAt": "2026-08-24T01:47:40.951Z",
+          "folderId": null
+        },
+        {
+          "id": "MhOlUFeCGdmXxxtU",
+          "name": "PM Agent OS — Agent Drive v2 (Etap 3D.2)",
+          "active": true,
+          "updatedAt": "2026-08-23T22:39:36.187Z",
+          "folderId": null
+        },
+        {
+          "id": "xJ310R8yw1wNV9Lq",
+          "name": "PM Agent OS — Playbooki (rdzen)",
+          "active": true,
+          "updatedAt": "2026-08-23T16:27:43.567Z",
+          "folderId": null
+        },
+        {
+          "id": "WW8ZItkjJjzvXd7y",
+          "name": "PM Agent OS — Wartownik lejka",
+          "active": false,
+          "updatedAt": "2026-08-23T15:28:13.294Z",
+          "folderId": null
+        },
+        {
+          "id": "VttWXZyVwaGUbJa9",
+          "name": "PM Agent OS — Rejestr Agentow Sync (F0)",
+          "active": true,
+          "updatedAt": "2026-08-23T15:18:34.342Z",
+          "folderId": null
+        },
+        {
+          "id": "PygUvYWKPMeAI5SB",
+          "name": "PM Agent OS — Narzędzie: przekaz_do_claude",
+          "active": true,
+          "updatedAt": "2026-08-23T14:47:14.838Z",
+          "folderId": null
+        },
+        {
+          "id": "Cz2ggkCUuU1sedFw",
+          "name": "PM Agent OS — Panele: plan pracy i pytania",
+          "active": true,
+          "updatedAt": "2026-08-23T14:29:48.897Z",
+          "folderId": null
+        },
+        {
+          "id": "zUzOrMrAzecG5v0p",
+          "name": "PM - Asystent YT szefa kuchni - KAFELEK",
+          "active": true,
+          "updatedAt": "2026-08-22T21:33:10.794Z",
+          "folderId": null
+        },
+        {
+          "id": "nVoDDuLPvV4ybTCy",
+          "name": "PM Agent OS — DONA Read-Only Query Helper (ETAP 0B)",
+          "active": true,
+          "updatedAt": "2026-08-22T21:33:05.008Z",
+          "folderId": null
+        },
+        {
+          "id": "P2Z0TrcZ7jnRxGOZ",
+          "name": "PM Agent OS — Kolekcja aparatow SA",
+          "active": true,
+          "updatedAt": "2026-08-22T19:29:37.588Z",
+          "folderId": null
+        },
+        {
+          "id": "WVZ4DgPsjSWQH1OF",
+          "name": "PM — Mapa myśli — KAFELEK",
+          "active": true,
+          "updatedAt": "2026-08-22T16:47:09.943Z",
+          "folderId": null
+        },
+        {
+          "id": "XmzXA0DDqkqaYvX9",
+          "name": "PM Agent OS — Dziennik zmian (auto)",
+          "active": false,
+          "updatedAt": "2026-08-22T16:46:50.534Z",
+          "folderId": null
+        },
+        {
+          "id": "4G1ROI0zKTFZoJ54",
+          "name": "PM Agent OS — Zombie Detector (ETAP 0B)",
+          "active": false,
+          "updatedAt": "2026-08-22T16:27:48.778Z",
+          "folderId": null
+        },
+        {
+          "id": "zsEL98xGtkXnUrt3",
+          "name": "PM Agent OS — TEST serwisanta (celowa awaria)",
+          "active": false,
+          "updatedAt": "2026-08-22T16:12:38.072Z",
+          "folderId": null
+        },
+        {
+          "id": "JRd9BM2cLrLoDQZU",
+          "name": "PM Agent OS — Narzedzie: Umowa o wykonanie strony",
+          "active": true,
+          "updatedAt": "2026-08-22T15:27:52.768Z",
+          "folderId": null
+        },
+        {
+          "id": "9lpw7TwVuBIT2rCE",
+          "name": "PM Agent OS — Narzedzie: Umowa powierzenia przetwarzania",
+          "active": true,
+          "updatedAt": "2026-08-22T14:27:46.379Z",
+          "folderId": null
+        },
+        {
+          "id": "FgqLUkOiDr9ruXyK",
+          "name": "PM Agent OS — Narzedzie: Zgodnosc strony i sprzedazy",
+          "active": true,
+          "updatedAt": "2026-08-22T13:48:32.086Z",
+          "folderId": null
+        },
+        {
+          "id": "rarbUpMrEYgjrtI5",
+          "name": "PM Agent OS — Narzedzie: Domena i poczta dla strony",
+          "active": true,
+          "updatedAt": "2026-08-22T08:49:53.235Z",
+          "folderId": null
+        },
+        {
+          "id": "cH9Lkqprp2aDfEni",
+          "name": "PM Agent OS — Narzedzie: Wywiad przed budowa strony",
+          "active": true,
+          "updatedAt": "2026-08-22T08:47:25.660Z",
+          "folderId": null
+        },
+        {
+          "id": "E3R75Sf2Q8p6Hm7e",
+          "name": "Zielona Pergola — głos managera (TTS)",
+          "active": false,
+          "updatedAt": "2026-08-22T08:17:09.212Z",
+          "folderId": null
+        },
+        {
+          "id": "tGfYo5p9IgYvOK3P",
+          "name": "Zielona Pergola — powiadomienie o wyborach w ofercie",
+          "active": false,
+          "updatedAt": "2026-08-22T08:17:01.510Z",
+          "folderId": null
+        },
+        {
+          "id": "qD0Tz6kcTFpl3Lu1",
+          "name": "Zielona Pergola — newsletter (poniedziałkowe menu)",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:54.571Z",
+          "folderId": null
+        },
+        {
+          "id": "np6N7fWR1DXWEE7W",
+          "name": "Zielona Pergola — newsletter (zapis)",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:47.209Z",
+          "folderId": null
+        },
+        {
+          "id": "IT0lSekAkKoSg5G2",
+          "name": "Zielona Pergola — przypomnienia o rezerwacjach",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:33.183Z",
+          "folderId": null
+        },
+        {
+          "id": "PoETi7eYw1frjOgw",
+          "name": "Zielona Pergola — tygodniowy raport AI",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:26.101Z",
+          "folderId": null
+        },
+        {
+          "id": "FA3DGlcXW7Bnin1H",
+          "name": "Zielona Pergola — opinie gości z odpowiedzią AI",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:18.926Z",
+          "folderId": null
+        },
+        {
+          "id": "KJjcnjh3VenxFgpB",
+          "name": "Zielona Pergola — wirtualny manager (czat AI)",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:11.912Z",
+          "folderId": null
+        },
+        {
+          "id": "pOAyAmRMziVsg0sh",
+          "name": "Zielona Pergola — zamówienia pizzy online",
+          "active": false,
+          "updatedAt": "2026-08-22T08:16:04.744Z",
+          "folderId": null
+        },
+        {
+          "id": "Y02JbNnPzbiZnqnt",
+          "name": "PM Panel — Odbior plikow",
+          "active": true,
+          "updatedAt": "2026-08-22T03:47:56.190Z",
+          "folderId": null
+        },
+        {
+          "id": "JX80JKmYB6uqJllX",
+          "name": "PM Agent OS — Narzedzie: Audyt poczty (skrot)",
+          "active": true,
+          "updatedAt": "2026-08-22T00:07:18.838Z",
+          "folderId": null
+        },
+        {
+          "id": "lU97wA75SwX6MbQP",
+          "name": "PM Agent OS — Narzedzie: Audyt folderow po nazwie",
+          "active": true,
+          "updatedAt": "2026-08-21T22:50:16.389Z",
+          "folderId": null
+        },
+        {
+          "id": "iz9pqHDenr2DzFk7",
+          "name": "PM Agent OS — Narzedzie: karta_projektu",
+          "active": true,
+          "updatedAt": "2026-08-21T20:33:44.591Z",
+          "folderId": null
+        },
+        {
+          "id": "HFK502zi2rgKbLZY",
+          "name": "PM Agent OS — Narzedzie: rejestr_agentow",
+          "active": true,
+          "updatedAt": "2026-08-21T20:24:46.364Z",
+          "folderId": null
+        },
+        {
+          "id": "QFPxNELsuK8ys8D1",
+          "name": "YouTube Transcript Analyzer",
+          "active": false,
+          "updatedAt": "2026-07-25T12:41:42.515Z",
+          "folderId": null
+        },
+        {
+          "id": "b4ZXiAVGUPDqyfqf",
+          "name": "PM — Alarm awarii — KAFELEK",
+          "active": true,
+          "updatedAt": "2026-07-26T23:41:41.838Z",
+          "folderId": null
+        },
+        {
+          "id": "My3KgJHvV9SquEzE",
+          "name": "PM — Tablica Operacyjna v0",
+          "active": false,
+          "updatedAt": "2026-07-28T07:30:57.527Z",
+          "folderId": null
+        },
+        {
+          "id": "VVMU6hgbCXydEATR",
+          "name": "PM — Producent Materiału v0",
+          "active": false,
+          "updatedAt": "2026-07-28T07:30:59.095Z",
+          "folderId": null
+        },
+        {
+          "id": "dPXcFz46IMrldGHi",
+          "name": "PM — Raport Wyników v0",
+          "active": true,
+          "updatedAt": "2026-07-28T07:31:02.514Z",
+          "folderId": null
+        },
+        {
+          "id": "L2isueiQjeWcOljX",
+          "name": "PM — Sygnał życia — KAFELEK",
+          "active": false,
+          "updatedAt": "2026-07-28T08:34:00.643Z",
+          "folderId": null
+        },
+        {
+          "id": "saiiUj7vp5LcXb7o",
+          "name": "PM — Material Intake v0",
+          "active": true,
+          "updatedAt": "2026-07-28T08:59:14.290Z",
+          "folderId": null
+        },
+        {
+          "id": "Tir7fqeqJaXLZSls",
+          "name": "PM — Przelicz prawa v1",
+          "active": false,
+          "updatedAt": "2026-07-28T09:04:27.002Z",
+          "folderId": null
+        },
+        {
+          "id": "Lykg4mFLY6cudx9D",
+          "name": "PM — Ratunek dla Słabego Dnia v0",
+          "active": true,
+          "updatedAt": "2026-07-28T09:10:21.930Z",
+          "folderId": null
+        },
+        {
+          "id": "euXnO1HqPv45MhdD",
+          "name": "PM — Research B2B v0",
+          "active": true,
+          "updatedAt": "2026-07-28T09:17:13.906Z",
+          "folderId": null
+        },
+        {
+          "id": "4Ew5NcIBvZafEgij",
+          "name": "PM — Research B2B — lista v0",
+          "active": true,
+          "updatedAt": "2026-07-28T09:18:06.963Z",
+          "folderId": null
+        },
+        {
+          "id": "bDLgoKvwdAC02ocm",
+          "name": "PM Agent OS — Lead Capture & Follow-up",
+          "active": false,
+          "updatedAt": "2026-08-06T11:20:16.012Z",
+          "folderId": null
+        },
+        {
+          "id": "qlTqbgnITWjFqeiv",
+          "name": "PM Marketing OS — Animacja pocztowek (Runway)",
+          "active": true,
+          "updatedAt": "2026-08-07T09:50:42.529Z",
+          "folderId": null
+        },
+        {
+          "id": "Qox8wJxHV2BkQlWo",
+          "name": "PM Agent OS — Paid Campaign Builder (Etap 3D)",
+          "active": true,
+          "updatedAt": "2026-08-07T17:28:01.830Z",
+          "folderId": null
+        },
+        {
+          "id": "ZLAvwgSKxaHRBtGW",
+          "name": "PM Agent OS — Analytics (Etap 3D)",
+          "active": true,
+          "updatedAt": "2026-08-07T17:28:02.946Z",
+          "folderId": null
+        },
+        {
+          "id": "JVFCBicKL4u9M2Ti",
+          "name": "PM Agent OS — Lead Ops (Etap 3E)",
+          "active": true,
+          "updatedAt": "2026-08-07T21:27:29.529Z",
+          "folderId": null
+        },
+        {
+          "id": "xbfmEJv67ZCyKVsj",
+          "name": "PM Agent OS — Sales Intelligence (Etap 3G)",
+          "active": true,
+          "updatedAt": "2026-08-08T15:02:23.004Z",
+          "folderId": null
+        },
+        {
+          "id": "3vffwD7GMYJCS3BL",
+          "name": "PM Agent OS — Agent Zarzadzania Projektem",
+          "active": true,
+          "updatedAt": "2026-08-09T03:39:37.358Z",
+          "folderId": null
+        },
+        {
+          "id": "4Vv7V8cr4JiNXRKg",
+          "name": "PM Agent OS — Speaker Mapping (Etap 3B)",
+          "active": true,
+          "updatedAt": "2026-08-10T10:21:36.003Z",
+          "folderId": null
+        },
+        {
+          "id": "AUocYZFYtHVzzYip",
+          "name": "PM Agent OS — YouTube Channel Routing (Etap 3C)",
+          "active": true,
+          "updatedAt": "2026-08-10T13:55:38.134Z",
+          "folderId": null
+        },
+        {
+          "id": "vMwsd2lIDRaES8Ic",
+          "name": "PM OS — Paid Operation Idempotency Guard",
+          "active": true,
+          "updatedAt": "2026-08-11T13:14:16.544Z",
+          "folderId": null
+        },
+        {
+          "id": "21dHK3N3Uj0wXeB2",
+          "name": "PM Agent OS — Erasure Service (RODO, Etap 3M)",
+          "active": true,
+          "updatedAt": "2026-08-11T13:20:20.959Z",
+          "folderId": null
+        },
+        {
+          "id": "qOTJq2oZScyJeHju",
+          "name": "PM Agent OS — Contact Guard (Sesja 10)",
+          "active": true,
+          "updatedAt": "2026-08-11T13:30:50.885Z",
+          "folderId": null
+        },
+        {
+          "id": "oW7wvB7Vu1pGfMCQ",
+          "name": "PM Agent OS — Retry Processor (FIX 10)",
+          "active": false,
+          "updatedAt": "2026-08-11T16:09:13.552Z",
+          "folderId": null
+        },
+        {
+          "id": "wd7bw3aKvZ6UqhnG",
+          "name": "PM Agent OS — Drive Duplicate Quarantine (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-11T18:40:26.548Z",
+          "folderId": null
+        },
+        {
+          "id": "rm8bFXXF1hVPlVWT",
+          "name": "PM Agent OS — Email Safe Label (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-11T19:01:22.660Z",
+          "folderId": null
+        },
+        {
+          "id": "qeyKM6bsrhGWcnp8",
+          "name": "PM Agent OS — Agent Contact",
+          "active": true,
+          "updatedAt": "2026-08-13T15:55:08.103Z",
+          "folderId": null
+        },
+        {
+          "id": "2DIHIbXurG6Ra23l",
+          "name": "PM Agent OS — Agent Drive",
+          "active": false,
+          "updatedAt": "2026-08-13T15:56:08.100Z",
+          "folderId": null
+        },
+        {
+          "id": "IEooJSoByO2wbOph",
+          "name": "PM Agent OS — Subscription & AI Limits Manager",
+          "active": true,
+          "updatedAt": "2026-08-13T15:59:38.262Z",
+          "folderId": null
+        },
+        {
+          "id": "jKqpLoRsOAFGtJeM",
+          "name": "PM Agent OS — Fabryka Kampanii",
+          "active": false,
+          "updatedAt": "2026-08-14T05:30:45.931Z",
+          "folderId": null
+        },
+        {
+          "id": "hWrLVnEMD18Rtjp1",
+          "name": "PM Agent OS — Cost Estimator (KOSZTY V2)",
+          "active": true,
+          "updatedAt": "2026-08-14T07:04:45.250Z",
+          "folderId": null
+        },
+        {
+          "id": "53yZWzc8ZHOeGHAX",
+          "name": "PM Agent OS — Agent Kreacji (Generowanie obrazow)",
+          "active": true,
+          "updatedAt": "2026-08-14T13:09:58.332Z",
+          "folderId": null
+        },
+        {
+          "id": "x7WhHmU6B3Lw3y3v",
+          "name": "PM Agent OS — Narzedzie: generuj-diagram",
+          "active": true,
+          "updatedAt": "2026-08-15T13:06:50.255Z",
+          "folderId": null
+        },
+        {
+          "id": "k1X9xu67gYb2FRjy",
+          "name": "PM Agent OS — Narzedzie: generuj-ikony",
+          "active": true,
+          "updatedAt": "2026-08-15T13:30:15.682Z",
+          "folderId": null
+        },
+        {
+          "id": "3Qw6DQ7MMoaK4OXe",
+          "name": "PM Agent OS — Narzedzie: co_nowego",
+          "active": true,
+          "updatedAt": "2026-08-15T16:25:48.244Z",
+          "folderId": null
+        },
+        {
+          "id": "n58rcmGM7kkt7Rm3",
+          "name": "PM Marketing OS — Onepage MCP Bridge",
+          "active": true,
+          "updatedAt": "2026-08-15T18:47:29.300Z",
+          "folderId": null
+        },
+        {
+          "id": "GCWHEGFiUol5eClt",
+          "name": "PM Agent OS — Dysk Batch Operations (Krok 4)",
+          "active": true,
+          "updatedAt": "2026-08-15T21:44:39.366Z",
+          "folderId": null
+        },
+        {
+          "id": "NGhjtBAbaW5zYUHe",
+          "name": "PM Agent OS — Tools Factory (Faza 7.3)",
+          "active": true,
+          "updatedAt": "2026-08-15T22:14:46.868Z",
+          "folderId": null
+        },
+        {
+          "id": "LnwIVyymKITbYOhY",
+          "name": "PM Agent OS — Tools Factory Aktywator (Krok 5)",
+          "active": true,
+          "updatedAt": "2026-08-15T22:27:14.700Z",
+          "folderId": null
+        },
+        {
+          "id": "Xj5bHjurl9pBbLOc",
+          "name": "SMOKE TEST — Audyt Dysku V1 (read-only)",
+          "active": false,
+          "updatedAt": "2026-08-16T04:40:38.892Z",
+          "folderId": null
+        },
+        {
+          "id": "pbrWdQPRIQVIiqhY",
+          "name": "PM Agent OS — Agent Calendar",
+          "active": true,
+          "updatedAt": "2026-08-16T06:21:53.987Z",
+          "folderId": null
+        },
+        {
+          "id": "YpWO7DL1f276h5h7",
+          "name": "PM Agent OS — Agent Dokumentacji v2",
+          "active": true,
+          "updatedAt": "2026-08-16T06:35:21.738Z",
+          "folderId": null
+        },
+        {
+          "id": "VR2GXK5jXqojpoKq",
+          "name": "PM Agent OS — Workflow Rollback (Krok 3B)",
+          "active": true,
+          "updatedAt": "2026-08-16T07:28:51.750Z",
+          "folderId": null
+        },
+        {
+          "id": "DTJEeCgrz8aZ3dJn",
+          "name": "PM Agent OS — Narzedzie: znajdz_duplikaty_kontaktow (CRM Identity Resolution V1)",
+          "active": true,
+          "updatedAt": "2026-08-16T11:07:13.049Z",
+          "folderId": null
+        },
+        {
+          "id": "i5PMg8lTOXaQQ4hW",
+          "name": "PM Agent OS — Narzedzie: stan_biznesu (Executive Dashboard V1)",
+          "active": true,
+          "updatedAt": "2026-08-16T11:39:20.890Z",
+          "folderId": null
+        },
+        {
+          "id": "rNUoc1dMSEJjFAOs",
+          "name": "PM Agent OS — Narzedzie: dokumenty_wizualne (Analiza wizualna V1)",
+          "active": true,
+          "updatedAt": "2026-08-16T12:29:57.572Z",
+          "folderId": null
+        },
+        {
+          "id": "7vUrQUCKbRPufYJ4",
+          "name": "PM Agent OS — OpenAI Cost Monitor (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-16T13:12:23.318Z",
+          "folderId": null
+        },
+        {
+          "id": "hygsIwa6pWYg8Zrm",
+          "name": "PM Agent OS — Asset Registry & Versioning",
+          "active": true,
+          "updatedAt": "2026-08-16T14:56:46.206Z",
+          "folderId": null
+        },
+        {
+          "id": "DELJRoYvlsu8uyX5",
+          "name": "PM Agent OS — Cross-Link Finder (ETAP DONA-TOOLS)",
+          "active": true,
+          "updatedAt": "2026-08-16T15:25:41.893Z",
+          "folderId": null
+        },
+        {
+          "id": "vhwXLqQWxMXtkmr6",
+          "name": "PM Agent OS — Sekretariat Poczty (Etap 3D.2)",
+          "active": true,
+          "updatedAt": "2026-08-17T05:03:09.174Z",
+          "folderId": null
+        },
+        {
+          "id": "34ChJxuOBAgte4D6",
+          "name": "PM Agent OS — Customer Routing (Etap 3A)",
+          "active": true,
+          "updatedAt": "2026-08-17T05:03:55.550Z",
+          "folderId": null
+        },
+        {
+          "id": "uermct89v7vL5RML",
+          "name": "PM Agent OS — Dysk Batch Cofnij Partie (Krok 4)",
+          "active": true,
+          "updatedAt": "2026-08-17T05:08:58.968Z",
+          "folderId": null
+        },
+        {
+          "id": "zSlSS7sZOlyZv5V7",
+          "name": "PM Agent OS — Safe Prompt Manager",
+          "active": false,
+          "updatedAt": "2026-08-17T07:45:35.220Z",
+          "folderId": null
+        },
+        {
+          "id": "Z4BDdvvz3IoTS4H7",
+          "name": "PM Marketing OS — Onepage OAuth",
+          "active": true,
+          "updatedAt": "2026-08-17T07:46:01.957Z",
+          "folderId": null
+        },
+        {
+          "id": "y9WPrHHV6pUuBqtQ",
+          "name": "PM Marketing OS — Onepage OAuth Setup (rotacja)",
+          "active": true,
+          "updatedAt": "2026-08-17T07:46:12.042Z",
+          "folderId": null
+        },
+        {
+          "id": "UQiBSl4Bmy8GUsD2",
+          "name": "PM Agent OS — Rollback Kolejka (I/O)",
+          "active": true,
+          "updatedAt": "2026-08-17T07:46:22.071Z",
+          "folderId": null
+        },
+        {
+          "id": "ZEjnERS4FYzsGKCV",
+          "name": "PM Agent OS — Client Briefing & Follow-up Watchdog (Etap 3J)",
+          "active": true,
+          "updatedAt": "2026-08-17T11:21:28.125Z",
+          "folderId": null
+        },
+        {
+          "id": "j6g99GFieAGCYykg",
+          "name": "PM Agent OS — Conversation Intelligence (Etap 3I)",
+          "active": true,
+          "updatedAt": "2026-08-17T21:18:26.130Z",
+          "folderId": null
+        },
+        {
+          "id": "3uhcH9RId0t6Q6UR",
+          "name": "PM Agent OS — Sales Ops (Etap 3G)",
+          "active": true,
+          "updatedAt": "2026-08-17T21:57:08.550Z",
+          "folderId": null
+        },
+        {
+          "id": "Fk0vSjZOAIg7zqA4",
+          "name": "PM Agent OS — Media Source Resolver",
+          "active": true,
+          "updatedAt": "2026-08-19T11:28:04.937Z",
+          "folderId": null
+        },
+        {
+          "id": "hBnGO2KJ65x7QznK",
+          "name": "PM Agent OS — Narzedzie: szukaj_historii_claude",
+          "active": true,
+          "updatedAt": "2026-08-19T12:05:42.590Z",
+          "folderId": null
+        },
+        {
+          "id": "MRvknTnyFC4nTnrb",
+          "name": "PM Agent OS — Narzedzie: RODO usun dane osoby (Krok 16)",
+          "active": true,
+          "updatedAt": "2026-08-19T15:54:31.918Z",
+          "folderId": null
+        },
+        {
+          "id": "cR7CKV1oPxDqXGAd",
+          "name": "PM Agent OS — Agent Lejka",
+          "active": true,
+          "updatedAt": "2026-08-19T16:44:29.160Z",
+          "folderId": null
+        },
+        {
+          "id": "cRgWL46ZwmXwJaV1",
+          "name": "PM Agent OS — Agent Strategii Marketingowej",
+          "active": true,
+          "updatedAt": "2026-08-19T16:55:03.311Z",
+          "folderId": null
+        },
+        {
+          "id": "pjcldtoTqBD8LYzU",
+          "name": "PM Agent OS — Narzedzie: Analiza wideo (Krok 16)",
+          "active": true,
+          "updatedAt": "2026-08-20T05:39:17.176Z",
+          "folderId": null
+        },
+        {
+          "id": "QfAXrRYQqalIP4M6",
+          "name": "PM Agent OS — Narzedzie: Podglad rolki / render wideo (Krok 17)",
+          "active": true,
+          "updatedAt": "2026-08-20T08:05:33.480Z",
+          "folderId": null
+        },
+        {
+          "id": "kzE36tcoTO4bybOq",
+          "name": "PM Agent OS — Narzedzie: Specjalista SEO (Krok 19)",
+          "active": true,
+          "updatedAt": "2026-08-20T10:00:47.987Z",
+          "folderId": null
+        },
+        {
+          "id": "UfgnKUmOlPEwTcK9",
+          "name": "PM Agent OS — Narzedzie: Dodaj fakture (Krok 20a)",
+          "active": true,
+          "updatedAt": "2026-08-20T10:20:10.276Z",
+          "folderId": null
+        },
+        {
+          "id": "pOp1kwjZQisY7GsC",
+          "name": "PM Agent OS — Narzedzie: Porownaj wersje dokumentu (Krok 22)",
+          "active": true,
+          "updatedAt": "2026-08-20T12:31:52.247Z",
+          "folderId": null
+        },
+        {
+          "id": "F4JQRHeC3xXJeW3e",
+          "name": "PM Agent OS — Narzedzie: Ekstrakcja tabel z dokumentu (Krok 21)",
+          "active": true,
+          "updatedAt": "2026-08-20T12:34:38.050Z",
+          "folderId": null
+        },
+        {
+          "id": "alBZhNictTS9KB36",
+          "name": "PM Agent OS — Narzedzie: Ekspert zapytan (Krok 23)",
+          "active": true,
+          "updatedAt": "2026-08-20T12:52:31.803Z",
+          "folderId": null
+        },
+        {
+          "id": "H1LpIoSxWcLU9eIq",
+          "name": "PM Agent OS — Narzedzie: Protokolant spotkan (Krok 24)",
+          "active": true,
+          "updatedAt": "2026-08-20T13:38:17.439Z",
+          "folderId": null
+        },
+        {
+          "id": "6xNM2BQMjKIhkHUn",
+          "name": "PM Agent OS — Narzedzie: Bibliotekarz Dysku (Krok 25)",
+          "active": true,
+          "updatedAt": "2026-08-20T15:39:57.826Z",
+          "folderId": null
+        },
+        {
+          "id": "J4WbM3rnbVTILoH1",
+          "name": "PM Agent OS — Legal & Compliance Gate",
+          "active": true,
+          "updatedAt": "2026-08-21T17:07:27.295Z",
+          "folderId": null
+        },
+        {
+          "id": "wGjOeCAOMt96BEKj",
+          "name": "Dom i Wnętrze Warszawa — asystent wycen i obmiarów",
+          "active": true,
+          "updatedAt": "2026-08-21T17:16:25.196Z",
+          "folderId": null
+        },
+        {
+          "id": "09ceDvlo4jzh5P6N",
+          "name": "PM Agent OS — Publikacja zatwierdzonej strony",
+          "active": true,
+          "updatedAt": "2026-08-21T17:16:28.745Z",
+          "folderId": null
+        },
+        {
+          "id": "lvMtz6kScTpYTJAS",
+          "name": "PM Agent OS — Windykator faktur (Krok 20)",
+          "active": false,
+          "updatedAt": "2026-08-21T17:16:35.330Z",
+          "folderId": null
+        },
+        {
+          "id": "GDu543S2W53Uch1R",
+          "name": "PM Growth Lab — raport z formularza uzupełniającego",
+          "active": true,
+          "updatedAt": "2026-08-21T17:16:38.647Z",
+          "folderId": null
+        },
+        {
+          "id": "zE50Z8xXIKn06Kl6",
+          "name": "PM POWER LAB — kontrakt Operacji Kaloryfer",
+          "active": true,
+          "updatedAt": "2026-08-21T17:16:53.692Z",
+          "folderId": null
+        },
+        {
+          "id": "G3RrxPYGGmQ8tVfP",
+          "name": "PM Panel — YouTube Research v1",
+          "active": true,
+          "updatedAt": "2026-08-21T17:16:57.105Z",
+          "folderId": null
+        },
+        {
+          "id": "a2B6Uxmvxc9926Uc",
+          "name": "PM Agent OS — Smoke Testy Customer Ops (Faza 0.4)",
+          "active": false,
+          "updatedAt": "2026-08-21T17:17:32.153Z",
+          "folderId": null
+        },
+        {
+          "id": "4F6fOzCvakTypzp1",
+          "name": "PM Agent OS — Smoke Testy: Onepage Bridge (bramka zgody + http_status)",
+          "active": false,
+          "updatedAt": "2026-08-21T17:17:35.523Z",
+          "folderId": null
+        },
+        {
+          "id": "aWfsW1kjjm09g9UX",
+          "name": "PM Agent OS — Smoke Testy: co_nowego",
+          "active": false,
+          "updatedAt": "2026-08-21T17:17:38.551Z",
+          "folderId": null
+        },
+        {
+          "id": "R5tl34E3tqeP3Zec",
+          "name": "PM Agent OS — Smoke Testy: narzedzia deterministyczne",
+          "active": false,
+          "updatedAt": "2026-08-21T17:17:49.455Z",
+          "folderId": null
+        },
+        {
+          "id": "DJeGGdtQ8UnFZWIf",
+          "name": "PM Agent OS — Smoke Testy: stan_biznesu + znajdz_duplikaty_kontaktow (Krok 7/8)",
+          "active": false,
+          "updatedAt": "2026-08-21T17:17:52.692Z",
+          "folderId": null
+        },
+        {
+          "id": "fmEAv3pJuXavssE5",
+          "name": "Publikacja pliku do repo (Dona - narzedzie generyczne)",
+          "active": true,
+          "updatedAt": "2026-08-21T17:18:04.452Z",
+          "folderId": null
+        },
+        {
+          "id": "338nzLePIn3XkI7o",
+          "name": "Receptury — Analiza wybranego filmu YT",
+          "active": true,
+          "updatedAt": "2026-08-21T17:18:07.345Z",
+          "folderId": null
+        },
+        {
+          "id": "ZLPGKYt05i501kb4",
+          "name": "SMOKE TEST — Mail / Strona / Lead (partia 1)",
+          "active": false,
+          "updatedAt": "2026-08-21T17:18:13.372Z",
+          "folderId": null
+        },
+        {
+          "id": "fKiHy3L2xgUetaUX",
+          "name": "SMOKE TEST — Oferta / Pliki / Kalendarz / Pamiec (partia 2)",
+          "active": false,
+          "updatedAt": "2026-08-21T17:18:17.334Z",
+          "folderId": null
+        },
+        {
+          "id": "x9jjts3SSYMP0Ygy",
+          "name": "Studio Lawenda — asystentka rezerwacji (czat AI)",
+          "active": true,
+          "updatedAt": "2026-08-21T17:18:20.452Z",
+          "folderId": null
+        },
+        {
+          "id": "BVfRpo0s6xN1MDHA",
+          "name": "PM Agent OS — Agent Brandingu (Brandfetch)",
+          "active": true,
+          "updatedAt": "2026-08-21T17:48:20.290Z",
+          "folderId": null
+        },
+        {
+          "id": "fAIjqAYZdfSTviz4",
+          "name": "Receptury — Szukaj filmu YT v2 (propozycje)",
+          "active": true,
+          "updatedAt": "2026-08-21T18:02:50.793Z",
+          "folderId": null
+        }
+      ]
+    },
+    {
+      "name": "Canon",
+      "count": 45,
+      "active": 1,
+      "workflows": [
+        {
+          "id": "ygu7ncrbXRxA1xuh",
+          "name": "CANON 12 — Rollback Advisor",
+          "active": false,
+          "updatedAt": "2026-09-12T12:37:00.034Z",
+          "folderId": "GeDrhDMgReHNuKKc"
+        },
+        {
+          "id": "lwJEsuODDMKHsmaV",
+          "name": "CANON 12 — Recovery Verifier",
+          "active": false,
+          "updatedAt": "2026-09-12T12:35:53.687Z",
+          "folderId": "GeDrhDMgReHNuKKc"
+        },
+        {
+          "id": "VYU9a0NW0mNaerhi",
+          "name": "CANON 13 — Conversion Drop Detector",
+          "active": false,
+          "updatedAt": "2026-09-12T12:30:38.712Z",
+          "folderId": "8LrApqgNfwpr3Zty"
+        },
+        {
+          "id": "t2zRIUFCoyF1dmc0",
+          "name": "CANON 11 — Preview Deployment Request",
+          "active": false,
+          "updatedAt": "2026-09-12T12:28:56.210Z",
+          "folderId": "8fEgELuurv6taXDZ"
+        },
+        {
+          "id": "FVvNb6mPqxnkFJ2z",
+          "name": "CANON 09 — Playwright Runner Request",
+          "active": false,
+          "updatedAt": "2026-09-12T12:27:36.208Z",
+          "folderId": "e7sR2pB19KP3GhiP"
+        },
+        {
+          "id": "XHWpFx85cQCPggIu",
+          "name": "CANON 09 — QA Test Plan Compiler",
+          "active": false,
+          "updatedAt": "2026-09-12T12:26:12.704Z",
+          "folderId": "e7sR2pB19KP3GhiP"
+        },
+        {
+          "id": "yvkG3h86vIjA78L7",
+          "name": "CANON 06 — App Build Factory",
+          "active": false,
+          "updatedAt": "2026-09-12T12:23:19.278Z",
+          "folderId": "oHR2EewQl3blMp2l"
+        },
+        {
+          "id": "GiCQYcj2qqTnR5Ex",
+          "name": "CANON 14 — Cost & Usage Guard",
+          "active": false,
+          "updatedAt": "2026-09-12T12:22:31.654Z",
+          "folderId": "tOw3y5m2cikjSXCI"
+        },
+        {
+          "id": "apbRVRmgdF6ApHTU",
+          "name": "CANON 05 — Builder Router",
+          "active": false,
+          "updatedAt": "2026-09-12T12:22:27.009Z",
+          "folderId": "CrJ1nlk519KDDmYA"
+        },
+        {
+          "id": "rGVRnGhq93nPZok1",
+          "name": "CANON 06 — App & Data Architect",
+          "active": false,
+          "updatedAt": "2026-09-12T12:16:14.723Z",
+          "folderId": "oHR2EewQl3blMp2l"
+        },
+        {
+          "id": "1mux6tCwoqfhnkCU",
+          "name": "CANON 09 — QA Full Gate",
+          "active": false,
+          "updatedAt": "2026-09-12T12:13:32.611Z",
+          "folderId": "e7sR2pB19KP3GhiP"
+        },
+        {
+          "id": "RDucHQZ1o3mOUC88",
+          "name": "CANON 07 — Technical SEO Implementation Patcher",
+          "active": false,
+          "updatedAt": "2026-09-12T09:34:42.944Z",
+          "folderId": "ljnDzDzMAz84z2I7"
+        },
+        {
+          "id": "qngD1Wjtjup8U55g",
+          "name": "CANON 08 — Tracking & Lead Instrumentation Planner",
+          "active": false,
+          "updatedAt": "2026-09-12T09:32:08.871Z",
+          "folderId": "Aayz5CWMhxBpfS42"
+        },
+        {
+          "id": "tpAwebULrH3CQSPn",
+          "name": "CANON 05 — Frontend Build Factory",
+          "active": false,
+          "updatedAt": "2026-09-12T09:30:10.148Z",
+          "folderId": "CrJ1nlk519KDDmYA"
+        },
+        {
+          "id": "dpoh1M9FDmp48cCZ",
+          "name": "CANON 03 — Design Create Director",
+          "active": false,
+          "updatedAt": "2026-09-12T09:26:52.662Z",
+          "folderId": "AqwaQK20SfwYExjS"
+        },
+        {
+          "id": "Q5x51QPBKQwHmFwy",
+          "name": "CANON 04 — Design Vault Selector",
+          "active": false,
+          "updatedAt": "2026-09-12T09:25:53.254Z",
+          "folderId": "LFEPNLWnrA3SJV0F"
+        },
+        {
+          "id": "ODWZ74RThrXa7TS4",
+          "name": "CANON 99 — Model Registry Role Admin",
+          "active": false,
+          "updatedAt": "2026-09-12T09:21:54.887Z",
+          "folderId": "mnjxNuKke5dJKs40"
+        },
+        {
+          "id": "JxAWIKe72B2XeMGK",
+          "name": "CANON 02 — UX Architecture Planner",
+          "active": false,
+          "updatedAt": "2026-09-12T09:18:03.324Z",
+          "folderId": "W45wFv78NIIwe7Jn"
+        },
+        {
+          "id": "rpHMphvRGHOFgTqF",
+          "name": "CANON 01 — Site Audit Inspector",
+          "active": false,
+          "updatedAt": "2026-09-12T09:14:56.384Z",
+          "folderId": "RsjjF82dYcLx05kS"
+        },
+        {
+          "id": "scs4gyLQUd87FCZx",
+          "name": "CANON 99 — Service Registry Binder",
+          "active": false,
+          "updatedAt": "2026-09-11T23:28:18.867Z",
+          "folderId": "mnjxNuKke5dJKs40"
+        },
+        {
+          "id": "PpMUzDl02eyapu6I",
+          "name": "CANON 99 — Go-Live Readiness",
+          "active": false,
+          "updatedAt": "2026-09-11T23:27:02.361Z",
+          "folderId": "mnjxNuKke5dJKs40"
+        },
+        {
+          "id": "n5343g3AtUFJDtcG",
+          "name": "CANON 11 — Production Release Gate",
+          "active": false,
+          "updatedAt": "2026-09-11T23:22:42.435Z",
+          "folderId": "8fEgELuurv6taXDZ"
+        },
+        {
+          "id": "meVwLqkhZIzJ4QQG",
+          "name": "CANON 10 — Security Evidence Aggregator",
+          "active": false,
+          "updatedAt": "2026-09-11T23:21:52.214Z",
+          "folderId": "tsHvLGb1sQq9PJTc"
+        },
+        {
+          "id": "5RLgKA59afKakOwQ",
+          "name": "CANON 10 — Security Evidence Intake",
+          "active": false,
+          "updatedAt": "2026-09-11T23:21:48.044Z",
+          "folderId": "tsHvLGb1sQq9PJTc"
+        },
+        {
+          "id": "eYZEzPRjEpkcKNQz",
+          "name": "CANON 10 — Security Preflight",
+          "active": false,
+          "updatedAt": "2026-09-11T23:21:43.921Z",
+          "folderId": "tsHvLGb1sQq9PJTc"
+        },
+        {
+          "id": "0I2mrnb8o30xe593",
+          "name": "CANON 10 — HTTP Security Header Inspector",
+          "active": false,
+          "updatedAt": "2026-09-11T23:19:24.018Z",
+          "folderId": "tsHvLGb1sQq9PJTc"
+        },
+        {
+          "id": "9983V6clcax0iecb",
+          "name": "CANON 07 — SEO Preview Inspector",
+          "active": false,
+          "updatedAt": "2026-09-11T23:18:02.913Z",
+          "folderId": "ljnDzDzMAz84z2I7"
+        },
+        {
+          "id": "YO2erCND4vWeyIZP",
+          "name": "CANON 07 — Technical SEO Preflight",
+          "active": false,
+          "updatedAt": "2026-09-11T23:17:34.039Z",
+          "folderId": "ljnDzDzMAz84z2I7"
+        },
+        {
+          "id": "M2KWwObkdKKJU1Op",
+          "name": "CANON 09 — QA Evidence Gate",
+          "active": false,
+          "updatedAt": "2026-09-11T23:15:22.688Z",
+          "folderId": "e7sR2pB19KP3GhiP"
+        },
+        {
+          "id": "h5RO1sYOkML4WxOA",
+          "name": "CANON 03 — Design Critic Gate",
+          "active": false,
+          "updatedAt": "2026-09-11T23:14:11.548Z",
+          "folderId": "AqwaQK20SfwYExjS"
+        },
+        {
+          "id": "5lU46gkns2oUxJtc",
+          "name": "CANON 05 — Model Benchmark Recorder",
+          "active": false,
+          "updatedAt": "2026-09-11T23:13:16.132Z",
+          "folderId": "CrJ1nlk519KDDmYA"
+        },
+        {
+          "id": "d9OkgZIPlPAPYGZY",
+          "name": "CANON 04 — Design Vault Curator",
+          "active": false,
+          "updatedAt": "2026-09-11T23:10:22.571Z",
+          "folderId": "LFEPNLWnrA3SJV0F"
+        },
+        {
+          "id": "DM7iEi0yL4uZec3I",
+          "name": "CANON 12 — Performance Regression Detector",
+          "active": false,
+          "updatedAt": "2026-09-11T22:56:57.035Z",
+          "folderId": "GeDrhDMgReHNuKKc"
+        },
+        {
+          "id": "Q9WabVIixwRpYdK3",
+          "name": "CANON 12 — Incident Diagnostician",
+          "active": false,
+          "updatedAt": "2026-09-11T22:56:42.661Z",
+          "folderId": "GeDrhDMgReHNuKKc"
+        },
+        {
+          "id": "8j4kAnHSTzzqakMO",
+          "name": "CANON 11 — Release Decision Intake",
+          "active": false,
+          "updatedAt": "2026-09-11T22:56:37.741Z",
+          "folderId": "8fEgELuurv6taXDZ"
+        },
+        {
+          "id": "gBBON7uNAENAM52Z",
+          "name": "CANON 11 — Release Request",
+          "active": false,
+          "updatedAt": "2026-09-11T22:56:33.537Z",
+          "folderId": "8fEgELuurv6taXDZ"
+        },
+        {
+          "id": "X9emhakQLS5r43SS",
+          "name": "CANON 12 — Performance Baseline Builder",
+          "active": false,
+          "updatedAt": "2026-09-11T22:53:05.554Z",
+          "folderId": "GeDrhDMgReHNuKKc"
+        },
+        {
+          "id": "SkR4RlmEh6qboKAc",
+          "name": "CANON 12 — Site Health Monitor",
+          "active": false,
+          "updatedAt": "2026-09-11T22:49:38.139Z",
+          "folderId": "GeDrhDMgReHNuKKc"
+        },
+        {
+          "id": "eedNSX8nIyfmGSHE",
+          "name": "CANON 14 — Cost Settlement",
+          "active": false,
+          "updatedAt": "2026-09-11T22:47:17.690Z",
+          "folderId": "tOw3y5m2cikjSXCI"
+        },
+        {
+          "id": "vfU349xQqPv4SC0D",
+          "name": "CANON 00 — Intake & Contract Gate",
+          "active": false,
+          "updatedAt": "2026-09-11T22:44:47.726Z",
+          "folderId": "URm2vWlPcSYBK9mE"
+        },
+        {
+          "id": "d3o4wH0pNZlonz2u",
+          "name": "CANON 14 — DONA Handoff Contract",
+          "active": false,
+          "updatedAt": "2026-09-11T22:43:58.356Z",
+          "folderId": "tOw3y5m2cikjSXCI"
+        },
+        {
+          "id": "Smf08l5ePbG6AmB6",
+          "name": "CANON 00 — Capability Dispatcher",
+          "active": false,
+          "updatedAt": "2026-09-11T22:43:52.880Z",
+          "folderId": "URm2vWlPcSYBK9mE"
+        },
+        {
+          "id": "tC1TXxCC68LBslg2",
+          "name": "CANON 00 — Project State Manager",
+          "active": false,
+          "updatedAt": "2026-09-11T22:43:47.972Z",
+          "folderId": "URm2vWlPcSYBK9mE"
+        },
+        {
+          "id": "12wRA0XcfK0Lte1H",
+          "name": "CANON 00 — Project Orchestrator",
+          "active": false,
+          "updatedAt": "2026-09-11T22:43:41.450Z",
+          "folderId": "URm2vWlPcSYBK9mE"
+        },
+        {
+          "id": "W1W8xTMyZrQaS8Vv",
+          "name": "CANON 99 — Error & Audit Logger",
+          "active": true,
+          "updatedAt": "2026-09-11T22:36:43.346Z",
+          "folderId": "mnjxNuKke5dJKs40"
+        }
+      ]
+    },
+    {
+      "name": "Zenit",
+      "count": 57,
+      "active": 0,
+      "workflows": [
+        {
+          "id": "i77JgEud4kV3NREL",
+          "name": "ZENIT 04 — Web Deployment Request",
+          "active": false,
+          "updatedAt": "2026-09-11T21:13:14.242Z",
+          "folderId": "uC4U8MNUH7wftbo8"
+        },
+        {
+          "id": "LF8lqPP4AG8EVPxn",
+          "name": "ZENIT 11 — Email Send Request",
+          "active": false,
+          "updatedAt": "2026-09-11T21:12:58.308Z",
+          "folderId": "PMuYcYCxdV1nJBSo"
+        },
+        {
+          "id": "qybVQrzdocHIhekN",
+          "name": "ZENIT 06 — Social Publish Request",
+          "active": false,
+          "updatedAt": "2026-09-11T21:12:38.636Z",
+          "folderId": "OGuP6LUoLOxyDQ9a"
+        },
+        {
+          "id": "SdPYX7q7515MEQFf",
+          "name": "ZENIT 07 — Approved Short Video Render Service",
+          "active": false,
+          "updatedAt": "2026-09-11T21:10:26.297Z",
+          "folderId": "SloXF0lXhh1Tm7Zs"
+        },
+        {
+          "id": "Y4O22gyxP3zOTf0V",
+          "name": "ZENIT 08 — Approved Image Render Service",
+          "active": false,
+          "updatedAt": "2026-09-11T21:10:16.371Z",
+          "folderId": "1anbp9W8M8hgslxm"
+        },
+        {
+          "id": "Le9eBXb9KplbuzBv",
+          "name": "ZENIT 12 — Review Response Studio",
+          "active": false,
+          "updatedAt": "2026-09-11T21:10:01.478Z",
+          "folderId": "TRCQEbzZm0lIoaEc"
+        },
+        {
+          "id": "VIzbYIR6MxTux1b3",
+          "name": "ZENIT 11 — Email & CRM Director",
+          "active": false,
+          "updatedAt": "2026-09-11T21:09:53.067Z",
+          "folderId": "PMuYcYCxdV1nJBSo"
+        },
+        {
+          "id": "DSqF9XpuQ5SOHF8g",
+          "name": "ZENIT 10 — Outreach Draft Studio",
+          "active": false,
+          "updatedAt": "2026-09-11T21:09:44.077Z",
+          "folderId": "6d1OvF4ArQYjftwO"
+        },
+        {
+          "id": "CiziceVivA03QqcD",
+          "name": "ZENIT 04 — Landing Page Build Studio",
+          "active": false,
+          "updatedAt": "2026-09-11T21:09:35.627Z",
+          "folderId": "uC4U8MNUH7wftbo8"
+        },
+        {
+          "id": "sF5LoMzx2WjklnsA",
+          "name": "ZENIT 09 — Paid Ads Strategist",
+          "active": false,
+          "updatedAt": "2026-09-11T21:09:25.790Z",
+          "folderId": "8ktNxVLZ7QMoqEkH"
+        },
+        {
+          "id": "M1tBdBBEXR9azYXl",
+          "name": "ZENIT 07 — Reels & Short Video Producer",
+          "active": false,
+          "updatedAt": "2026-09-11T21:09:16.722Z",
+          "folderId": "SloXF0lXhh1Tm7Zs"
+        },
+        {
+          "id": "9uQ4bZ4h4hr0lAHh",
+          "name": "ZENIT 06 — Social Media Director",
+          "active": false,
+          "updatedAt": "2026-09-11T21:09:08.050Z",
+          "folderId": "OGuP6LUoLOxyDQ9a"
+        },
+        {
+          "id": "qs5GYWZe2X4GVKm7",
+          "name": "ZENIT 15 — External Action Gateway",
+          "active": false,
+          "updatedAt": "2026-09-11T21:08:28.103Z",
+          "folderId": "BGWY7QjwJ8GfPLzc"
+        },
+        {
+          "id": "XWh8oGBGolfcW9E6",
+          "name": "ZENIT 14 — Approval Decision Service",
+          "active": false,
+          "updatedAt": "2026-09-11T21:08:10.190Z",
+          "folderId": "YnvsXAqd5aYmXB9e"
+        },
+        {
+          "id": "gKejmA6UFsfXsmkf",
+          "name": "ZENIT 14 — Approval Status Check",
+          "active": false,
+          "updatedAt": "2026-09-11T21:07:40.124Z",
+          "folderId": "YnvsXAqd5aYmXB9e"
+        },
+        {
+          "id": "nVvtMhjEh5oZ2QYQ",
+          "name": "ZENIT 14 — Approval Policy Gate",
+          "active": false,
+          "updatedAt": "2026-09-11T21:07:21.721Z",
+          "folderId": "YnvsXAqd5aYmXB9e"
+        },
+        {
+          "id": "Pjt2ewHkr5InA3BI",
+          "name": "ZENIT 00 — Intake & Safety Gate",
+          "active": false,
+          "updatedAt": "2026-09-11T21:06:44.160Z",
+          "folderId": "GXof1GkyYo8DuiCs"
+        },
+        {
+          "id": "aUErAORqnIQwLLNa",
+          "name": "ZENIT 00 — AI Marketing Director",
+          "active": false,
+          "updatedAt": "2026-09-11T15:23:33.696Z",
+          "folderId": "GXof1GkyYo8DuiCs"
+        },
+        {
+          "id": "Z1JvoVXn3Zk0dnbe",
+          "name": "ZENIT 00 — Department Dispatcher",
+          "active": false,
+          "updatedAt": "2026-09-11T15:22:58.556Z",
+          "folderId": "GXof1GkyYo8DuiCs"
+        },
+        {
+          "id": "ANYVkJUQzVN6yimp",
+          "name": "ZENIT 05 — SEO Content Brief Factory",
+          "active": false,
+          "updatedAt": "2026-09-11T15:22:27.374Z",
+          "folderId": "PMJbkUvdTfLPw2n7"
+        },
+        {
+          "id": "Gdvo56Krbg0v0QWK",
+          "name": "ZENIT 08 — Asset Provenance & Rights",
+          "active": false,
+          "updatedAt": "2026-09-11T15:20:03.918Z",
+          "folderId": "1anbp9W8M8hgslxm"
+        },
+        {
+          "id": "kCdAg2xoeURRdzPm",
+          "name": "ZENIT 00 — Campaign Orchestrator",
+          "active": false,
+          "updatedAt": "2026-09-11T15:18:34.883Z",
+          "folderId": "GXof1GkyYo8DuiCs"
+        },
+        {
+          "id": "gc57tH64zHCwn5Vu",
+          "name": "ZENIT 14 — Claims & Compliance Reviewer",
+          "active": false,
+          "updatedAt": "2026-09-11T15:15:54.648Z",
+          "folderId": "YnvsXAqd5aYmXB9e"
+        },
+        {
+          "id": "DC8MZgne1xhNIprW",
+          "name": "ZENIT 05 — Content Repurposing Engine",
+          "active": false,
+          "updatedAt": "2026-09-11T15:12:35.182Z",
+          "folderId": "PMJbkUvdTfLPw2n7"
+        },
+        {
+          "id": "ojEDgLdcQy0J8J8g",
+          "name": "ZENIT 15 — Cost & Usage Guard",
+          "active": false,
+          "updatedAt": "2026-09-11T15:04:56.165Z",
+          "folderId": "BGWY7QjwJ8GfPLzc"
+        },
+        {
+          "id": "f9q8MuW6a3sMF60Z",
+          "name": "ZENIT 13 — Measurement & Tracking Architect",
+          "active": false,
+          "updatedAt": "2026-09-11T14:58:18.883Z",
+          "folderId": "BtanhTPvumFnbx0A"
+        },
+        {
+          "id": "Irpr1iZQVxWHRboj",
+          "name": "ZENIT 05 — Technical SEO Inspector",
+          "active": false,
+          "updatedAt": "2026-09-11T14:56:14.153Z",
+          "folderId": "PMJbkUvdTfLPw2n7"
+        },
+        {
+          "id": "HhfUVnVSWcAqkth7",
+          "name": "ZENIT 01 — Proposal & Scope Architect",
+          "active": false,
+          "updatedAt": "2026-09-11T14:53:18.435Z",
+          "folderId": "we9Sp9QSQoPnr5QL"
+        },
+        {
+          "id": "03v46B587PuVgvEK",
+          "name": "ZENIT 99 — Go-Live Readiness",
+          "active": false,
+          "updatedAt": "2026-09-11T14:51:56.717Z",
+          "folderId": "3VZSQTI4lYZdvy1f"
+        },
+        {
+          "id": "SrfsYBMY74rx8Iou",
+          "name": "ZENIT 01 — Account Director",
+          "active": false,
+          "updatedAt": "2026-09-11T14:48:45.074Z",
+          "folderId": "we9Sp9QSQoPnr5QL"
+        },
+        {
+          "id": "LlaLMSTJ80XMhFUJ",
+          "name": "ZENIT 99 — Operations Dashboard Snapshot",
+          "active": false,
+          "updatedAt": "2026-09-11T14:46:49.195Z",
+          "folderId": "3VZSQTI4lYZdvy1f"
+        },
+        {
+          "id": "ujdXQ0srM8QxWAcF",
+          "name": "ZENIT 13 — Client Performance Report",
+          "active": false,
+          "updatedAt": "2026-09-11T14:41:17.087Z",
+          "folderId": "BtanhTPvumFnbx0A"
+        },
+        {
+          "id": "PSaCccZQRmdiZwt8",
+          "name": "ZENIT 06 — Content Calendar Planner",
+          "active": false,
+          "updatedAt": "2026-09-11T14:30:46.974Z",
+          "folderId": "OGuP6LUoLOxyDQ9a"
+        },
+        {
+          "id": "juvDDlTsQbgEscvv",
+          "name": "ZENIT 15 — Client Delivery Request",
+          "active": false,
+          "updatedAt": "2026-09-11T14:28:01.836Z",
+          "folderId": "BGWY7QjwJ8GfPLzc"
+        },
+        {
+          "id": "2DxX66wlepxsL2dU",
+          "name": "ZENIT 14 — Refiner",
+          "active": false,
+          "updatedAt": "2026-09-11T14:26:48.367Z",
+          "folderId": "YnvsXAqd5aYmXB9e"
+        },
+        {
+          "id": "1T4LVshwWe1B1kGC",
+          "name": "ZENIT 15 — Deliverables Packager",
+          "active": false,
+          "updatedAt": "2026-09-11T14:25:25.163Z",
+          "folderId": "BGWY7QjwJ8GfPLzc"
+        },
+        {
+          "id": "p2VMCewhdSPxdgce",
+          "name": "ZENIT 13 — Optimization & Experiment Manager",
+          "active": false,
+          "updatedAt": "2026-09-11T14:22:22.053Z",
+          "folderId": "BtanhTPvumFnbx0A"
+        },
+        {
+          "id": "s38GTD2LI2aLjsNq",
+          "name": "ZENIT 15 — Client 360 Context Loader",
+          "active": false,
+          "updatedAt": "2026-09-11T14:13:13.065Z",
+          "folderId": "BGWY7QjwJ8GfPLzc"
+        },
+        {
+          "id": "Ow0AjUXyhjm9TrXp",
+          "name": "ZENIT 02 — Audience & Persona Intelligence",
+          "active": false,
+          "updatedAt": "2026-09-11T13:25:58.669Z",
+          "folderId": "KSyazzt4HyPUOTSU"
+        },
+        {
+          "id": "UrkgUxmN4dayox7M",
+          "name": "ZENIT 10 — Local Lead Discovery Engine",
+          "active": false,
+          "updatedAt": "2026-09-11T13:24:54.614Z",
+          "folderId": "6d1OvF4ArQYjftwO"
+        },
+        {
+          "id": "QLsnxzLt6bGAhgoe",
+          "name": "ZENIT 13 — Marketing Analytics Director",
+          "active": false,
+          "updatedAt": "2026-09-11T13:18:54.695Z",
+          "folderId": "BtanhTPvumFnbx0A"
+        },
+        {
+          "id": "eCsl6ttg9h9P1B7e",
+          "name": "ZENIT 00 — Offer & Funnel Architect",
+          "active": false,
+          "updatedAt": "2026-09-11T13:17:08.884Z",
+          "folderId": "GXof1GkyYo8DuiCs"
+        },
+        {
+          "id": "saD2wggOiNFFSVM3",
+          "name": "ZENIT 03 — Competitor & Trend Intelligence",
+          "active": false,
+          "updatedAt": "2026-09-11T13:15:16.814Z",
+          "folderId": "lrhcotdqjG8XDyeP"
+        },
+        {
+          "id": "7PxT4X8Q7DSBOsQw",
+          "name": "ZENIT 04 — Website Audit & CRO Inspector",
+          "active": false,
+          "updatedAt": "2026-09-11T13:13:39.045Z",
+          "folderId": "uC4U8MNUH7wftbo8"
+        },
+        {
+          "id": "HHjA6VlFv87NgbdV",
+          "name": "ZENIT 03 — Market Research Agent",
+          "active": false,
+          "updatedAt": "2026-09-11T13:11:03.525Z",
+          "folderId": "lrhcotdqjG8XDyeP"
+        },
+        {
+          "id": "dyGqPDsAvMwjAbcW",
+          "name": "ZENIT 15 — AI Reliability Router",
+          "active": false,
+          "updatedAt": "2026-09-11T13:08:56.326Z",
+          "folderId": "BGWY7QjwJ8GfPLzc"
+        },
+        {
+          "id": "s9MQY9MlgxJNgAsI",
+          "name": "ZENIT 05 — Content Studio Director",
+          "active": false,
+          "updatedAt": "2026-09-11T13:04:45.777Z",
+          "folderId": "PMJbkUvdTfLPw2n7"
+        },
+        {
+          "id": "M38kaV9iiRkCz11c",
+          "name": "ZENIT 99 — Error & Audit Logger",
+          "active": false,
+          "updatedAt": "2026-09-11T12:44:32.633Z",
+          "folderId": "3VZSQTI4lYZdvy1f"
+        },
+        {
+          "id": "pI4I6b7n2ALqwsQH",
+          "name": "ZENIT 02 — Brand Brain Builder",
+          "active": false,
+          "updatedAt": "2026-09-11T12:43:38.786Z",
+          "folderId": "KSyazzt4HyPUOTSU"
+        },
+        {
+          "id": "Jy2fRJla6poT7B6m",
+          "name": "ZENIT 01 — Client Onboarding Director",
+          "active": false,
+          "updatedAt": "2026-09-11T12:42:42.141Z",
+          "folderId": "we9Sp9QSQoPnr5QL"
+        },
+        {
+          "id": "6wXcZVGdsTL02X5m",
+          "name": "ZENIT 14 — Quality Director",
+          "active": false,
+          "updatedAt": "2026-09-11T12:40:45.472Z",
+          "folderId": "YnvsXAqd5aYmXB9e"
+        },
+        {
+          "id": "MuXIT8gohLBUej0g",
+          "name": "ZENIT 12 — Local Marketing Director",
+          "active": false,
+          "updatedAt": "2026-09-11T12:39:33.130Z",
+          "folderId": "TRCQEbzZm0lIoaEc"
+        },
+        {
+          "id": "NQTJziNCUvbfmyF4",
+          "name": "ZENIT 10 — Lead Generation Strategist",
+          "active": false,
+          "updatedAt": "2026-09-11T12:38:42.291Z",
+          "folderId": "6d1OvF4ArQYjftwO"
+        },
+        {
+          "id": "is5vvN9ifXrSXJq3",
+          "name": "ZENIT 08 — Creative Director",
+          "active": false,
+          "updatedAt": "2026-09-11T12:37:41.636Z",
+          "folderId": "1anbp9W8M8hgslxm"
+        },
+        {
+          "id": "xA0yRNDpNJAfPdIG",
+          "name": "ZENIT 05 — SEO Strategy Agent",
+          "active": false,
+          "updatedAt": "2026-09-11T12:35:29.828Z",
+          "folderId": "PMJbkUvdTfLPw2n7"
+        },
+        {
+          "id": "bsavstUhLMd3djgw",
+          "name": "ZENIT 04 — Web Strategy & Page Architect",
+          "active": false,
+          "updatedAt": "2026-09-11T12:35:05.261Z",
+          "folderId": "uC4U8MNUH7wftbo8"
+        },
+        {
+          "id": "xFwZnDOII9wUOtw0",
+          "name": "ZENIT 02 — Brand Context Loader",
+          "active": false,
+          "updatedAt": "2026-09-11T12:31:53.737Z",
+          "folderId": "KSyazzt4HyPUOTSU"
+        }
+      ]
+    },
+    {
+      "name": "Nikon",
+      "count": 11,
+      "active": 1,
+      "workflows": [
+        {
+          "id": "rQm3ArlfWrn4hf7Z",
+          "name": "NIKON 11 — Render Queue Lease",
+          "active": false,
+          "updatedAt": "2026-09-14T17:29:10.530Z",
+          "folderId": "VzsHXmH8yOfSF4EK"
+        },
+        {
+          "id": "xIq8KxebH5SJ41uG",
+          "name": "NIKON 11 — Render Queue Enqueue",
+          "active": false,
+          "updatedAt": "2026-09-14T17:25:44.076Z",
+          "folderId": "VzsHXmH8yOfSF4EK"
+        },
+        {
+          "id": "Wxsprx4PH9qqlEz2",
+          "name": "NIKON 99 — Error & Audit Logger",
+          "active": true,
+          "updatedAt": "2026-09-14T17:23:39.213Z",
+          "folderId": "rdxFAHluXYcAETM3"
+        },
+        {
+          "id": "WiCZsVzygzo2Mbri",
+          "name": "NIKON 09 — QA Decision Gate",
+          "active": false,
+          "updatedAt": "2026-09-14T17:06:45.583Z",
+          "folderId": "jRIUymzizlfc7zFT"
+        },
+        {
+          "id": "BjpagYFTxnVANZ0d",
+          "name": "NIKON 13 — Readiness Evaluator",
+          "active": false,
+          "updatedAt": "2026-09-14T17:04:02.635Z",
+          "folderId": "D3CIJqsnuHTUfrfD"
+        },
+        {
+          "id": "g9nzdT3AqPmtij4D",
+          "name": "NIKON 09 — Human Approval Gate",
+          "active": false,
+          "updatedAt": "2026-09-14T15:58:28.288Z",
+          "folderId": "jRIUymzizlfc7zFT"
+        },
+        {
+          "id": "0aJwDkG8lC9Y87k8",
+          "name": "NIKON 10 — Rights & Release Gate",
+          "active": false,
+          "updatedAt": "2026-09-14T15:55:49.910Z",
+          "folderId": "IYheaPVgGa51DQqp"
+        },
+        {
+          "id": "bgolN12thxvWvUpG",
+          "name": "NIKON 00 — DONA Handoff Receiver",
+          "active": false,
+          "updatedAt": "2026-09-14T15:51:05.311Z",
+          "folderId": "11jGr698woW5KTCF"
+        },
+        {
+          "id": "FIFXEFVwvoMaZMcg",
+          "name": "NIKON 00 — Idempotency Guard",
+          "active": false,
+          "updatedAt": "2026-09-14T15:49:06.760Z",
+          "folderId": "11jGr698woW5KTCF"
+        },
+        {
+          "id": "i6N6sXhuwp2xXQ5w",
+          "name": "NIKON 00 — Cost Guard",
+          "active": false,
+          "updatedAt": "2026-09-14T04:35:18.119Z",
+          "folderId": "11jGr698woW5KTCF"
+        },
+        {
+          "id": "cVAAIVnaseoFlHVz",
+          "name": "NIKON 00 — State Manager",
+          "active": false,
+          "updatedAt": "2026-09-14T04:32:55.140Z",
+          "folderId": "11jGr698woW5KTCF"
+        }
+      ]
+    }
+  ]
+}
