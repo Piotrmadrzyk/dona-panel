@@ -20,11 +20,13 @@ try {
     token=await file.readFile('utf8');
   } finally {await file.close();}
   const binding=JSON.parse(await readFile(new URL('./queue/connection-binding.json',import.meta.url),'utf8'));
-  const request=createQueueTransport({endpoint:'https://pmresearch.app.n8n.cloud/webhook/dona-router-pilot',token,timeoutMs:15000});
+  const request=createQueueTransport({endpoint:'https://pmresearch.app.n8n.cloud/webhook/dona-router-pilot',token,timeoutMs:30000});
+  console.error('Sprawdzam autoryzację w n8n (maksymalnie 30 sekund)…');
   const start=Date.now();
   const status=await request({...binding,operation:'status'});
   report.checks.push({name:'authentication',passed:status.ok===true,durationMs:Date.now()-start});
   if(status.ok!==true) throw new Error('QUEUE_AUTH_FAILED');
+  console.error('Autoryzacja potwierdzona. Odczytuję zadanie (maksymalnie 30 sekund)…');
   const readStart=Date.now();
   const response=await request({...binding,operation:'read'});
   const matched=response.ok===true && response.job?.task_id===binding.taskId
@@ -36,6 +38,8 @@ try {
   const allowed=['QUEUE_AUTH_FAILED','QUEUE_TIMEOUT','QUEUE_NETWORK_FAILED','QUEUE_HTTP_FAILED',
     'QUEUE_INVALID_RESPONSE','QUEUE_RESPONSE_TOO_LARGE','UNSAFE_DIRECTORY','UNSAFE_KEY_FILE'];
   report.error=allowed.includes(error.message)?error.message:'LOCAL_SETUP_FAILED';
+  if (error.phase) report.connectionPhase=error.phase;
+  if (error.timings) report.connectionTimingsMs=error.timings;
 }
 console.log(JSON.stringify(report,null,2));
 if(!report.passed) process.exitCode=1;
