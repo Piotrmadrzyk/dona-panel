@@ -50,7 +50,13 @@ test('HTTPS transport validates TLS, blocks redirects, bounds responses and abor
       mode='invalid'; await assert.rejects(call({operation:'status'}), /QUEUE_INVALID_RESPONSE/);
     });
     await t.test('wall-clock timeout includes a stalled server', async () => {
-      mode='stall'; await assert.rejects(createQueueTransport({...options,timeoutMs:100})({operation:'status'}), /QUEUE_TIMEOUT/);
+      mode='stall'; await assert.rejects(createQueueTransport({...options,timeoutMs:100})({operation:'status'}), error => {
+        assert.equal(error.message,'QUEUE_TIMEOUT');
+        assert.equal(error.phase,'tls_connected');
+        assert.ok(error.timings.totalMs >= 90);
+        assert.ok(!JSON.stringify(error).includes(options.token));
+        return true;
+      });
     });
     await t.test('external cancellation terminates request', async () => {
       const controller = new AbortController();
