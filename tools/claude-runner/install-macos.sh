@@ -15,6 +15,25 @@ done
 
 node -e 'const m=Number(process.versions.node.split(".")[0]); if(m<20){console.error("Wymagany Node.js 20 lub nowszy");process.exit(1)}'
 
+claude_path="$(command -v claude)"
+claude_version_output="$("$claude_path" --version 2>/dev/null || true)"
+CLAUDE_VERSION_OUTPUT="$claude_version_output" node -e '
+const found = (process.env.CLAUDE_VERSION_OUTPUT || "").match(/(\d+)\.(\d+)\.(\d+)/);
+if (!found) {
+  console.error("Nie udało się odczytać wersji Claude Code. Uruchom: claude --version");
+  process.exit(1);
+}
+const actual = found.slice(1).map(Number);
+const minimum = [2, 1, 259];
+for (let i = 0; i < 3; i += 1) {
+  if (actual[i] > minimum[i]) process.exit(0);
+  if (actual[i] < minimum[i]) {
+    console.error(`Wymagany Claude Code 2.1.259 lub nowszy; wykryto ${actual.join(".")}. Zaktualizuj Claude Code i uruchom instalator ponownie.`);
+    process.exit(1);
+  }
+}
+'
+
 runner_dir="$(cd "$(dirname "$0")" && pwd)"
 config_dir="$HOME/.config/dona-claude-runner"
 log_dir="$HOME/Library/Logs/dona-claude-runner"
@@ -65,14 +84,15 @@ fi
 /usr/bin/security add-generic-password -U -s dona-claude-runner -a "$runner_id" -w "$panel_secret" >/dev/null
 unset panel_secret
 
-node - "$config_dir/config.json" "$runner_id" "$projects_root" "${project_args[@]}" <<'NODE'
+node - "$config_dir/config.json" "$runner_id" "$projects_root" "$claude_path" "${project_args[@]}" <<'NODE'
 const fs = require('fs');
-const [file, runnerId, root, ...pairs] = process.argv.slice(2);
+const [file, runnerId, root, claudePath, ...pairs] = process.argv.slice(2);
 const projects = {};
 for (let i = 0; i < pairs.length; i += 2) projects[pairs[i]] = { path: pairs[i + 1] };
 const config = {
   endpoint: 'https://pmresearch.app.n8n.cloud/webhook/dona-claude-runner',
   runnerId,
+  claudePath,
   pollSeconds: 30,
   maxRunMinutes: 45,
   maxOutputBytes: 2000000,

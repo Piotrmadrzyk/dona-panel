@@ -130,7 +130,7 @@ async function processOne() {
   return true;
 }
 
-await api('status', { version: '0.1.0' });
+await api('status', { version: '0.1.1' });
 for (;;) {
   try {
     const worked = await processOne();

@@ -23,3 +23,4 @@ bash tools/claude-runner/install-macos.sh
 Instalator sprawdza zależności, pyta o katalogi repozytoriów, zapisuje hasło panelu wyłącznie w Keychain i uruchamia proces przez LaunchAgent.
 
 Runner wymaga Node.js 20+ i Claude Code 2.1.259+ ze względu na `--permission-prompts none`.
+Instalator sam sprawdza wersję i zapisuje pełną ścieżkę do `claude`, dzięki czemu LaunchAgent nie zależy od interaktywnego `PATH` terminala.
