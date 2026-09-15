@@ -7,6 +7,7 @@ const retryable = new Set(['LIMIT', 'AUTH', 'UNAVAILABLE']);
 
 export function validateTask(task) {
   if (!task || task.project !== 'dona-panel' || task.kind !== 'code_change') fail('TASK_OUT_OF_PILOT');
+  if (!['auto', 'claude', 'codex'].includes(task.executorPreference ?? 'auto')) fail('INVALID_EXECUTOR_PREFERENCE');
   if (!/^[a-zA-Z0-9_-]{8,100}$/.test(task.id || '')) fail('INVALID_TASK_ID');
   if (typeof task.goal !== 'string' || !task.goal.trim() || task.goal.length > 20000) fail('INVALID_GOAL');
   if (!/^[a-f0-9]{40}$/.test(task.baseCommit || '')) fail('INVALID_BASE_COMMIT');
@@ -28,6 +29,7 @@ export function contextHash(task) {
     id: task.id, project: task.project, kind: task.kind, goal: task.goal,
     baseCommit: task.baseCommit, contextVersion: task.contextVersion,
     files: [...task.files].sort(), acceptance: task.acceptance,
+    executorPreference: task.executorPreference ?? 'auto',
   })).digest('hex');
 }
 
@@ -101,7 +103,8 @@ export function buildPrompt(task, checkpoint) {
 export async function runPilot({ task, registry, host, enabled = false, now = Date.now }) {
   if (!enabled) return { status: 'DISABLED' };
   const hash = contextHash(task);
-  const selected = selectExecutors(registry, now());
+  const selected = selectExecutors(registry, now()).filter(entry =>
+    !task.executorPreference || task.executorPreference === 'auto' || entry.engine === task.executorPreference);
   if (!selected.length) return { status: 'BLOCKED', reason: 'NO_SUBSCRIPTION_EXECUTOR' };
   const readiness = await host.preflight();
   if (readiness?.isolated !== true || readiness?.subscriptionOnly !== true
