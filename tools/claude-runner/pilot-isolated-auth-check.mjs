@@ -9,6 +9,18 @@ import { childEnvironment } from './model-router.mjs';
 const report={modelTaskStarted:false,queueTouched:false,isolationVerified:false,checks:[]};
 const selected=process.argv.slice(2);
 const engines=selected.length===0?['claude','codex']:selected;
+function safeDiagnostic(value) {
+  return value
+    .replace(/\u001b\[[0-?]*[ -/]*[@-~]/g,'')
+    .replace(/(?:bearer\s+)[^\s"']+/gi,'Bearer [REDACTED]')
+    .replace(/(["']?(?:access_token|refresh_token|id_token|api_key|authorization|password|secret)["']?\s*[:=]\s*)[^\r\n]+/gi,'$1[REDACTED]')
+    .replace(/https?:\/\/[^\s"']+/g,'[URL]')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[EMAIL]')
+    .replace(/\/Users\/[^/\s]+/g,'[HOME]')
+    .replace(/[A-Za-z0-9_+\/.=-]{32,}/g,'[REDACTED]')
+    .replace(/[\x00-\x08\x0b-\x1f\x7f]/g,'')
+    .trim().slice(0,1200);
+}
 let root;
 try {
   if(engines.some(e=>!['claude','codex'].includes(e))) throw new Error('INVALID_ENGINE');
@@ -66,7 +78,7 @@ console.log(denied?'DONA_CANARY_DENIED':'DONA_CANARY_ACCESSIBLE');if(!denied)pro
     const reason=authenticated&&result.ok?'AUTH_VISIBLE':result.timedOut?'TIMEOUT':statusReadable?'AUTH_NOT_VISIBLE'
       :/Operation not permitted|Permission denied|EACCES|EPERM/.test(output)?'ACCESS_DENIED'
       :/Cannot find module|ERR_MODULE_NOT_FOUND/.test(output)?'CLI_DEPENDENCY_BLOCKED':'CLI_STATUS_UNREADABLE';
-    // Emit only fixed labels, never provider output, local paths or credential values.
+    // Labels plus a redacted startup diagnostic for unreadable Codex status only.
     const diagnosticFlags=[
       ['permission_denied',/operation not permitted|permission denied|EACCES|EPERM|os error (?:1|13)\b/i],
       ['missing_file',/no such file|ENOENT|os error 2\b/i],
@@ -80,7 +92,8 @@ console.log(denied?'DONA_CANARY_DENIED':'DONA_CANARY_ACCESSIBLE');if(!denied)pro
       ['sandbox',/sandbox|seatbelt|mach-lookup/i],
     ].filter(([,pattern])=>pattern.test(output)).map(([label])=>label);
     report.checks.push({engine,variant,passed:authenticated&&result.ok,canaryDenied:true,statusReadable,reason,
-      exitCode:result.exitCode,diagnosticFlags,outputPresent:output.trim().length>0});
+      exitCode:result.exitCode,diagnosticFlags,outputPresent:output.trim().length>0,
+      ...(engine==='codex'&&!statusReadable?{diagnostic:safeDiagnostic(output)}:{})});
     }
   }
   report.passed=report.checks.length>0&&report.checks.every(c=>c.passed);
