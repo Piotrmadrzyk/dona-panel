@@ -270,7 +270,9 @@
       const values=Object.fromEntries(new FormData(e.currentTarget).entries());
       const reply=String(values.reply||'').trim();if(!reply){e.currentTarget.reportValidity();return;}
       dialog.close();
-      const prompt='Utwórz dokładnie tę ręcznie napisaną odpowiedź jako szkic do wiadomości o identyfikatorze '+mail.id+' (message_id="'+(mail.messageId||'')+'", temat: "'+mail.title+'", od '+(mail.sender||'nieznanego nadawcy')+'). Treść odpowiedzi Piotra: '+JSON.stringify(reply)+'. Użyj narzędzia poczta z akcją draft i zachowaj treść bez przeredagowania. Szkic ma trafić do Skrzynki decyzji — nie wysyłaj niczego bez zatwierdzenia.';
+      const mailTarget=String(mail.messageId||mail.id||'');
+      const daneJson=JSON.stringify({manual_reply_text:reply});
+      const prompt='Utwórz dokładnie tę ręcznie napisaną odpowiedź jako szkic do wiadomości o identyfikatorze '+mail.id+' (message_id="'+(mail.messageId||'')+'", temat: "'+mail.title+'", od '+(mail.sender||'nieznanego nadawcy')+'). Treść odpowiedzi Piotra: '+JSON.stringify(reply)+'. Wywołaj narzędzie poczta dokładnie raz z argumentami: action="draft", parametr='+JSON.stringify(mailTarget)+', dane='+JSON.stringify(daneJson)+'. Pole manual_reply_text ma pozostać bez przeredagowania. Szkic ma trafić do Skrzynki decyzji — nie wysyłaj niczego bez zatwierdzenia.';
       toast('Odpowiedź trafia do Skrzynki decyzji.');
       try{const result=await window.Dona.runBranch('poczta','Poczta',prompt);if(!result||result.ok===false)toast('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');else if(state.view==='mail')loadData();}
       catch(err){toast('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');}
