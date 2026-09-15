@@ -1,5 +1,6 @@
 // Pilot extension of the existing runner. Not imported by production runner.mjs.
 import { createHash } from 'node:crypto';
+import { userInfo } from 'node:os';
 
 const fail = (code) => { throw new Error(code); };
 const engines = new Set(['claude', 'codex']);
@@ -67,7 +68,12 @@ export function childEnvironment(host) {
   // proxy settings and Node injection flags cannot leak into an invocation.
   if (!host || typeof host.home !== 'string' || !host.home.startsWith('/')) fail('INVALID_HOST_HOME');
   if (typeof host.path !== 'string' || !host.path || host.path.split(':').some(p => !p.startsWith('/'))) fail('INVALID_HOST_PATH');
-  return { HOME: host.home, PATH: host.path, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8',
+  // macOS Claude subscription lookup needs user identity even with HOME set.
+  // Obtain it from the OS, never from task input or inherited environment.
+  const username = userInfo().username;
+  if (typeof username !== 'string' || !username || /[\0\r\n]/.test(username)) fail('INVALID_HOST_USER');
+  return { HOME: host.home, PATH: host.path, USER: username, LOGNAME: username,
+    LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8',
     GIT_TERMINAL_PROMPT: '0', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' };
 }
 
