@@ -38,6 +38,13 @@ test('executor preference is validated and bound to task identity', () => {
   assert.notEqual(contextHash(task), contextHash({ ...task, executorPreference: 'claude' }));
   assert.equal(contextHash(task), contextHash({ ...task, executorPreference: 'auto' }));
 });
+test('explicit executor reaching limit stops without another engine or checkpoint', async () => {
+  const host = fixture([{ ok: false, code: 'usage_limit_reached' }]);
+  host.checkpoint = async () => { throw new Error('No fallback should be attempted'); };
+  const result = await runPilot({ ...options(host), task: { ...task, executorPreference: 'claude' } });
+  assert.equal(result.reason, 'LIMIT');
+  assert.equal(host.events.filter(e => e[0] === 'execute').length, 1);
+});
 
 test('pilot rejects foreign projects, traversal, settings and invalid context', () => {
   for (const change of [{ project: 'nikon' }, { files: ['pilot/../secret.js'] }, { files: ['.claude/settings.json'] },
