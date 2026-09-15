@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="./systems.css?v=6.0.3">
   <link rel="stylesheet" href="./business.css?v=7.1.0">
   <script defer src="./voice-audio.js?v=4.1.0"></script>
-  <script defer src="./chat.js?v=7.0.0"></script>
+  <script defer src="./chat.js?v=7.3.0"></script>
   <script defer src="./particles.js?v=5.0.0"></script>
   <script defer src="./centre.js?v=7.0.0"></script>
   <script defer src="./command-model.js?v=5.0.0"></script>
@@ -28,7 +28,7 @@
   <script defer src="./liveops.js?v=1.1.0"></script>
   <script defer src="./systems.js?v=6.0.7"></script>
   <script defer src="./business-model.js?v=7.0.0"></script>
-  <script defer src="./business.js?v=7.1.0"></script>
+  <script defer src="./business.js?v=7.3.0"></script>
   <script defer src="./workspace.js?v=7.2.0"></script>
   <script defer src="./voice.js?v=5.1.0"></script>
 </head>
@@ -110,7 +110,7 @@
         <div class="phead"><button class="icon-button thread-toggle" id="threadToggle" title="Pokaż rozmowy" aria-label="Pokaż historię rozmów" aria-expanded="false">☰</button><button class="assistant-mark" id="core" title="Rozmowa na żywo z DONĄ" aria-label="Rozpocznij rozmowę na żywo"></button><div class="who"><h2 id="threadTitle">DONA</h2><small id="assistantStatus">Gotowa do rozmowy</small></div><button class="icon-button chat-exit" id="chatClose" title="Wróć do panelu" aria-label="Wróć do panelu"><span class="chat-back-label"><span aria-hidden="true">←</span> Wróć</span><span class="chat-collapse-icon" data-icon="chevrons"></span></button></div>
         <div class="welcome" id="chatWelcome"><span class="eyebrow">ZACZNIJMY OD NAJWAŻNIEJSZEGO</span><h2>Co dziś załatwimy?</h2><p>Napisz, czym mam się zająć. Możesz też przekazać plik lub porozmawiać ze mną.</p><div class="suggestions"><button data-prompt="Sprawdź, jakie mam pilne sprawy do załatwienia. Tylko odczyt i podsumowanie, bez wysyłek ani zmian."><span data-icon="list"></span>Pokaż pilne sprawy<span aria-hidden="true">›</span></button><button data-prompt="Pomóż mi przygotować ofertę dla klienta. Zacznij od ustalenia klienta i zakresu; bez wysyłania ani publikowania."><span data-icon="file"></span>Przygotuj ofertę<span aria-hidden="true">›</span></button></div></div>
         <div class="log" id="log" role="log" aria-label="Wiadomości" aria-live="polite" aria-relevant="additions text"></div>
-        <div class="footer"><div id="operationStatus" role="status" aria-live="polite"></div><div class="voice-toolbar"><button class="text-button" id="dictBtn"><span id="dictIc"></span><span>Dyktuj</span></button><button class="text-button" id="golive"><span id="liveIc"></span><span>Rozmawiaj na żywo</span></button><div class="voice-controls"><button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button><button class="iconbtn" id="voiceBtn" title="Odczytywanie odpowiedzi">Głos</button></div></div><div class="composer"><label class="sr-only" for="inp">Wiadomość do DONY</label><textarea id="inp" placeholder="Napisz lub powiedz, czego potrzebujesz…" rows="2"></textarea><div class="composer-bottom"><div><button class="icon-button" id="clipBtn" title="Dołącz plik, do 3,5 MB" aria-label="Dołącz plik"><span data-icon="paperclip"></span></button><button class="icon-button" id="memBtn" title="Zapamiętaj wpisaną notatkę" aria-label="Zapisz tekst w pamięci DONY"><span data-icon="bookmark"></span></button></div><input type="file" id="fileInp" accept="image/*,application/pdf,video/*" hidden><button class="send" id="btn" title="Wyślij wiadomość" aria-label="Wyślij wiadomość"><span id="sendIc"></span></button></div></div><p class="composer-hint">Enter — wyślij · Shift + Enter — nowy wiersz</p></div>
+        <div class="footer"><div id="operationStatus" role="status" aria-live="polite"></div><div class="voice-toolbar"><button class="text-button" id="dictBtn"><span id="dictIc"></span><span>Dyktuj</span></button><button class="text-button" id="golive"><span id="liveIc"></span><span>Rozmawiaj na żywo</span></button><div class="voice-controls"><button class="iconbtn" id="rateBtn" title="Tempo głosu">1×</button><button class="iconbtn" id="voiceBtn" title="Odczytywanie odpowiedzi">Głos</button></div></div><div class="composer"><label class="sr-only" for="inp">Wiadomość do DONY</label><textarea id="inp" placeholder="Napisz lub powiedz, czego potrzebujesz…" rows="2"></textarea><div class="composer-bottom"><div><button class="icon-button" id="clipBtn" title="Dołącz plik albo wybierz do 8 zdjęć do rolki" aria-label="Dołącz plik lub zdjęcia do rolki"><span data-icon="paperclip"></span></button><button class="icon-button" id="memBtn" title="Zapamiętaj wpisaną notatkę" aria-label="Zapisz tekst w pamięci DONY"><span data-icon="bookmark"></span></button></div><input type="file" id="fileInp" accept="image/*,application/pdf,video/*" multiple hidden><button class="send" id="btn" title="Wyślij wiadomość" aria-label="Wyślij wiadomość"><span id="sendIc"></span></button></div></div><p class="composer-hint">Enter — wyślij · Shift + Enter — nowy wiersz</p></div>
       </section>
     </aside>
   </div>

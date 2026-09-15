@@ -7,6 +7,7 @@
   var API="https://pmresearch.app.n8n.cloud/webhook";
   var CHAT_URL=API+"/dona-panel";
   var FILE_URL=API+"/dona-panel-plik";
+  var PHOTO_URL=API+"/dona-panel-zdjecie";
   var MEM_URL=API+"/dona-panel-zapamietaj";
   var TTS_URL=API+"/dona-tts";
   var HIST_URL=API+"/dona-historia";
@@ -226,11 +227,75 @@
   }
   var clipBtn=document.getElementById("clipBtn");
   var fileInp=document.getElementById("fileInp");
+  var reelPhotoMode=false;
   if(clipBtn&&fileInp){
-    clipBtn.addEventListener("click",function(){ if(isDemo){demoNotice();return;} if(!busy) fileInp.click(); });
-    fileInp.addEventListener("change",function(){
-      var f=fileInp.files&&fileInp.files[0]; if(!f||busy){ return; }
-      if(f.size>3.5*1024*1024){add("sys","Ten plik przekracza limit panelu 3,5 MB. Użyj mniejszego pliku albo linku do Dysku.");fileInp.value="";return;}
+    clipBtn.addEventListener("click",function(){ if(isDemo){demoNotice();return;} if(!busy){reelPhotoMode=false;fileInp.click();} });
+    function prepareReelPhoto(f){
+      return new Promise(function(resolve,reject){
+        if(!f||String(f.type||'').indexOf('image/')!==0){reject(new Error('ONLY_IMAGES'));return;}
+        var reader=new FileReader();
+        reader.onerror=function(){reject(new Error('READ_FAILED'));};
+        reader.onload=function(){
+          var img=new Image();
+          img.onerror=function(){reject(new Error('IMAGE_DECODE_FAILED'));};
+          img.onload=function(){
+            if(Math.min(img.naturalWidth||0,img.naturalHeight||0)<480){reject(new Error('IMAGE_TOO_SMALL'));return;}
+            var scale=Math.min(1,1920/Math.max(img.naturalWidth,img.naturalHeight));
+            var width=Math.max(1,Math.round(img.naturalWidth*scale)),height=Math.max(1,Math.round(img.naturalHeight*scale));
+            var canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+            var ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.drawImage(img,0,0,width,height);
+            function finish(quality){canvas.toBlob(function(blob){
+              if(!blob){reject(new Error('IMAGE_CONVERT_FAILED'));return;}
+              if(blob.size>3.5*1024*1024&&quality>0.71){finish(0.7);return;}
+              if(blob.size>3.5*1024*1024){reject(new Error('IMAGE_TOO_LARGE'));return;}
+              var out=new FileReader();out.onerror=function(){reject(new Error('READ_FAILED'));};
+              out.onload=function(){resolve({name:String(f.name||'zdjecie').replace(/\.[^.]+$/,"")+'.jpg',type:'image/jpeg',data:String(out.result||''),width:width,height:height});};
+              out.readAsDataURL(blob);
+            },'image/jpeg',quality);}
+            finish(0.86);
+          };
+          img.src=String(reader.result||'');
+        };
+        reader.readAsDataURL(f);
+      });
+    }
+    async function uploadReelPhotos(files,comment){
+      var results=[];
+      for(var start=0;start<files.length;start+=3){
+        phase('Wysyłam zdjęcia '+(start+1)+'–'+Math.min(start+3,files.length)+' z '+files.length+'…');
+        var batch=files.slice(start,start+3);
+        var sent=await Promise.all(batch.map(async function(f){
+          var p=await prepareReelPhoto(f);
+          var j=await panelPost(PHOTO_URL,{haslo:sessionPw,nazwa:p.name,typ:p.type,dane_base64:p.data,width:p.width,height:p.height},90000);
+          if(!j||!j.ok||!j.photo||!j.photo.fileId)throw new Error((j&&j.error)||'UPLOAD_NOT_CONFIRMED');
+          return j.photo;
+        }));
+        results=results.concat(sent);
+      }
+      var images=results.map(function(p){return {plik_id:p.fileId,dlugosc_sek:3,napis:''};});
+      var brief=comment||'Ułóż zdjęcia w najlepszej kolejności. Dodaj krótkie napisy i wyraźne CTA odpowiednie dla wybranej marki.';
+      var visible='📷 '+results.length+' zdjęć do rolki — '+brief;
+      add('me',visible);zapiszHist('user',visible);inp.value='';
+      phase('Zdjęcia zapisane. Zlecam produkcję rolki…');
+      var command='Polecenie właściciela: przygotuj rzeczywistą prostą rolkę ze zdjęć bez lektora. Użyj trybu PHOTO_SLIDESHOW i istniejącego renderera obrazów z Google Drive. Nie żądaj publicznych URL-i ani ponownego wgrywania plików. Obrazy w kolejności wejściowej: '+JSON.stringify(images)+'. Brief: '+brief+'. Dobierz kolejność i napisy zgodnie z briefem. Nie publikuj. Zwróć gotowy link MP4 albo dokładny techniczny blocker.';
+      var j=await panelPost(BRANCH_URL,{haslo:sessionPw,galaz:'marketing',polecenie:withBrand(command),tryb:'',conversation_id:panelConversationId},650000);
+      var ans=j&&j.answer?j.answer:'Nie otrzymałam potwierdzenia produkcji rolki.';
+      add('dona','[Marketing]\n'+ans);speak(ans);return j;
+    }
+    fileInp.addEventListener("change",async function(){
+      var files=Array.from(fileInp.files||[]); if(!files.length||busy){ return; }
+      var dedicatedReel=reelPhotoMode;reelPhotoMode=false;
+      if(files.length>8){add("sys","Do jednej rolki wybierz maksymalnie 8 zdjęć.");fileInp.value="";return;}
+      if(files.length>1||dedicatedReel){
+        if(files.some(function(f){return String(f.type||'').indexOf('image/')!==0;})){add('sys','Przy wyborze wielu plików wszystkie muszą być zdjęciami. Dokument lub wideo dołącz pojedynczo.');fileInp.value='';return;}
+        var multiComment=(inp.value||'').trim();lockPanel(true);phase('Przygotowuję '+files.length+' zdjęć do rolki…');
+        try{await uploadReelPhotos(files,multiComment);phase('Dona odpowiedziała — sprawdź wynik rolki.');window.dispatchEvent(new CustomEvent('dona:refresh'));}
+        catch(e){add('sys',e&&e.message==='IMAGE_TOO_SMALL'?'Jedno ze zdjęć jest mniejsze niż 480 px. Wybierz większe zdjęcie.':e&&e.message==='IMAGE_DECODE_FAILED'?'Telefon nie zdołał odczytać jednego ze zdjęć. Wybierz JPEG/PNG albo udostępnij je z galerii jako JPEG.':'Nie potwierdzono wysłania wszystkich zdjęć. Zapisane zdjęcia pozostają na Dysku, ale rolka nie została zlecona. Spróbuj ponownie tylko po sprawdzeniu Dysku.');phase('Nie potwierdzono kompletu zdjęć.');}
+        finally{lockPanel(false);fileInp.value='';}
+        return;
+      }
+      var f=files[0];
+      if(f.size>3.5*1024*1024){add("sys","Ten plik przekracza limit panelu 3,5 MB. Dla rolki wybierz kilka zdjęć naraz — panel je zmniejszy. Inny duży plik prześlij linkiem z Dysku.");fileInp.value="";return;}
       var komentarz=withBrand((inp.value||"").trim());
       busy=true; btn.disabled=true; clipBtn.disabled=true; think(true);
       add("me","📎 "+f.name+(komentarz?(" — "+komentarz):""));
@@ -386,7 +451,7 @@
   }
 
 
-var panelVersion = '7.0.0';
+var panelVersion = '7.3.0';
 var panelConversationId = lsGet('pm_panel_conversation_id') || 'PM';
 var panelBusyCount = 0, rtSession = null, rtSequence = 0;
 var BRANCH_URL = API + '/dona-panel-branch';
@@ -770,6 +835,7 @@ window.Dona={
   run:function(text){return send(text);},
   branch:function(name){openBranch({nm:name});},
   runBranch:function(id,name,text){return executeBranch(id,name,text);},
+  pickReelPhotos:function(){if(isDemo){demoNotice();return;}if(busy||liveOn){phase('Zaczekaj na bieżący wynik lub zakończ Live.');return;}reelPhotoMode=true;fileInp.click();},
   newThread:newConversation,
   selectThread:selectConversation,
   threads:function(){return panelThreads.slice();},
