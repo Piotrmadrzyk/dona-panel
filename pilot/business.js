@@ -51,7 +51,34 @@
     const missing=brand()==='probatum'&&!profiles.some(p=>p.id==='probatum'&&p.bufferChannelId);
     return '<div class="biz-toolbar">'+newButton('post','+ Przygotuj posty')+'<a href="#media" class="secondary">Rolki i materiały</a></div>'+notices()+(missing?'<div class="biz-warning"><strong>Profil Probatum czeka na połączenie.</strong> W odczytanym rejestrze nie ma kanału publikacji tej marki. Możesz przygotować treść z Doną.</div>':'')+'<div class="biz-profile-strip">'+profiles.map(p=>'<div><strong>'+E(p.name)+'</strong><span>'+E(p.bufferChannelId?'Kanał zapisany · ostatni odczyt '+at(p.bufferCheckedAt):'Połączenie wymaga sprawdzenia')+'</span></div>').join('')+'</div><p class="biz-footnote">„Publikuj teraz” jest Twoim poleceniem publikacji wyświetlonej treści i zdjęcia. Sam wybierasz post i moment.</p><div class="biz-post-grid">'+(posts.map(p=>'<article class="biz-post">'+(safe(p.image)?'<img src="'+E(safe(p.image))+'" alt="'+E(p.title)+'" loading="lazy" referrerpolicy="no-referrer">':'')+'<div class="biz-post-body"><div class="biz-meta"><span>'+E(brandName(p.profileId))+'</span>'+badge(p.status)+'</div><h2>'+E(p.title)+'</h2><p class="biz-post-text">'+E(p.text)+'</p>'+(p.error?'<p class="biz-warning">'+E(p.error)+'</p>':'')+(p.notes?'<details><summary>Uwagi do materiału</summary><p>'+E(p.notes)+'</p></details>':'')+'<div class="biz-actions">'+(M.drafts(p.status)?'<button class="primary" data-command="publish" data-id="'+E(p.id)+'" data-revision="'+E(p.revision)+'">Publikuj teraz</button><button class="secondary" data-command="revise" data-kind="social" data-id="'+E(p.id)+'">Zleć poprawki</button>':'')+link('Post na Facebooku',p.publishedUrl)+(['PUBLISHING','BUFFER_ACCEPTED','UNKNOWN','UNKNOWN_RESULT','FAILED'].includes(p.status)?command('Sprawdź status','Sprawdź status publikacji posta '+p.id+'. Tylko odczyt, bez ponownego wysyłania.'):'')+link('Źródło',p.source)+'</div></div></article>').join('')||empty('Brak postów w tej przestrzeni','Wybierz markę i poproś Donę o przygotowanie materiałów.',newButton('post','Przygotuj post')))+'</div>';
   }
-  const renderers={today:renderHome,orders:renderOrders,media:renderMedia,campaigns:renderCampaigns,sales:renderSales,social:renderSocial};
+  function processCards(){
+    const plans=rows('processes').filter(p=>p.state?.plan?.tasks?.length);
+    if(!plans.length)return '';
+    return section('Praca nad Twoją firmą','', '<div class="biz-process-grid">'+plans.map(p=>{
+      const ts=p.state.plan.tasks,done=ts.filter(t=>t.status==='VERIFIED').length;
+      return '<article class="biz-process-card"><span class="biz-kicker">'+done+' Z '+ts.length+' ETAPÓW Z POTWIERDZONYM WYNIKIEM</span><h3>'+E(p.title)+'</h3><p>'+E(p.currentStep)+'</p><progress max="'+ts.length+'" value="'+done+'" aria-label="Postęp: '+E(p.title)+'"></progress><button class="primary" data-business-process="'+E(p.id)+'">Otwórz plan i zadania →</button></article>';
+    }).join('')+'</div>');
+  }
+  function processDetails(id){
+    const p=rows('processes').find(p=>p.id===id);if(!p?.state?.plan)return;
+    const d=dialog();d.setAttribute('aria-labelledby','businessDialogTitle');
+    const labels={READY:'Można zacząć',WAITING:'Kolejny etap',VERIFIED:'Potwierdzony wynik'};
+    d.innerHTML='<header><h2 id="businessDialogTitle">'+E(p.title)+'</h2><button class="icon-button" data-business-close aria-label="Zamknij">×</button></header><p>Wybierz przygotowanie zadania. Odpowiedź zostanie zapisana w rozmowie. Zakończenie etapu wymaga osobnego potwierdzenia wyniku.</p><ol class="biz-process-tasks">'+p.state.plan.tasks.map(t=>'<li><span class="biz-status">'+E(labels[t.status]||'Do sprawdzenia')+'</span><h3>'+E(t.title)+'</h3>'+link('Otwórz wynik',t.resultReference)+(t.status==='READY'&&t.branch&&!['launch','contact','publish'].includes(t.id)?'<button class="primary" data-business-step="'+E(t.id)+'" data-process-id="'+E(p.id)+'">Zleć przygotowanie</button>':'')+'</li>').join('')+'</ol><footer><button class="secondary" data-business-close>Zamknij</button></footer>';
+    d.showModal();
+  }
+  document.addEventListener('click',async e=>{
+    const b=e.target.closest('[data-business-process],[data-business-step]');if(!b)return;
+    if(b.hasAttribute('data-business-process')){processDetails(b.dataset.businessProcess);return;}
+    if(demo){feedback('To podgląd. Zaloguj się, aby wykonać zadanie.');return;}
+    if(busy)return;
+    const p=rows('processes').find(p=>p.id===b.dataset.processId),t=p?.state?.plan?.tasks.find(t=>t.id===b.dataset.businessStep);
+    if(!t||t.status!=='READY'||!t.branch||['launch','contact','publish'].includes(t.id))return;
+    const prompt='Pracujesz nad zapisanym procesem '+p.id+': '+p.title+'. Zadanie: '+t.title+'. Aktualny krok: '+p.currentStep+'. Wykonaj możliwą pracę przygotowawczą dostępnymi narzędziami. Najpierw odczytaj aktualne źródła. Nie wymyślaj cen, wyników ani danych. Zwróć konkretny rezultat, źródła i miejsce zapisu. Samo przygotowanie odpowiedzi nie oznacza zakończenia procesu. Bez publikacji, wysyłania wiadomości i uruchamiania reklam.';
+    busy=true;b.disabled=true;dialog().close();feedback('Przekazuję zadanie. Wynik znajdziesz w rozmowie z Doną.');
+    try{const r=await window.Dona.runBranch(t.branch,p.title,prompt);feedback(!r?'Polecenie nie zostało przyjęte. Sprawdź, czy trwa inne zadanie.':r.ok===false?'Dona zgłosiła problem. Sprawdź odpowiedź w rozmowie.':'Odpowiedź zapisana w rozmowie. Status etapu czeka na weryfikację wyniku.');window.dispatchEvent(new CustomEvent('dona:refresh'));}
+    catch{feedback('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');}finally{busy=false;}
+  });
+  const renderers={today:()=>processCards()+renderHome(),orders:()=>processCards()+renderOrders(),media:renderMedia,campaigns:()=>processCards()+renderCampaigns(),sales:renderSales,social:renderSocial};
   function render(v,d,isDemo){if(view!==v){filter='all';query='';}view=v;data=d;demo=isDemo;window.DonaCommand?.setSnapshot?.(d,isDemo);const root=document.getElementById('viewContent');if(!d){root.innerHTML=empty('Czekam na dane firmy','Po odczycie zobaczysz zlecenia i zapisane wyniki.');return;}root.innerHTML=renderers[v]();}
   function dialog(){let d=document.getElementById('businessDialog');if(!d){d=document.createElement('dialog');d.id='businessDialog';d.className='biz-dialog';document.body.appendChild(d);d.addEventListener('click',e=>{if(e.target===d)d.close();});}return d;}
   function openForm(kind){
