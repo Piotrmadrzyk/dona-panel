@@ -49,7 +49,9 @@ export function queueQuery(input) {
   const id = requireMatch(input.taskId, /^[a-zA-Z0-9_-]{8,100}$/);
   const hash = requireMatch(input.contextHash, /^[a-f0-9]{64}$/);
   if (input.operation === 'read') return {
-    query: `SELECT task_id,context_hash,task,status,revision,result FROM ${jobTable} WHERE task_id=$1 AND context_hash=$2;`, params: [id,hash] };
+    query: `SELECT EXISTS(SELECT 1 FROM ${jobTable} WHERE task_id=$1 AND context_hash=$2) AS ok,
+      (SELECT row_to_json(j) FROM (SELECT task_id,context_hash,task,status,revision,result FROM ${jobTable}
+        WHERE task_id=$1 AND context_hash=$2) j) AS job;`, params: [id,hash] };
   const runner = requireMatch(input.runnerId, /^[a-zA-Z0-9._-]{2,80}$/);
   if (input.operation === 'acquire') return {
     query: `WITH claimed AS (UPDATE ${jobTable} SET status='PROCESSING',runner_id=$3,
