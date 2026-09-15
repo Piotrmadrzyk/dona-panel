@@ -735,7 +735,9 @@ async function runLiveTool(s,it){
   try{
     prepared=await enrichPanelAction(prepared);
     var answer=await ask(prepared&&prepared.backendText||q,undefined,false,true);
-    add('dona',answer);zapiszHist('dona',answer);phase('Wynik systemu otrzymany — sprawdź odpowiedź');
+    // Panel Dona Apex zapisuje wynik narzędzia po stronie serwera. Ponowny zapis z
+    // przeglądarki tworzył w historii drugi egzemplarz tej samej odpowiedzi.
+    add('dona',answer);phase('Wynik systemu otrzymany — sprawdź odpowiedź');
     if(isCurrent(s)){
       sendRT(s,{type:'conversation.item.create',item:{type:'function_call_output',call_id:id,output:JSON.stringify({odpowiedz:answer})}});
       liveCaption(answer,'DONA');liveState('result','ODPOWIEDŹ SYSTEMU OTRZYMANA');s.replyDue=true;scheduleReply(s);
