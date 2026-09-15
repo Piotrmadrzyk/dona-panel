@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=7\.0\.0/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.7/);
-  assert.match(html,/workspace\.js\?v=7\.2\.0/);
+  assert.match(html,/workspace\.js\?v=7\.3\.2/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -68,7 +68,10 @@ test('mail reply accepts exact user text without forcing a chat conversation and
   assert.match(workspace,/collection==='mails'/);
   assert.match(workspace,/name="reply" required maxlength="12000"/);
   assert.match(workspace,/Treść odpowiedzi Piotra:/);
-  assert.match(workspace,/zachowaj treść bez przeredagowania/);
+  assert.match(workspace,/manual_reply_text:reply/);
+  assert.match(workspace,/action="draft", parametr=/);
+  assert.match(workspace,/dane='\+JSON\.stringify\(daneJson\)/);
+  assert.match(workspace,/Pole manual_reply_text ma pozostać bez przeredagowania/);
   assert.match(workspace,/nie zostanie wysłana przed zatwierdzeniem/);
   assert.match(workspace,/Szkic ma trafić do Skrzynki decyzji/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
