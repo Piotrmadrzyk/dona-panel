@@ -136,6 +136,7 @@ export async function runPilot({ task, registry, host, enabled = false, now = Da
           await save({ status: 'BLOCKED', reason: lastReason });
           return { status: 'BLOCKED', reason: lastReason };
         }
+        if (i === selected.length - 1) continue;
         // A stopped process alone is insufficient: capture only validated,
         // scoped files. A failed/unsafe checkpoint must stop the fallback.
         checkpoint = await host.checkpoint({ task, workspace, lease });
