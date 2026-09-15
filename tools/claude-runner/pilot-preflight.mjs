@@ -9,7 +9,7 @@ const report = { node: process.versions.node, platform: platform(), os: release(
   productionChanged: false, agentTaskStarted: false,
   authVerified: false, isolationVerified: false, readyToRunPilot: false, tools: {} };
 // Presence only, never values. Existing API variables would change billing.
-report.billingOverridesPresent = ['ANTHROPIC_API_KEY','ANTHROPIC_AUTH_TOKEN','OPENAI_API_KEY',
+report.billingOverridesPresent = ['ANTHROPIC_API_KEY','ANTHROPIC_AUTH_TOKEN','OPENAI_API_KEY','CODEX_API_KEY',
   'ANTHROPIC_PROFILE','CLAUDE_CODE_USE_BEDROCK','CLAUDE_CODE_USE_VERTEX','CLAUDE_CODE_USE_FOUNDRY',
   'CLAUDE_CODE_OAUTH_TOKEN'].filter(key => Boolean(process.env[key]));
 for (const command of ['git', 'claude', 'codex']) {
