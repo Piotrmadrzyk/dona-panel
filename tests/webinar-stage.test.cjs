@@ -27,10 +27,10 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/trace\.css\?v=5\.2\.2/);
   assert.match(html,/trace\.js\?v=5\.2\.2/);
   assert.match(html,/centre\.css\?v=5\.2\.3/);
-  assert.match(html,/centre\.js\?v=5\.2\.3/);
+  assert.match(html,/centre\.js\?v=7\.0\.0/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.7/);
-  assert.match(html,/workspace\.js\?v=6\.0\.12/);
+  assert.match(html,/workspace\.js\?v=7\.2\.0/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
@@ -57,15 +57,20 @@ test('rescheduling a meeting is a real form, not a chat prose request, and never
   assert.match(workspace,/window\.Dona\.run\(prompt\)/);
 });
 
-test('mail detail offers self-service reply drafting, routed through DONA for the single named message, and now really lands in Skrzynka decyzji',()=>{
+test('mail view shows ten newest messages with direct mobile actions',()=>{
+  assert.match(workspace,/function mailCard/);
+  assert.match(workspace,/sort\(\(a,b\)=>\(Date\.parse\(b\.date\|\|b\.createdAt\)\|\|0\)-\(Date\.parse\(a\.date\|\|a\.createdAt\)\|\|0\)\)\.slice\(0,10\)/);
+  for(const marker of ['data-mail-reply','data-discuss="mails"','data-mail-trash','Otwórz','Odpowiedz','Omów z Doną','Usuń'])assert.match(workspace,new RegExp(marker));
+});
+
+test('mail reply accepts exact user text without forcing a chat conversation and still requires approval',()=>{
   assert.match(workspace,/function showMailReply/);
   assert.match(workspace,/collection==='mails'/);
-  assert.match(workspace,/Przygotuj odpowiedź/);
-  // 10.09: the "draft" action in Inbox Zero now files a real approval request (Approval
-  // Service, same proven path as the Recepcja Poczty pilot) - copy must say so accurately,
-  // not the earlier "just chat, nothing lands anywhere" placeholder.
-  assert.match(workspace,/wyśle do zatwierdzenia.*Skrzynce decyzji/);
-  assert.match(workspace,/Szkic ma trafić do zatwierdzenia w Skrzynce decyzji/);
+  assert.match(workspace,/name="reply" required maxlength="12000"/);
+  assert.match(workspace,/Treść odpowiedzi Piotra:/);
+  assert.match(workspace,/zachowaj treść bez przeredagowania/);
+  assert.match(workspace,/nie zostanie wysłana przed zatwierdzeniem/);
+  assert.match(workspace,/Szkic ma trafić do Skrzynki decyzji/);
   assert.match(workspace,/window\.Dona\.runBranch\('poczta','Poczta',prompt\)/);
 });
 

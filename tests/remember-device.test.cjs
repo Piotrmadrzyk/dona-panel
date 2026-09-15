@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const KEY='pm_panel_haslo';
 const storage=()=>{const data=new Map();return{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)}};
-for(const file of ['index.html','pilot/chat.js']){
+for(const file of ['pilot/chat.js']){
  const src=fs.readFileSync(file,'utf8');
  function boot(local=storage(),session=storage()){
   const ctx=vm.createContext({localStorage:local,sessionStorage:session});
@@ -41,3 +41,8 @@ for(const file of ['index.html','pilot/chat.js']){
   ctx.tryLogin();await new Promise(resolve=>setImmediate(resolve));assert.equal(ctx.sessionPw,'test-only');assert.equal(ctx.lsGet(KEY),'');
  });
 }
+
+test('root entry redirects to the current pilot panel and preserves query/hash',()=>{
+ const src=fs.readFileSync('index.html','utf8');
+ assert.match(src,/location\.replace\('\.\/pilot\/'\+location\.search\+\(location\.hash\|\|'#today'\)\)/);
+});
