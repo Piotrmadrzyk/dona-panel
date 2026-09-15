@@ -20,6 +20,25 @@ function fixture(results) {
 }
 const options = host => ({ task, registry, host, enabled: true, now: () => 1000 });
 
+test('explicit Codex preference launches only Codex', async () => {
+  const host = fixture([{ ok: true }]);
+  const result = await runPilot({ ...options(host), task: { ...task, executorPreference: 'codex' } });
+  assert.equal(result.engine, 'codex');
+  assert.equal(host.events.filter(e => e[0] === 'execute').length, 1);
+});
+test('explicit engine cannot silently fallback or bypass quota', async () => {
+  const host = fixture([]);
+  const result = await runPilot({ ...options(host), task: { ...task, executorPreference: 'codex' },
+    registry: registry.map(e => e.engine === 'codex' ? { ...e, quota: 'known', remainingPercent: 0 } : e) });
+  assert.equal(result.reason, 'NO_SUBSCRIPTION_EXECUTOR');
+  assert.equal(host.events.length, 0);
+});
+test('executor preference is validated and bound to task identity', () => {
+  assert.throws(() => validateTask({ ...task, executorPreference: 'api' }), /INVALID_EXECUTOR_PREFERENCE/);
+  assert.notEqual(contextHash(task), contextHash({ ...task, executorPreference: 'claude' }));
+  assert.equal(contextHash(task), contextHash({ ...task, executorPreference: 'auto' }));
+});
+
 test('pilot rejects foreign projects, traversal, settings and invalid context', () => {
   for (const change of [{ project: 'nikon' }, { files: ['pilot/../secret.js'] }, { files: ['.claude/settings.json'] },
     { contextVersion: NaN }, { baseCommit: 'main' }, { files: ['pilot/chat.js', 'pilot/chat.js'] }]) {
