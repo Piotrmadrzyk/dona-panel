@@ -3,6 +3,13 @@
   'use strict';
   const root = document.getElementById('viewContent');
   const enhance = () => {
+    root.querySelectorAll('img').forEach(img => {
+      const path = new URL(img.src);
+      if (path.origin === location.origin && path.pathname.startsWith('/review-dona-atelier/assets/')) {
+        path.pathname = path.pathname.replace('/review-dona-atelier/assets/', '/pilot/assets/');
+        img.src = path.href;
+      }
+    });
     const hero = root.querySelector('.biz-hero');
     if (hero && !hero.dataset.atelier) {
       hero.dataset.atelier = 'true';
