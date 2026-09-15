@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { userInfo } from 'node:os';
 import { validateTask, contextHash, selectExecutors, classifyFailure, childEnvironment, invocation, runPilot } from '../tools/claude-runner/model-router.mjs';
 
 const task = { id: 'pilot_000001', project: 'dona-panel', kind: 'code_change', goal: 'Popraw mobilny przycisk',
@@ -62,8 +63,9 @@ test('rejects paid, stale, future, low quota and wrong capabilities', () => {
     assert.equal(selectExecutors([{ ...registry[0], ...change }], 1000).length, 0);
 });
 test('no environment secrets or runtime injection inherited', () => {
-  const env = childEnvironment({ home: '/safe', path: '/usr/bin', ANTHROPIC_API_KEY: 'secret', NODE_OPTIONS: '--require evil' });
+  const env = childEnvironment({ home: '/safe', path: '/usr/bin', ANTHROPIC_API_KEY: 'secret', NODE_OPTIONS: '--require evil', USER: 'untrusted-task-user', LOGNAME: 'untrusted-task-user' });
   assert.equal(env.ANTHROPIC_API_KEY, undefined); assert.equal(env.NODE_OPTIONS, undefined);
+  assert.equal(env.USER, userInfo().username); assert.equal(env.LOGNAME, userInfo().username);
   assert.throws(() => childEnvironment({ home: '/safe', path: '/usr/bin:.' }));
 });
 test('CLI invocations retain sandbox and avoid arbitrary shell prompt interpolation', () => {
