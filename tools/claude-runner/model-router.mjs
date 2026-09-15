@@ -83,7 +83,8 @@ export function invocation(engine, model, prompt) {
       '{"disableAllHooks":true,"disableClaudeAiConnectors":true}'],
     stdin: prompt,
   };
-  return { args: ['exec', '--json', '--sandbox', 'workspace-write', '--model', model,
+  // Snapshot is intentionally not a Git checkout. Host preflight must establish isolation.
+  return { args: ['exec', '--json', '--skip-git-repo-check', '--ignore-user-config', '--sandbox', 'workspace-write', '--model', model,
     '-c', 'approval_policy="never"', '-c', 'sandbox_workspace_write.network_access=false', '-'], stdin: prompt };
 }
 
