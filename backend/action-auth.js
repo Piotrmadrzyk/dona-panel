@@ -15,5 +15,5 @@ if (authorized && ['tenant_id','tenantId','role','rola','user_id','userId'].some
   error = 'client_identity_not_allowed'; statusCode = 403;
 }
 const origin = $('Workspace Request').first().json.headers?.origin;
-if(authorized && origin !== 'https://dona.probatum.pl'){error='origin_not_allowed';statusCode=403;}
+if (authorized && origin !== 'https://dona.probatum.pl') { error = 'origin_not_allowed'; statusCode = 403; }
 return [{json:{authorized:authorized && !error,tenantId:'PM',statusCode,error}}];
