@@ -42,6 +42,13 @@ test('public demo includes a truthful catalogue without invented prices',()=>{
  assert.match(source,/id:'prod_pm_akademia_ai'[\s\S]*?priceStatus:'BLOCKED'[\s\S]*?promotionAllowed:false/);
  assert.doesNotMatch(source,/id:'prod_pm_akademia_ai'[\s\S]{0,300}?price:/);
 });
+test('prospect cards escape source text, use only ids in prompts and never offer send',()=>{
+ const s=setup();s.data.prospects=[{id:'prs_'+'1'.repeat(24),brandId:'probatum',companyName:'Firma <script>alert(1)</script>',productName:'WWW',score:80,reason:'Hipoteza',evidenceSummary:'FAKT: formularz',sourceUrl:'javascript:alert(1)',websiteUrl:'https://firma.pl/',needSignal:'HIPOTEZA: przypomnienia',evidenceCheckedAt:'2026-09-16T08:00:00Z'}];
+ s.win.DonaBusiness.render('sales',s.data,false);const html=s.root.innerHTML;
+ assert.match(html,/Firmy do sprawdzenia/);assert.match(html,/80\/100 · priorytet/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>|href="javascript/);assert.equal(s.calls.length,0);
+ const card=html.match(/<article class="biz-sale biz-prospect">[\s\S]*?<\/article>/)[0];assert.match(card,/lista|liste_prospektow/);assert.doesNotMatch(card,/Wyślij|mailto:/);assert.match(card,/Bez kontaktowania firmy/);
+});
+test('prospect read failure is visible and is not reported as no candidates',()=>{const s=setup();s.data.prospectsStatus={ok:false,message:'Nie udało się odczytać listy firm.'};s.win.DonaBusiness.render('sales',s.data,false);assert.match(s.root.innerHTML,/Nie udało się odczytać/);assert.doesNotMatch(s.root.innerHTML,/Lista czeka na pierwszy research/);});
 test('sales puts people before catalogue and builds replies from trusted record ids only',()=>{
  const s=setup();s.data.processes=[];s.data.products=[{id:'prod_pm_www',brandId:'probatum',name:'Strona',priceStatus:'QUOTE_REQUIRED'}];s.data.leads=[
   {id:'lead-123',brandId:'probatum',name:'Anna Kowalska',title:'Nowa strona',email:'anna@example.com',phone:'+48123456789',source:'Formularz',status:'NEW',description:'Proszę o kontakt',createdAt:'2026-09-16T08:00:00Z'},
