@@ -145,7 +145,7 @@ test('business systems expose allowlisted fields and keep raw workflow payloads 
  f['Read Competitor Observations']=[{id:1,klient_id:'PM',obserwacja_id:'watch-1',konkurent:'Firma X',skrot:'Podsumowanie',migawka:'PRIVATE SNAPSHOT'}];
  f['Read Playbooks']=[{id:1,playbook_id:'pb-1',nazwa:'AI B2B',branza:'b2b',moduly:'leady,oferty',szablony_json:'PRIVATE TEMPLATE'}];
  const r=run(snapshotSource,f),serialized=JSON.stringify(r);
- assert.equal(r.tasks[0].projectId,'project-1');assert.equal(r.tasks[0].priorityScore,88);assert.equal(r.processes.length,1);assert.deepEqual(r.processes[0].state,{settled:['Zakres'],waiting:['Akceptacja'],blocked:['Dostęp']});
+ assert.equal(r.tasks[0].projectId,'project-1');assert.equal(r.tasks[0].priorityScore,88);assert.equal(r.processes.length,1);assert.deepEqual(r.processes[0].state,{settled:['Zakres'],waiting:['Akceptacja'],blocked:['Dostęp'],plan:null});
  assert.equal(r.assets[0].previewUrl,'');assert.equal(r.assets[0].sourceUrl,'https://example.com/source');assert.equal(r.customerMemory[0].clientName,'Klient Jeden');assert.equal(r.nextActions[0].clientName,'Klient Jeden');
  assert.equal(r.invoices[0].amount,1234.5);assert.equal(r.subscriptions[0].dashboardUrl,'https://example.com/dashboard');assert.equal(r.subscriptionUsage[0].used,25);assert.equal(r.researches[0].topic,'Rynek');assert.equal(r.competitorObservations[0].competitor,'Firma X');assert.deepEqual(r.playbooks[0].modules,['leady','oferty']);
  assert.doesNotMatch(serialized,/FOREIGN PROCESS|PRIVATE PROVENANCE|PRIVATE STATE|PRIVATE KEY|PRIVATE HTML|PRIVATE CAMPAIGN|PRIVATE NORMALIZED|PRIVATE PDF|PRIVATE CREDENTIAL|PRIVATE RAW|PRIVATE RESEARCH|PRIVATE SNAPSHOT|PRIVATE TEMPLATE/);

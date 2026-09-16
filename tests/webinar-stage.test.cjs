@@ -30,7 +30,7 @@ test('webinar assets are cache-busted together',()=>{
   assert.match(html,/centre\.js\?v=7\.0\.0/);
   assert.match(html,/systems\.css\?v=6\.0\.3/);
   assert.match(html,/systems\.js\?v=6\.0\.7/);
-  assert.match(html,/workspace\.js\?v=7\.3\.2/);
+  assert.match(html,/workspace\.js\?v=7\.3\.3/);
 });
 
 test('demo Buffer state is never labelled as a confirmed external read',()=>{
