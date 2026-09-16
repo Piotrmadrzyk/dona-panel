@@ -20,3 +20,16 @@ test('prepared task routes once with bound process context; pending/publication 
 test('reviewable result is shown and explicit owner confirmation is sent with exact identity',async()=>{const s=setup();s.data.processes[0].state.plan.tasks[0]={id:'offer',branch:'sprzedaz',title:'Oferta',status:'RESULT_READY',resultSummary:'Gotowa oferta <bezpieczna>',resultAt:'2026-09-16T08:00:00Z'};s.win.DonaBusiness.render('orders',s.data,false);await s.open('p1');assert.match(s.dialog.innerHTML,/Wynik do sprawdzenia/);assert.match(s.dialog.innerHTML,/Gotowa oferta &lt;bezpieczna&gt;/);await s.verify('offer');assert.equal(JSON.stringify(s.verifications[0]),JSON.stringify({processId:'p1',taskId:'offer',planVersion:3,branch:'sprzedaz'}));});
 test('process card surfaces a result that needs owner review',()=>{const s=setup();s.data.processes[0].state.plan.tasks[0].status='RESULT_READY';s.win.DonaBusiness.render('orders',s.data,false);assert.match(s.root.innerHTML,/1 wynik czeka na Ciebie/);assert.match(s.root.innerHTML,/Sprawdź gotowy wynik/);});
 test('demo never dispatches a task',async()=>{const s=setup(true);await s.step('offer');assert.equal(s.calls.length,0);});
+test('sales catalogue renders fixed, quoted and blocked products safely',()=>{
+ const s=setup();s.data.processes=[];s.data.products=[
+  {id:'fixed',brandId:'probatum',name:'Stała usługa',priceStatus:'FIXED',price:2500,currency:'PLN',unit:'projekt',role:'Gotowy zakres'},
+  {id:'quote',brandId:'probatum',name:'Wycena <script>alert(1)</script>',priceStatus:'QUOTE_REQUIRED',role:'Zakres do ustalenia'},
+  {id:'academy',brandId:'probatum',name:'Akademia AI',priceStatus:'BLOCKED',role:'Kurs',limitation:'Bramka płatności niegotowa'}
+ ];
+ s.win.DonaBusiness.render('sales',s.data,false);const html=s.root.innerHTML;
+ assert.match(html,/Oferta Probatum/);assert.match(html,/2[\s\u00a0]?500[^<]*zł[^<]*netto/);assert.match(html,/Wycena indywidualna/);assert.match(html,/Sprzedaż wstrzymana/);
+ assert.doesNotMatch(html,/<script>alert/);assert.match(html,/Wycena &lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+ const blocked=html.match(/<article class="biz-product is-blocked">[\s\S]*?<\/article>/)?.[0]||'';
+ assert.match(blocked,/Sprawdź, czego brakuje/);assert.doesNotMatch(blocked,/data-prompt="[^"]*Przygotuj ofertę/);
+ const prompts=[...html.matchAll(/data-prompt="([^"]*)"/g)].map(m=>m[1]);assert.equal(prompts.some(p=>p.includes('script')||p.includes('alert')),false);assert.ok(prompts.some(p=>p.includes('price_quote')&&p.includes('Bez wysyłania')));
+});
