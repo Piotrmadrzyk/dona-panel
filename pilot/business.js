@@ -55,8 +55,9 @@
     const plans=rows('processes').filter(p=>p.state?.plan?.tasks?.length);
     if(!plans.length)return '';
     return section('Praca nad Twoją firmą','', '<div class="biz-process-grid">'+plans.map(p=>{
-      const ts=p.state.plan.tasks,done=ts.filter(t=>t.status==='VERIFIED').length;
-      return '<article class="biz-process-card"><span class="biz-kicker">'+done+' Z '+ts.length+' ETAPÓW Z POTWIERDZONYM WYNIKIEM</span><h3>'+E(p.title)+'</h3><p>'+E(p.currentStep)+'</p><progress max="'+ts.length+'" value="'+done+'" aria-label="Postęp: '+E(p.title)+'"></progress><button class="primary" data-business-process="'+E(p.id)+'">Otwórz plan i zadania →</button></article>';
+      const ts=p.state.plan.tasks,done=ts.filter(t=>t.status==='VERIFIED').length,ready=ts.filter(t=>t.status==='RESULT_READY').length;
+      const pending=ready?'<div class="biz-process-alert" role="status"><strong>'+ready+' '+(ready===1?'wynik czeka':'wyniki czekają')+' na Ciebie</strong><span>Sprawdź rezultat i zdecyduj, czy odblokować następny etap.</span></div>':'';
+      return '<article class="biz-process-card '+(ready?'has-result':'')+'"><span class="biz-kicker">'+done+' Z '+ts.length+' ETAPÓW Z POTWIERDZONYM WYNIKIEM</span><h3>'+E(p.title)+'</h3>'+pending+'<p>'+E(p.currentStep)+'</p><progress max="'+ts.length+'" value="'+done+'" aria-label="Postęp: '+E(p.title)+'"></progress><button class="primary" data-business-process="'+E(p.id)+'">'+(ready?'Sprawdź gotowy wynik →':'Otwórz plan i zadania →')+'</button></article>';
     }).join('')+'</div>');
   }
   function processDetails(id){
