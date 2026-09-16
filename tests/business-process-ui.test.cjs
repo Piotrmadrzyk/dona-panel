@@ -24,12 +24,21 @@ test('sales catalogue renders fixed, quoted and blocked products safely',()=>{
  const s=setup();s.data.processes=[];s.data.products=[
   {id:'fixed',brandId:'probatum',name:'Stała usługa',priceStatus:'FIXED',price:2500,currency:'PLN',unit:'projekt',role:'Gotowy zakres'},
   {id:'quote',brandId:'probatum',name:'Wycena <script>alert(1)</script>',priceStatus:'QUOTE_REQUIRED',role:'Zakres do ustalenia'},
-  {id:'academy',brandId:'probatum',name:'Akademia AI',priceStatus:'BLOCKED',role:'Kurs',limitation:'Bramka płatności niegotowa'}
+  {id:'academy',brandId:'probatum',name:'Akademia AI',priceStatus:'FIXED',price:199,currency:'PLN',promotionAllowed:false,role:'Kurs',limitation:'Bramka płatności niegotowa'}
  ];
  s.win.DonaBusiness.render('sales',s.data,false);const html=s.root.innerHTML;
  assert.match(html,/Oferta Probatum/);assert.match(html,/2[\s\u00a0]?500[^<]*zł[^<]*netto/);assert.match(html,/Wycena indywidualna/);assert.match(html,/Sprzedaż wstrzymana/);
  assert.doesNotMatch(html,/<script>alert/);assert.match(html,/Wycena &lt;script&gt;alert\(1\)&lt;\/script&gt;/);
  const blocked=html.match(/<article class="biz-product is-blocked">[\s\S]*?<\/article>/)?.[0]||'';
  assert.match(blocked,/Sprawdź, czego brakuje/);assert.doesNotMatch(blocked,/data-prompt="[^"]*Przygotuj ofertę/);
+ assert.doesNotMatch(blocked,/199/);
  const prompts=[...html.matchAll(/data-prompt="([^"]*)"/g)].map(m=>m[1]);assert.equal(prompts.some(p=>p.includes('script')||p.includes('alert')),false);assert.ok(prompts.some(p=>p.includes('price_quote')&&p.includes('Bez wysyłania')));
+});
+test('public demo includes a truthful catalogue without invented prices',()=>{
+ const source=fs.readFileSync('pilot/workspace.js','utf8');
+ assert.match(source,/products:\[/);
+ assert.match(source,/id:'prod_pm_lead_followup_automation'[\s\S]*?priceStatus:'QUOTE_REQUIRED'/);
+ assert.match(source,/id:'prod_pm_www'[\s\S]*?priceStatus:'QUOTE_REQUIRED'/);
+ assert.match(source,/id:'prod_pm_akademia_ai'[\s\S]*?priceStatus:'BLOCKED'[\s\S]*?promotionAllowed:false/);
+ assert.doesNotMatch(source,/id:'prod_pm_akademia_ai'[\s\S]{0,300}?price:/);
 });
