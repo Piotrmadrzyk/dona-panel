@@ -21,7 +21,7 @@ test('an expired or stale APPROVED post can be rejected or re-approved, not just
   assert.equal(decide({...approveAgain,action:'reject'},r).status,'REJECTED');
   for(const deadState of ['REJECTED','PUBLISHED','PUBLISHING'])assert.equal(decide(approveAgain,{...r,status:deadState}).error,'stale_content');
 });
-test('publish_social requires an APPROVED post with a matching hash and a known brand page',()=>{
+test('publish_social uses the exact displayed post, regardless of its place in the queue',()=>{
   const approved=post();approved.status='APPROVED';approved.approved_hash=approved.caption_hash;
   const b={operation:'publish_social',id:approved.post_key,revision:approved.approved_hash};
   const ok=decide(b,approved);
@@ -31,6 +31,19 @@ test('publish_social requires an APPROVED post with a matching hash and a known 
   assert.equal(decide({...b,revision:'y'.repeat(64)},approved).ok,false);
   assert.equal(decide(b,{...approved,fb_page_id:'OTHER'}).error,'scope');
   assert.equal(decide({...b,id:'unknown:post'},approved).error,'not_found');
+});
+test('generated panel workflow preserves the live owner-publish path',()=>{
+  const workflow=fs.readFileSync('backend/actions.workflow.ts','utf8');
+  const generated=name=>{const prefix='const '+name+' = node(',line=workflow.split('\n').find(v=>v.startsWith(prefix));assert.ok(line,'missing generated node '+name);return JSON.parse(line.slice(prefix.length,-2));};
+  assert.equal(generated('guard').config.parameters.jsCode,guard);
+  const publish=generated('callPublish');
+  assert.equal(publish.config.parameters.workflowInputs.value.operation,'publish_now');
+  assert.equal(publish.config.parameters.workflowInputs.value.expected_content_hash,"={{ $('Check Exact Content').first().json.contentHash }}");
+  assert.equal(publish.config.onError,'continueErrorOutput');
+  assert.equal(generated('interpretPublish').config.parameters.jsCode,fs.readFileSync('backend/publish-outcome.js','utf8'));
+  assert.match(workflow,/"availableInMCP": true/);
+  assert.match(workflow,/\.add\(callPublish\.output\(1\)\.to\(interpretPublish\)\)/);
+  assert.doesNotMatch(workflow,/publish_approved|ANOTHER_APPROVED_POST_IS_FIRST|DAILY_LIMIT_REACHED/);
 });
 test('write API accepts publish_social as an authorized operation alongside decision and save_memory',()=>{
   const f=op=>run(auth,{'Workspace Request':[{body:{haslo:'test-only',operation:op},headers:{origin:'https://dona.probatum.pl'}}]},[{nazwa:'panel_haslo',wartosc:'test-only'}]);
