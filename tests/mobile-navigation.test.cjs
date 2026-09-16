@@ -7,10 +7,11 @@ const workspace=fs.readFileSync('pilot/workspace.js','utf8');
 const business=fs.readFileSync('pilot/business.js','utf8');
 const css=fs.readFileSync('pilot/business.css','utf8');
 
-test('phone navigation always exposes work, a new order, tools and Dona',()=>{
+test('phone navigation always exposes sales, a new order, tools and Dona',()=>{
   const mobile=html.match(/<nav class="biz-mobile-nav"[\s\S]*?<\/nav>/)?.[0]||'';
   assert.match(mobile,/data-view="today"/);
-  assert.match(mobile,/data-view="orders"/);
+  assert.match(mobile,/data-view="sales"/);
+  assert.match(mobile,/>Sprzedaż</);
   assert.match(mobile,/data-business-new="task"/);
   assert.match(mobile,/data-view="tools"/);
   assert.match(mobile,/data-chat/);
