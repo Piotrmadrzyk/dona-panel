@@ -83,6 +83,26 @@ const approvals=read('Read Approvals','tenant_id','approvals').map(r=>{
 });
 const leads=read('Read Leads','client_id','leads').map(r=>({id:text(r.lead_id),name:text(r.imie),title:text(r.imie||r.email||'Zapytanie'),email:text(r.email),phone:text(r.telefon),status:text(r.status),description:text(r.tresc||r.notatka,6000),source:text(r.zrodlo),createdAt:text(r.utworzono||r.createdAt)}));
 const offers=read('Read Offers','client_id','offers').map(r=>({id:text(r.offer_id),title:text(r.nazwa_pliku||'Oferta '+r.offer_id),clientName:clientName(r.customer_id),status:text(r.status),amount:r.total_netto!==null&&r.total_netto!==''&&Number.isFinite(Number(r.total_netto))?Number(r.total_netto):null,currency:text(r.waluta)||'PLN',createdAt:text(r.utworzono||r.createdAt),expiresAt:text(r.valid_until),url:url(r.drive_link),description:text(r.approval_reason||r.decision_reason)}));
+// Product rows describe what Probatum may sell. A separate, versioned price table is
+// the only source of a confirmed amount. Old QA products stay in the table for audit,
+// but their explicit test markers keep them out of the owner's real catalogue.
+const productRows=read('Read Products','klient_id','products').filter(r=>r.material_dostepny===true&&!/(?:testow|rekord test|pozycja test|etap(?:u)?\s*3[f-g])/i.test(text(r.nazwa)+' '+text(r.notatka)));
+const now=Date.now();
+const priceRows=read('Read Prices','client_id','prices').filter(r=>r.aktywny===true&&Number.isFinite(Date.parse(r.valid_from))&&Date.parse(r.valid_from)<=now&&(!r.valid_to||Number.isFinite(Date.parse(r.valid_to))&&Date.parse(r.valid_to)>now));
+const pricesByProduct=new Map();
+for(const r of priceRows){const id=text(r.produkt_id);if(id){const list=pricesByProduct.get(id)||[];list.push(r);pricesByProduct.set(id,list);}}
+const products=productRows.map(r=>{
+ const candidates=pricesByProduct.get(text(r.produkt_id))||[];
+ const maxVersion=candidates.length?Math.max(...candidates.map(p=>number(p.wersja)||0)):0;
+ const latest=candidates.filter(p=>(number(p.wersja)||0)===maxVersion);
+ const candidate=latest.length===1?latest[0]:null;
+ const amount=candidate?number(candidate.cena):null,priceType=text(candidate&&candidate.price_type,80).toUpperCase(),currency=text(candidate&&candidate.waluta,3).toUpperCase();
+ const current=candidate&&amount!==null&&amount>0&&['ONE_TIME','RECURRING','FIXED'].includes(priceType)&&/^[A-Z]{3}$/.test(currency)?candidate:null;
+ const promotionAllowed=r.wolno_promowac===true;
+ const priceStatus=!promotionAllowed?'BLOCKED':current?'FIXED':'QUOTE_REQUIRED';
+ const vatRate=priceStatus==='FIXED'&&number(current.vat_rate)!==null&&number(current.vat_rate)>=0&&number(current.vat_rate)<=100?number(current.vat_rate):null;
+ return {id:text(r.produkt_id),name:text(r.nazwa,300),brandId:'probatum',category:text(r.kategoria,100),type:text(r.typ_pozycji,80),unit:text(r.jednostka,100),price:priceStatus==='FIXED'?amount:null,currency:priceStatus==='FIXED'?currency:'',priceType:priceStatus==='FIXED'?priceType:'',vatRate,priceStatus,promotionAllowed,materialAvailable:true,priority:text(r.priorytet,40),role:text(r.rola_sprzedazowa,2000),channels:text(r.gdzie_promowac,1000),limitation:text(r.ograniczenie_operacyjne,2000),updatedAt:text(r.aktualizacja||r.updatedAt)};
+}).filter(r=>/^[a-z0-9_-]{1,100}$/i.test(r.id)&&r.name);
 const clients=customers.map(r=>({id:text(r.customer_id),name:text(r.nazwa||r.firma_nazwa||r.customer_id),email:text(r.emails),phone:text(r.telefony),status:text(r.status||r.lifecycle_stage),lifecycle:text(r.lifecycle_stage),owner:text(r.owner),serviceLevel:text(r.poziom_obslugi),tags:text(r.tagi),nextAction:text(r.next_action),nextActionAt:text(r.next_action_at),lastContactAt:text(r.last_contact_at),driveFolderId:text(r.drive_folder_id),createdAt:text(r.utworzono||r.createdAt)}));
 const meetings=read('Read Meetings','client_id','meetings').map(r=>({id:text(r.meeting_id),title:text(r.tytul),clientName:clientName(r.customer_id),date:text(r.start),end:text(r.koniec),status:text(r.status),location:text(r.lokalizacja),url:url(r.event_link),createdAt:text(r.utworzono||r.createdAt)}));
 // "[TEST ...]" titles are QA fixtures already cancelled at the source (see cancel_reason
@@ -188,7 +208,7 @@ const calendarRows=read('Read Zoho Calendar','tenant_id','calendar');
 const zoho=calendarRows.filter(r=>r.provider==='zoho'&&text(r.calendar_id)!=='own').map(r=>{let events=[];try{const e=JSON.parse(r.events_json||'[]');events=Array.isArray(e)?e:[];}catch{}return {id:text(r.calendar_id),name:text(r.calendar_name),status:text(r.status),checkedAt:text(r.checked_at),errorCode:text(r.error_code),rangeStart:text(r.range_start),rangeEnd:text(r.range_end),events:events.slice(0,500).map(e=>({id:text(e.id),uid:text(e.uid),etag:text(e.etag),recurrenceId:text(e.recurrenceId),title:text(e.title),date:text(e.date),end:text(e.end),allDay:e.allDay===true,location:text(e.location),url:url(e.url),status:text(e.status),provider:'zoho',calendarId:text(r.calendar_id),brandId:brand(e)}))};});
 connections.push({id:'zoho',name:'Zoho Calendar',status:zoho.length?(zoho.every(c=>c.status==='READ_OK')?'READ_OK':'ERROR'):'NOT_CONNECTED',detail:zoho.length?'Ostatnia synchronizacja: '+text(zoho[0].checkedAt)+'. Widok pokazuje zapisany wynik synchronizacji.':'Połącz konto Zoho, aby pobierać spotkania. Kalendarz Google jest osobną integracją.',source:'Zoho Calendar API'});
 
-for(const collection of [leads,offers,clients,meetings,tasks,processes,assets,campaigns,files,researches,activity,mediaAnalyses])for(const item of collection)if(!item.brandId)item.brandId='';
+for(const collection of [leads,offers,products,clients,meetings,tasks,processes,assets,campaigns,files,researches,activity,mediaAnalyses])for(const item of collection)if(!item.brandId)item.brandId='';
 // GA4 pageview/user/session snapshot per owned site (probatum/edwardjanusz/silverandglass),
 // collected daily by 'PM Agent OS - Zbieranie: statystyki_www (GA4, codziennie)'. Keep only the
 // most recent row per site - the table accumulates history, the panel only needs the latest.
@@ -201,4 +221,4 @@ for(const r of wwwStatsRows){
   if(existing && new Date(existing.zebrano)>=new Date(r.zebrano))continue;
   wwwStats[site]={odslony:number(r.odslony),uzytkownicy:number(r.uzytkownicy),sesje:number(r.sesje),zakres:text(r.zakres),zebrano:text(r.zebrano)};
 }
-return [{json:{ok:true,generatedAt:new Date().toISOString(),context:{tenantId:tenant,name:text(configs[0].nazwa)||'Probatum',userName:'Piotr',role:'OWNER'},approvals,leads,offers,clients,meetings,tasks,processes,workJobs,workJobsStatus,assets,campaigns,customerMemory,nextActions,files,invoices,subscriptions,subscriptionUsage,researches,competitorObservations,playbooks,mediaAnalyses,activity,memory,permanentMemory,knowledgeFragments,socialProfiles,socialPosts,connections,claudeRunner,mails,mailboxSync,workHistory,wwwStats,calendar:{provider:'zoho',status:zoho.length?'CONFIGURED':'NOT_CONNECTED',calendars:zoho},meta:{limit:cap,truncated,mode:'owner_pilot',readOnly:true}}}];
+return [{json:{ok:true,generatedAt:new Date().toISOString(),context:{tenantId:tenant,name:text(configs[0].nazwa)||'Probatum',userName:'Piotr',role:'OWNER'},approvals,leads,offers,products,clients,meetings,tasks,processes,workJobs,workJobsStatus,assets,campaigns,customerMemory,nextActions,files,invoices,subscriptions,subscriptionUsage,researches,competitorObservations,playbooks,mediaAnalyses,activity,memory,permanentMemory,knowledgeFragments,socialProfiles,socialPosts,connections,claudeRunner,mails,mailboxSync,workHistory,wwwStats,calendar:{provider:'zoho',status:zoho.length?'CONFIGURED':'NOT_CONNECTED',calendars:zoho},meta:{limit:cap,truncated,mode:'owner_pilot',readOnly:true}}}];
