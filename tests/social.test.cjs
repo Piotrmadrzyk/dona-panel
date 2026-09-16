@@ -30,21 +30,36 @@ test('explicit Polish wrzuć command is recognized as a whole word',()=>{
  const f=fixture();f.request.original_message='Wrzuć zatwierdzony post';assert.equal(runSelect(f).route,'publish');
  f.request.original_message='Nie wrzuć posta';assert.notEqual(runSelect(f).route,'publish');
 });
-test('social rejects missing approval, changed material, foreign profile, expired approval and disconnected channel',()=>{
- for(const change of [f=>f.posts[0].status='DRAFT',f=>f.posts[0].caption+=' edited',f=>f.posts[0].approved_by='DONA',f=>f.posts[0].approved_at='2020-01-01',f=>f.profiles[0].buffer_channel_id='other',f=>f.channels[0].isDisconnected=true,f=>f.request.ok=false,f=>f.request.profile_key='silverandglass']){
+test('current owner command publishes the exact version selected after read, regardless of queue or date',()=>{
+ const f=fixture();f.request.operation='read';const read=runSelect(f);
+ f.request={...f.request,operation:'publish_now',post_key:f.posts[0].post_key,original_message:'Opublikuj teraz ten post',expected_content_hash:read.posts[0].content_hash};
+ f.posts[0].status='DRAFT';f.posts[0].scheduled_date='2099-01-01';
+ f.posts.unshift({...fixture().posts[0],id:1,post_key:'first-approved'});
+ f.posts.push({...fixture().posts[0],id:9,post_key:'published-today',status:'PUBLISHED',scheduled_date:new Date().toISOString().slice(0,10),published_url:'https://www.facebook.com/posts/123'});
+ const r=runSelect(f);assert.equal(r.route,'publish');assert.equal(r.post.post_key,f.request.post_key);assert.equal(r.approval.approved_by,'Piotr');assert.equal(r.approval.approved_hash,f.request.expected_content_hash);
+});
+test('owner override fails closed when exact content was not read or changed afterwards',()=>{
+ const f=fixture();f.request.operation='publish_now';f.request.original_message='Opublikuj teraz ten post';f.posts[0].status='DRAFT';
+ assert.equal(runSelect(f).error,'READ_EXACT_VERSION_FIRST');
+ f.request.expected_content_hash=hash(JSON.stringify([f.posts[0].profile_key,f.posts[0].fb_page_id,f.posts[0].source_url,f.posts[0].image_url,f.posts[0].image_sha256,f.posts[0].caption]));
+ f.posts[0].caption+=' zmieniona';assert.equal(runSelect(f).error,'POST_CHANGED_SINCE_READ');
+});
+test('legacy approved publishing rejects missing approval, changed material, foreign profile and disconnected channel',()=>{
+ for(const change of [f=>f.posts[0].status='DRAFT',f=>f.posts[0].caption+=' edited',f=>f.posts[0].approved_by='DONA',f=>f.profiles[0].buffer_channel_id='other',f=>f.channels[0].isDisconnected=true,f=>f.request.ok=false,f=>f.request.profile_key='silverandglass']){
   const f=fixture();change(f);assert.notEqual(runSelect(f).route,'publish');
  }
 });
 test('read-only questions cannot become publication through LLM operation selection',()=>{
- for(const message of ['Widzisz posty?','Nie publikuj','Opublikuj test','Tylko odczyt, bez publikacji','Czy umiesz publikować?']){
+ for(const message of ['Widzisz posty?','Nie publikuj','Tylko odczyt, bez publikacji','Czy umiesz publikować?','Czy możesz opublikować ten post?']){
   const f=fixture();f.request.original_message=message;assert.equal(runSelect(f).error,'EXPLICIT_PUBLISH_COMMAND_REQUIRED');
  }
 });
-test('unknown, accepted and already published posts block duplicates',()=>{
- for(const status of ['PUBLISHING','BUFFER_ACCEPTED','UNKNOWN','PUBLISHED']){
-  const f=fixture();f.posts.push({...f.posts[0],id:9,post_key:'other',status,scheduled_date:new Date().toISOString().slice(0,10)});assert.notEqual(runSelect(f).route,'publish');
+test('selected post is protected against duplicate publication without blocking other selected work',()=>{
+ const f=fixture();f.posts.push({...f.posts[0],id:9,post_key:'other',status:'PUBLISHING'});assert.equal(runSelect(f).route,'publish');
+ for(const status of ['PUBLISHING','BUFFER_ACCEPTED','UNKNOWN']){
+  const same=fixture();same.posts[0].status=status;same.posts[0].buffer_post_id='buffer-12345';assert.equal(runSelect(same).route,'status');
  }
- const f=fixture();f.posts.push({...f.posts[0],id:1,post_key:'first'});assert.equal(runSelect(f).error,'ANOTHER_APPROVED_POST_IS_FIRST');
+ const published=fixture();published.posts[0].status='PUBLISHED';published.posts[0].published_url='https://www.facebook.com/posts/123';const r=runSelect(published);assert.equal(r.route,'return');assert.equal(r.published,true);assert.equal(r.payload,undefined);
 });
 function runResult(remote,previousOverrides={}){
  const f=fixture(),selected={route:'publish',post:{...f.posts[0],...previousOverrides},channelId:f.channels[0].id,today:'2026-09-09'};
@@ -65,6 +80,8 @@ test('Buffer accepted is not Facebook published',()=>{
 test('social executor has no automatic publication trigger and keeps exact claim ahead of write',()=>{
  const w=fs.readFileSync('backend/social.workflow.ts','utf8');
  assert.doesNotMatch(w,/scheduleTrigger|n8n-nodes-base.webhook|retryOnFail":true/);
- assert.match(w,/Claim Exact Approved Post/);assert.match(w,/Verify Approved Photo/);assert.match(w,/"callerIds":"vE77e9dXD2e93jBW"/);
+ assert.match(w,/Claim Exact Approved Post/);assert.match(w,/Verify Approved Photo/);assert.match(w,/"callerIds":"vE77e9dXD2e93jBW,mILGt8TyRMEf6NZg"/);
+ assert.match(w,/expected_content_hash/);assert.match(w,/publish_now/);assert.match(w,/updatedAt/);
+ assert.doesNotMatch(w,/ANOTHER_APPROVED_POST_IS_FIRST|DAILY_LIMIT_REACHED|POST_SCHEDULED_FOR_FUTURE/);
  assert.match(w,/\.to\(claim\)\.to\(confirm\)\.to\(write\)/);
 });
