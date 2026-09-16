@@ -22,7 +22,8 @@ test('Dona\'s answer is no longer saved client-side after a fetch succeeds - the
 });
 
 test('branch dispatch (executeBranch) now threads conversation_id through, so the server can save into the right thread',()=>{
-  assert.match(chat,/panelPost\(BRANCH_URL,\{haslo:sessionPw,galaz:selected\.id,polecenie:withBrand\(text\),tryb:selected\.id==='research'\?'szybka':'',conversation_id:panelConversationId\}\)/);
+  assert.match(chat,/var payload=\{haslo:sessionPw,galaz:selected\.id,polecenie:withBrand\(text\),tryb:selected\.id==='research'\?'szybka':'',conversation_id:panelConversationId\}/);
+  assert.match(chat,/panelPost\(BRANCH_URL,payload\)/);
 });
 
 test('the connection-drop message tells the truth about the new guarantee instead of implying the answer is gone',()=>{

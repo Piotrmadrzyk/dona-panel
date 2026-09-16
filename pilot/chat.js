@@ -659,14 +659,18 @@ async function runBranch(){
   var text=document.getElementById('branchText').value.trim();if(!text||!activeBranch||busy)return;
   var selected={id:activeBranch.id,name:activeBranch.name};closeBranch();return executeBranch(selected.id,selected.name,text);
 }
-async function executeBranch(branchId,branchName,text){
+async function executeBranch(branchId,branchName,text,taskContext){
   if(isDemo){demoNotice();return;}text=String(text||'').trim();if(!text||busy||liveOn)return;
   var selected={id:branchId,name:branchName};lockPanel(true);emit('open-chat');
   add('me','['+selected.name+'] '+text);zapiszHist('user','['+selected.name+'] '+text);phase('Zlecenie → '+selected.name);
   var tip=add('sys',selected.name+': czekam na wynik…');
   document.querySelectorAll('[data-branch="'+selected.id+'"]').forEach(function(n){n.classList.add('running');});
   try{
-    var j=await panelPost(BRANCH_URL,{haslo:sessionPw,galaz:selected.id,polecenie:withBrand(text),tryb:selected.id==='research'?'szybka':'',conversation_id:panelConversationId});
+    var payload={haslo:sessionPw,galaz:selected.id,polecenie:withBrand(text),tryb:selected.id==='research'?'szybka':'',conversation_id:panelConversationId};
+    if(taskContext&&/^[A-Za-z0-9_-]{1,80}$/.test(String(taskContext.processId||''))&&/^[A-Za-z0-9_-]{1,80}$/.test(String(taskContext.taskId||''))&&Number.isInteger(Number(taskContext.planVersion))&&Number(taskContext.planVersion)>0){
+      payload.process_id=String(taskContext.processId);payload.task_id=String(taskContext.taskId);payload.plan_version=Number(taskContext.planVersion);
+    }
+    var j=await panelPost(BRANCH_URL,payload);
     if(typeof j.answer!=='string'||!j.answer.trim())throw new Error('EMPTY_RESPONSE');
     // Saved server-side now (see send()'s comment above) - not zapiszHist'd again here.
     add('dona','['+selected.name+']\n'+j.answer);
@@ -674,6 +678,15 @@ async function executeBranch(branchId,branchName,text){
     return j;
   }catch(e){add('sys',requestError(e));phase('Wynik niepotwierdzony');return {ok:false,error:e&&e.message||'UNKNOWN'};}
   finally{tip.remove();lockPanel(false);document.querySelectorAll('.running').forEach(function(n){n.classList.remove('running');});}
+}
+async function verifyBusinessTask(meta){
+  if(isDemo){demoNotice();return {ok:false,error:'DEMO'};}if(busy||liveOn)return {ok:false,error:'BUSY'};
+  meta=meta||{};var processId=String(meta.processId||''),taskId=String(meta.taskId||''),branch=String(meta.branch||''),version=Number(meta.planVersion);
+  if(!/^[A-Za-z0-9_-]{1,80}$/.test(processId)||!/^[A-Za-z0-9_-]{1,80}$/.test(taskId)||!/^[a-z]{2,40}$/.test(branch)||!Number.isInteger(version)||version<1)return {ok:false,error:'INVALID_TASK'};
+  lockPanel(true);phase('Potwierdzam wynik etapu…');
+  try{var j=await panelPost(BRANCH_URL,{haslo:sessionPw,task_action:'verify',process_id:processId,task_id:taskId,plan_version:version,galaz:branch,conversation_id:panelConversationId});phase(j.ok?'Wynik potwierdzony':'Nie udało się potwierdzić wyniku');return j;}
+  catch(e){phase('Potwierdzenie nie zostało zapisane');return {ok:false,error:e&&e.message||'UNKNOWN'};}
+  finally{lockPanel(false);}
 }
 document.getElementById('branchCancel').onclick=closeBranch;
 document.getElementById('branchRun').onclick=runBranch;
@@ -836,7 +849,8 @@ window.Dona={
   draft:function(text){setInput(text);emit('open-chat');},
   run:function(text){return send(text);},
   branch:function(name){openBranch({nm:name});},
-  runBranch:function(id,name,text){return executeBranch(id,name,text);},
+  runBranch:function(id,name,text,taskContext){return executeBranch(id,name,text,taskContext);},
+  verifyBusinessTask:verifyBusinessTask,
   pickReelPhotos:function(){if(isDemo){demoNotice();return;}if(busy||liveOn){phase('Zaczekaj na bieżący wynik lub zakończ Live.');return;}reelPhotoMode=true;fileInp.click();},
   newThread:newConversation,
   selectThread:selectConversation,

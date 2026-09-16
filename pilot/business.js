@@ -62,20 +62,25 @@
   function processDetails(id){
     const p=rows('processes').find(p=>p.id===id);if(!p?.state?.plan)return;
     const d=dialog();d.setAttribute('aria-labelledby','businessDialogTitle');
-    const labels={READY:'Można zacząć',WAITING:'Kolejny etap',VERIFIED:'Potwierdzony wynik'};
-    d.innerHTML='<header><h2 id="businessDialogTitle">'+E(p.title)+'</h2><button class="icon-button" data-business-close aria-label="Zamknij">×</button></header><p>Wybierz przygotowanie zadania. Odpowiedź zostanie zapisana w rozmowie. Zakończenie etapu wymaga osobnego potwierdzenia wyniku.</p><ol class="biz-process-tasks">'+p.state.plan.tasks.map(t=>'<li><span class="biz-status">'+E(labels[t.status]||'Do sprawdzenia')+'</span><h3>'+E(t.title)+'</h3>'+link('Otwórz wynik',t.resultReference)+(t.status==='READY'&&t.branch&&!['launch','contact','publish'].includes(t.id)?'<button class="primary" data-business-step="'+E(t.id)+'" data-process-id="'+E(p.id)+'">Zleć przygotowanie</button>':'')+'</li>').join('')+'</ol><footer><button class="secondary" data-business-close>Zamknij</button></footer>';
+    const labels={READY:'Można zacząć',WAITING:'Kolejny etap',RESULT_READY:'Wynik do sprawdzenia',VERIFIED:'Potwierdzony wynik'};
+    d.innerHTML='<header><h2 id="businessDialogTitle">'+E(p.title)+'</h2><button class="icon-button" data-business-close aria-label="Zamknij">×</button></header><p>Wybierz przygotowanie zadania. Wynik zostanie zapisany przy tym etapie. Dopiero Twoje potwierdzenie odblokuje kolejny krok.</p><ol class="biz-process-tasks">'+p.state.plan.tasks.map(t=>'<li class="biz-process-task '+(t.status==='RESULT_READY'?'has-result':'')+'"><span class="biz-status">'+E(labels[t.status]||'Do sprawdzenia')+'</span><h3>'+E(t.title)+'</h3>'+(t.resultSummary?'<p class="biz-result-summary">'+E(String(t.resultSummary).slice(0,1200))+'</p>':'')+(t.resultAt?'<small>Wynik zapisany: '+E(at(t.resultAt))+'</small>':'')+'<div class="biz-actions">'+link('Otwórz wynik',t.resultReference)+(t.status==='RESULT_READY'?'<button class="primary" data-business-verify="'+E(t.id)+'" data-process-id="'+E(p.id)+'">Potwierdź wynik i przejdź dalej</button>':'')+(t.status==='READY'&&t.branch&&!['launch','contact','publish'].includes(t.id)?'<button class="primary" data-business-step="'+E(t.id)+'" data-process-id="'+E(p.id)+'">Zleć przygotowanie</button>':'')+'</div></li>').join('')+'</ol><footer><button class="secondary" data-business-close>Zamknij</button></footer>';
     d.showModal();
   }
   document.addEventListener('click',async e=>{
-    const b=e.target.closest('[data-business-process],[data-business-step]');if(!b)return;
+    const b=e.target.closest('[data-business-process],[data-business-step],[data-business-verify]');if(!b)return;
     if(b.hasAttribute('data-business-process')){processDetails(b.dataset.businessProcess);return;}
     if(demo){feedback('To podgląd. Zaloguj się, aby wykonać zadanie.');return;}
     if(busy)return;
-    const p=rows('processes').find(p=>p.id===b.dataset.processId),t=p?.state?.plan?.tasks.find(t=>t.id===b.dataset.businessStep);
+    const p=rows('processes').find(p=>p.id===b.dataset.processId),taskId=b.dataset.businessStep||b.dataset.businessVerify,t=p?.state?.plan?.tasks.find(t=>t.id===taskId);
+    if(b.hasAttribute('data-business-verify')){
+      if(!t||t.status!=='RESULT_READY'||!t.branch)return;busy=true;b.disabled=true;
+      try{const r=await window.Dona.verifyBusinessTask({processId:p.id,taskId:t.id,planVersion:p.state.plan.version,branch:t.branch});if(r?.ok){dialog().close();feedback('Wynik potwierdzony. Następny etap został odblokowany.');window.dispatchEvent(new CustomEvent('dona:refresh'));}else{feedback('Potwierdzenie nie zostało zapisane. Odśwież panel i spróbuj ponownie.');}}
+      catch{feedback('Potwierdzenie nie zostało zapisane. Odśwież panel i spróbuj ponownie.');}finally{busy=false;}return;
+    }
     if(!t||t.status!=='READY'||!t.branch||['launch','contact','publish'].includes(t.id))return;
     const prompt='Pracujesz nad zapisanym procesem '+p.id+': '+p.title+'. Zadanie: '+t.title+'. Aktualny krok: '+p.currentStep+'. Wykonaj możliwą pracę przygotowawczą dostępnymi narzędziami. Najpierw odczytaj aktualne źródła. Nie wymyślaj cen, wyników ani danych. Zwróć konkretny rezultat, źródła i miejsce zapisu. Samo przygotowanie odpowiedzi nie oznacza zakończenia procesu. Bez publikacji, wysyłania wiadomości i uruchamiania reklam.';
     busy=true;b.disabled=true;dialog().close();feedback('Przekazuję zadanie. Wynik znajdziesz w rozmowie z Doną.');
-    try{const r=await window.Dona.runBranch(t.branch,p.title,prompt);feedback(!r?'Polecenie nie zostało przyjęte. Sprawdź, czy trwa inne zadanie.':r.ok===false?'Dona zgłosiła problem. Sprawdź odpowiedź w rozmowie.':'Odpowiedź zapisana w rozmowie. Status etapu czeka na weryfikację wyniku.');window.dispatchEvent(new CustomEvent('dona:refresh'));}
+    try{const r=await window.Dona.runBranch(t.branch,p.title,prompt,{processId:p.id,taskId:t.id,planVersion:p.state.plan.version});feedback(!r?'Polecenie nie zostało przyjęte. Sprawdź, czy trwa inne zadanie.':r.ok===false?'Dona zgłosiła problem. Sprawdź odpowiedź w rozmowie.':r.processSaved===false?'Odpowiedź jest w rozmowie, ale nie udało się przypisać jej do etapu. Dona nie oznaczyła go jako gotowego.':'Wynik zapisany przy etapie. Otwórz plan, sprawdź go i potwierdź.');window.dispatchEvent(new CustomEvent('dona:refresh'));}
     catch{feedback('Nie potwierdzono wyniku. Sprawdź rozmowę przed ponowieniem.');}finally{busy=false;}
   });
   const renderers={today:()=>processCards()+renderHome(),orders:()=>processCards()+renderOrders(),media:renderMedia,campaigns:()=>processCards()+renderCampaigns(),sales:renderSales,social:renderSocial};

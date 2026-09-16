@@ -38,8 +38,10 @@ function processState(value, processId) {
   version:p.version, kind:text(p.kind,40),
   tasks:(Array.isArray(p.tasks)?p.tasks:[]).slice(0,40).filter(t=>t&&typeof t==='object'&&/^[a-z0-9_-]{1,80}$/.test(t.id||'')).map(t=>({
    id:text(t.id,80),title:text(t.title,600),branch:branches.includes(t.branch)?t.branch:'',
-   status:['READY','WAITING','VERIFIED'].includes(t.status)?t.status:'WAITING',
-   resultReference:text(t.resultReference,2000),
+   status:['READY','WAITING','RESULT_READY','VERIFIED'].includes(t.status)?t.status:'WAITING',
+   resultReference:text(t.resultReference,2000),resultSummary:text(t.resultSummary,5000),
+   resultAt:text(t.resultAt,80),verifiedAt:text(t.verifiedAt,80),
+   lastAttempt:t.lastAttempt&&typeof t.lastAttempt==='object'?{status:['SUCCESS','FAILED'].includes(t.lastAttempt.status)?t.lastAttempt.status:'',at:text(t.lastAttempt.at,80)}:null,
    missing:(Array.isArray(t.missing)?t.missing:[]).slice(0,30).map(v=>text(v,120))
   }))
  }:null;
