@@ -20,6 +20,30 @@ try {
   if (!task) return fail('TASK_NOT_FOUND','Nie znaleziono zadania w tym planie.');
   if (!allowedBranches.includes(wej.galaz) || task.branch !== wej.galaz) return fail('BRANCH_MISMATCH','Zadanie nie należy do wskazanej gałęzi.');
 
+  const now = Date.parse(wej.czas);
+  const evidence = plan.evidence && typeof plan.evidence === 'object' ? plan.evidence : {};
+  const validEvidence = key => {
+    const item = evidence[key];
+    if (!item || item.status !== 'verified' || item.version !== plan.version || !clean(item.reference,2000)) return false;
+    const checked = Date.parse(item.checkedAt), expires = Date.parse(item.expiresAt);
+    return Number.isFinite(checked) && Number.isFinite(expires) && checked <= now && now < expires;
+  };
+  const refreshPlan = () => {
+    const verified = new Set(plan.tasks.filter(item => item && item.status === 'VERIFIED').map(item => item.id));
+    for (const item of plan.tasks) {
+      if (!item || !['WAITING','READY'].includes(item.status)) continue;
+      const dependencies = Array.isArray(item.dependencies) ? item.dependencies : [];
+      const requirements = Array.isArray(item.requirements) ? item.requirements : [];
+      const missing = dependencies.filter(id => !verified.has(id)).map(id => 'task:' + id)
+        .concat(requirements.filter(key => !validEvidence(key)).map(key => 'evidence:' + key));
+      item.missing = missing;
+      item.status = missing.length ? 'WAITING' : 'READY';
+    }
+    plan.next = plan.tasks.filter(item => item && item.status === 'READY').map(item => JSON.parse(JSON.stringify(item)));
+    plan.complete = plan.tasks.length > 0 && plan.tasks.every(item => item && item.status === 'VERIFIED');
+  };
+  refreshPlan();
+
   let changed = false;
   let idempotent = false;
   if (wej.operacja === 'zapisz_wynik_zadania') {
@@ -31,6 +55,7 @@ try {
       task.lastAttempt = {id:wej.attempt_id, at:wej.czas, status:wej.result_ok === true ? 'SUCCESS' : 'FAILED'};
       if (wej.result_ok === true) {
         task.status = 'RESULT_READY';
+        task.missing = [];
         task.resultReference = wej.result_reference;
         task.resultSummary = wej.result_summary;
         task.resultAt = wej.czas;
@@ -42,7 +67,12 @@ try {
       idempotent = true;
     } else {
       if (task.status !== 'RESULT_READY' || !clean(task.resultReference, 2000)) return fail('RESULT_NOT_READY','Najpierw zadanie musi mieć zapisany wynik do sprawdzenia.');
+      const verified = new Set(plan.tasks.filter(item => item && item.status === 'VERIFIED').map(item => item.id));
+      const dependencies = Array.isArray(task.dependencies) ? task.dependencies : [];
+      const requirements = Array.isArray(task.requirements) ? task.requirements : [];
+      if (!dependencies.every(id => verified.has(id)) || !requirements.every(validEvidence)) return fail('TASK_REQUIREMENTS_NOT_MET','Warunki tego etapu nie są już potwierdzone. Odśwież dowody przed zatwierdzeniem.');
       task.status = 'VERIFIED';
+      task.missing = [];
       task.verifiedAt = wej.czas;
       task.verifiedBy = 'OWNER';
       changed = true;
@@ -51,23 +81,7 @@ try {
     return fail('INVALID_OPERATION','Nieobsługiwana operacja zadania.');
   }
 
-  const now = Date.parse(wej.czas);
-  const evidence = plan.evidence && typeof plan.evidence === 'object' ? plan.evidence : {};
-  const validEvidence = key => {
-    const item = evidence[key];
-    if (!item || item.status !== 'verified' || item.version !== plan.version || !clean(item.reference,2000)) return false;
-    const checked = Date.parse(item.checkedAt), expires = Date.parse(item.expiresAt);
-    return Number.isFinite(checked) && Number.isFinite(expires) && checked <= now && now < expires;
-  };
-  const verified = new Set(plan.tasks.filter(item => item && item.status === 'VERIFIED').map(item => item.id));
-  for (const item of plan.tasks) {
-    if (!item || item.status !== 'WAITING') continue;
-    const dependencies = Array.isArray(item.dependencies) ? item.dependencies : [];
-    const requirements = Array.isArray(item.requirements) ? item.requirements : [];
-    if (dependencies.every(id => verified.has(id)) && requirements.every(validEvidence)) item.status = 'READY';
-  }
-  plan.next = plan.tasks.filter(item => item && item.status === 'READY').map(item => JSON.parse(JSON.stringify(item)));
-  plan.complete = plan.tasks.length > 0 && plan.tasks.every(item => item && item.status === 'VERIFIED');
+  refreshPlan();
   const ready = plan.tasks.filter(item => item && item.status === 'READY');
   const review = plan.tasks.filter(item => item && item.status === 'RESULT_READY');
   const krok = ready.length ? ready.map(item => item.title).join('; ').slice(0,4000)

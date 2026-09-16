@@ -33,10 +33,13 @@ function refresh(plan, now) {
   const verified = new Set(plan.tasks.filter(task => task.status === 'VERIFIED').map(task => task.id));
   const evidence = plan.evidence && typeof plan.evidence === 'object' ? plan.evidence : {};
   for (const task of plan.tasks) {
-    if (!task || task.status !== 'WAITING') continue;
+    if (!task || !['WAITING','READY'].includes(task.status)) continue;
     const dependencies = Array.isArray(task.dependencies) ? task.dependencies : [];
     const requirements = Array.isArray(task.requirements) ? task.requirements : [];
-    if (dependencies.every(id => verified.has(id)) && requirements.every(key => evidenceValid(evidence[key], plan.version, now))) task.status = 'READY';
+    const missing = [...dependencies.filter(id => !verified.has(id)).map(id => 'task:' + id),
+      ...requirements.filter(key => !evidenceValid(evidence[key], plan.version, now)).map(key => 'evidence:' + key)];
+    task.missing = missing;
+    task.status = missing.length ? 'WAITING' : 'READY';
   }
   plan.next = plan.tasks.filter(task => task.status === 'READY').map(task => clone(task));
   plan.complete = plan.tasks.length > 0 && plan.tasks.every(task => task.status === 'VERIFIED');
@@ -47,6 +50,7 @@ export function recordTaskResult(rawState, input) {
   const now = Date.parse(input.at);
   if (!Number.isFinite(now)) throw new Error('INVALID_TIME');
   const task = validateContext(plan, input);
+  refresh(plan, now);
   if (!['READY','RESULT_READY'].includes(task.status)) throw new Error('TASK_NOT_EXECUTABLE');
   const attemptId = clean(input.attemptId, 120);
   const reference = clean(input.resultReference, 2000);
@@ -56,6 +60,7 @@ export function recordTaskResult(rawState, input) {
   task.lastAttempt = {id:attemptId, at:new Date(now).toISOString(), status:input.ok === true ? 'SUCCESS' : 'FAILED'};
   if (input.ok === true) {
     task.status = 'RESULT_READY';
+    task.missing = [];
     task.resultReference = reference;
     task.resultSummary = summary;
     task.resultAt = new Date(now).toISOString();
@@ -71,7 +76,13 @@ export function verifyTaskResult(rawState, input) {
   const task = validateContext(plan, input);
   if (task.status === 'VERIFIED') return {state, changed:false, task};
   if (task.status !== 'RESULT_READY' || !clean(task.resultReference, 2000)) throw new Error('RESULT_NOT_READY');
+  const verified = new Set(plan.tasks.filter(item => item.status === 'VERIFIED').map(item => item.id));
+  const evidence = plan.evidence && typeof plan.evidence === 'object' ? plan.evidence : {};
+  const dependencies = Array.isArray(task.dependencies) ? task.dependencies : [];
+  const requirements = Array.isArray(task.requirements) ? task.requirements : [];
+  if (!dependencies.every(id => verified.has(id)) || !requirements.every(key => evidenceValid(evidence[key], plan.version, now))) throw new Error('TASK_REQUIREMENTS_NOT_MET');
   task.status = 'VERIFIED';
+  task.missing = [];
   task.verifiedAt = new Date(now).toISOString();
   task.verifiedBy = 'OWNER';
   refresh(plan, now);
