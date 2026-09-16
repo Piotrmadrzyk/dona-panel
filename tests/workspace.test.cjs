@@ -13,7 +13,7 @@ function run(source, records, input=[]) {
 function auth(body, secrets=[{nazwa:'panel_haslo',wartosc:'test-only-password'}], origin='https://dona.probatum.pl') {
   return run(authSource,{'Workspace Request':[{body,headers:{origin}}]},secrets);
 }
-function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Meetings','Tasks','Processes','Assets','Campaigns','Customer Memory','Next Actions','Documents','Invoices','Subscriptions','Subscription Usage','Research','Competitor Observations','Playbooks','Events','Brain','Social Profiles','Social Posts','Mail','Mail Sync','Project Memory','Panel Events','Zoho Calendar','Media Registry','Agent Logs'].map(n=>['Read '+n,[{}]]))};}
+function fixture(){return {'Validate Access':[{authorized:true,tenantId:'PM'}],'Tenant Configuration':[{id:1,client_id:'PM',nazwa:'Test Company'}],...Object.fromEntries(['Customers','Approvals','Leads','Offers','Products','Prices','Meetings','Tasks','Processes','Assets','Campaigns','Customer Memory','Next Actions','Documents','Invoices','Subscriptions','Subscription Usage','Research','Competitor Observations','Playbooks','Events','Brain','Social Profiles','Social Posts','Mail','Mail Sync','Project Memory','Panel Events','Zoho Calendar','Media Registry','Agent Logs'].map(n=>['Read '+n,[{}]]))};}
 test('only the correct password can authorize snapshot',()=>{
   for(const body of [undefined,null,[],{}, {operation:'snapshot',haslo:'wrong'}, {operation:'snapshot',haslo:{}}])assert.equal(auth(body).statusCode,401);
   assert.equal(auth({operation:'snapshot',haslo:'test-only-password'}).authorized,true);
@@ -32,7 +32,7 @@ test('only the exact production origin may authorize a snapshot',()=>{
 });
 test('empty tables produce valid empty arrays; missing tenant fails',()=>{
   const f=fixture();const result=run(snapshotSource,f);
-  for(const key of ['approvals','leads','offers','clients','meetings','tasks','processes','assets','campaigns','customerMemory','nextActions','files','invoices','subscriptions','subscriptionUsage','researches','competitorObservations','playbooks','mediaAnalyses','activity'])assert.deepEqual(result[key],[]);
+  for(const key of ['approvals','leads','offers','products','clients','meetings','tasks','processes','assets','campaigns','customerMemory','nextActions','files','invoices','subscriptions','subscriptionUsage','researches','competitorObservations','playbooks','mediaAnalyses','activity'])assert.deepEqual(result[key],[]);
   f['Tenant Configuration']=[{}];assert.throws(()=>run(snapshotSource,f),/TENANT_CONFIGURATION_UNAVAILABLE/);
   f['Validate Access']=[{authorized:false,tenantId:'PM'}];assert.throws(()=>run(snapshotSource,f),/ACCESS_DENIED/);
 });
@@ -119,6 +119,45 @@ test('cancelled QA test tasks/processes ("[TEST ...]") never reach the owner pan
 });
 test('unsafe URLs are removed and missing monetary values stay unknown',()=>{
   const f=fixture();f['Read Offers']=[{id:1,client_id:'PM',offer_id:'one',drive_link:'javascript:alert(1)'},{id:2,client_id:'PM',offer_id:'two',total_netto:0,drive_link:'https://example.com/file'}];const r=run(snapshotSource,f);assert.equal(r.offers[0].url,'');assert.equal(r.offers[0].amount,null);assert.equal(r.offers[1].amount,0);assert.equal(r.offers[1].url,'https://example.com/file');
+});
+test('sales catalogue exposes only real PM products and never invents a price',()=>{
+  const f=fixture();
+  f['Read Products']=[
+    {id:1,klient_id:'PM',produkt_id:'service',nazwa:'Automatyzacja zapytań',wolno_promowac:true,material_dostepny:true,rola_sprzedazowa:'Porządkuje zapytania',ograniczenie_operacyjne:'Cena po analizie',secret:'PRIVATE'},
+    {id:2,klient_id:'PM',produkt_id:'academy',nazwa:'Akademia AI',wolno_promowac:false,material_dostepny:true,cena_netto:999,ograniczenie_operacyjne:'Sprzedaż wstrzymana'},
+    {id:3,klient_id:'PM',produkt_id:'qa',nazwa:'Produkt testowy',wolno_promowac:true,material_dostepny:true,notatka:'Rekord testowy Etapu 3F'},
+    {id:4,klient_id:'OTHER',produkt_id:'foreign',nazwa:'FOREIGN',material_dostepny:true}
+  ];
+  f['Read Prices']=[
+    {id:1,client_id:'PM',produkt_id:'service',aktywny:true,wersja:1,cena:2500,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:2,client_id:'PM',produkt_id:'academy',aktywny:true,wersja:1,cena:999,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:3,client_id:'OTHER',produkt_id:'foreign',aktywny:true,wersja:1,cena:1,valid_from:'2026-01-01T00:00:00Z'}
+  ];
+  const r=run(snapshotSource,f),serialized=JSON.stringify(r);
+  assert.deepEqual(r.products.map(p=>p.id),['service','academy']);
+  assert.equal(r.products[0].priceStatus,'FIXED');assert.equal(r.products[0].price,2500);
+  assert.equal(r.products[1].priceStatus,'BLOCKED');assert.equal(r.products[1].price,null);assert.equal(r.products[1].promotionAllowed,false);
+  assert.deepEqual(Object.keys(r.products[0]).sort(),['brandId','category','channels','currency','id','limitation','materialAvailable','name','price','priceStatus','priceType','priority','promotionAllowed','role','type','unit','updatedAt','vatRate'].sort());
+  assert.doesNotMatch(serialized,/PRIVATE|FOREIGN|Produkt testowy|999/);
+});
+test('catalogue prices fail closed for custom, invalid, stale and ambiguous records',()=>{
+  const f=fixture(),product=id=>({id,klient_id:'PM',produkt_id:id,nazwa:id,wolno_promowac:true,material_dostepny:true});
+  f['Read Products']=['custom','zero','bad-currency','future','expired','inactive','duplicate','newest','no-price'].map((id,i)=>product(id));
+  f['Read Prices']=[
+    {id:1,client_id:'PM',produkt_id:'custom',aktywny:true,wersja:1,cena:2000,waluta:'PLN',price_type:'CUSTOM',valid_from:'2026-01-01T00:00:00Z'},
+    {id:2,client_id:'PM',produkt_id:'zero',aktywny:true,wersja:1,cena:0,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:3,client_id:'PM',produkt_id:'bad-currency',aktywny:true,wersja:1,cena:100,waluta:'zł',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:4,client_id:'PM',produkt_id:'future',aktywny:true,wersja:1,cena:100,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2999-01-01T00:00:00Z'},
+    {id:5,client_id:'PM',produkt_id:'expired',aktywny:true,wersja:1,cena:100,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2000-01-01T00:00:00Z',valid_to:'2001-01-01T00:00:00Z'},
+    {id:6,client_id:'PM',produkt_id:'inactive',aktywny:false,wersja:1,cena:100,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:7,client_id:'PM',produkt_id:'duplicate',aktywny:true,wersja:2,cena:100,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:8,client_id:'PM',produkt_id:'duplicate',aktywny:true,wersja:2,cena:200,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:9,client_id:'PM',produkt_id:'newest',aktywny:true,wersja:1,cena:100,waluta:'PLN',price_type:'ONE_TIME',valid_from:'2026-01-01T00:00:00Z'},
+    {id:10,client_id:'PM',produkt_id:'newest',aktywny:true,wersja:2,cena:300,waluta:'EUR',price_type:'RECURRING',vat_rate:23,valid_from:'2026-01-01T00:00:00Z'}
+  ];
+  const byId=Object.fromEntries(run(snapshotSource,f).products.map(p=>[p.id,p]));
+  for(const id of ['custom','zero','bad-currency','future','expired','inactive','duplicate','no-price']){assert.equal(byId[id].priceStatus,'QUOTE_REQUIRED');assert.equal(byId[id].price,null);assert.equal(byId[id].currency,'');}
+  assert.equal(byId.newest.priceStatus,'FIXED');assert.equal(byId.newest.price,300);assert.equal(byId.newest.currency,'EUR');assert.equal(byId.newest.vatRate,23);
 });
 test('owner-pilot document table keeps business client IDs separate from ownership',()=>{
   const f=fixture();f['Read Documents']=[
