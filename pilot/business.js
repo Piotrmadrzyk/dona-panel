@@ -62,13 +62,19 @@
     const id=recordId(o.id),next=id?command('Następny krok','Odczytaj aktualną ofertę o identyfikatorze '+id+'. Sprawdź jej status i przygotuj kolejny kontakt. Bez wysyłania.') : '';
     return '<article class="biz-sale"><div class="biz-meta">'+badge(o.status)+'<strong>'+E(money(o.amount,o.currency))+'</strong></div><h3>'+E(o.title||'Oferta')+'</h3><p>'+E(o.clientName||'Klient nieprzypisany')+'</p><div class="biz-actions">'+link('Otwórz ofertę',o.url)+next+'</div></article>';
   }
+  function prospectCard(p){
+    const id=/^prs_[a-f0-9]{24}$/.test(p.id||'')?p.id:'';
+    return '<article class="biz-sale biz-prospect"><div class="biz-meta"><span>DO SPRAWDZENIA</span><strong>'+E(p.score)+'/100 · priorytet</strong></div><h3>'+E(p.companyName)+'</h3><small>'+E(p.productName)+'</small><p>'+E(p.reason)+'</p><details><summary>Dowody i hipoteza potrzeby</summary><p>'+E(p.evidenceSummary)+'</p><p>'+E(p.needSignal)+'</p><small>Źródła sprawdzone: '+E(at(p.evidenceCheckedAt))+'</small><div class="biz-actions">'+link('Źródło',p.sourceUrl)+link('Strona firmy',p.websiteUrl)+'</div></details><div class="biz-next"><span>Następny krok</span><strong>'+E(p.nextAction||'Sprawdź dopasowanie i dowody')+'</strong></div><div class="biz-actions">'+(id?command('Omów dopasowanie','Odczytaj prospekty przez liste_prospektow i omów firmę o identyfikatorze '+id+'. Oddziel fakty ze źródeł od hipotezy potrzeby. Wynik punktowy to priorytet sprawdzenia, nie szansa zakupu. Bez kontaktowania firmy, wysyłania wiadomości ani zmiany statusu.'):'')+'</div></article>';
+  }
   function renderSales(){
     const leads=rows('leads'),offers=rows('offers'),products=rows('products'),selected=brand();
     const daily='<div class="biz-two-col biz-sales-priority">'+section('Zapytania wymagające reakcji','#inquiries',leads.length?leads.slice(0,12).map(leadCard).join(''):empty('Brak zapisanych zapytań','Nowe kontakty pojawią się po zapisaniu przez Donę lub formularze.'))+section('Oferty i dalszy kontakt','#offers',offers.length?offers.slice(0,12).map(offerCard).join(''):empty('Przygotuj ofertę z Doną','Podaj klienta i zakres prac. Zapisane oferty zobaczysz tutaj.'))+'</div>';
     const missing=selected==='all'?'Katalog nie został odczytany':'Ta marka nie ma jeszcze usług w katalogu';
     const missingCopy=selected==='all'?'Dona nie powinna proponować produktu ani ceny, dopóki katalog nie wróci.':'Przełącz przestrzeń na Probatum albo uzupełnij katalog tej marki.';
     const catalogue=section(selected==='all'||selected==='probatum'?'Oferta Probatum':'Usługi tej marki','',products.length?'<p class="biz-section-copy">Dona korzysta z tego katalogu podczas przygotowania oferty. Kwotę podaje tylko wtedy, gdy ma aktywną, potwierdzoną cenę.</p><div class="biz-product-grid">'+products.map(productCard).join('')+'</div>':empty(missing,missingCopy));
-    return '<div class="biz-toolbar">'+newButton('offer','+ Przygotuj ofertę')+'<a href="#clients" class="secondary">Klienci</a><a href="#finance" class="secondary">Finanse i płatności</a></div>'+notices()+daily+'<div class="biz-catalogue">'+catalogue+'</div>';
+    const candidates=rows('prospects');
+    const prospecting=selected==='all'||selected==='probatum'?section('Firmy do sprawdzenia','',data.prospectsStatus?.ok===false?'<div class="biz-warning">'+E(data.prospectsStatus.message)+'</div>':candidates.length?'<p class="biz-section-copy">Publiczne informacje i hipoteza dopasowania. Punkty ustalają kolejność sprawdzania, a kontakt wymaga osobnej decyzji.</p><div class="biz-product-grid">'+candidates.map(prospectCard).join('')+'</div>':empty('Lista czeka na pierwszy research','Tutaj pojawią się firmy ze źródłami i uzasadnieniem dopasowania.')):'';
+    return '<div class="biz-toolbar">'+newButton('offer','+ Przygotuj ofertę')+'<a href="#clients" class="secondary">Klienci</a><a href="#finance" class="secondary">Finanse i płatności</a></div>'+notices()+daily+prospecting+'<div class="biz-catalogue">'+catalogue+'</div>';
   }
   function renderSocial(){
     const posts=rows('socialPosts'),profiles=(data.socialProfiles||[]).filter(p=>brand()==='all'||p.id===brand());
