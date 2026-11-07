@@ -43,7 +43,9 @@ td:last-child,th:last-child{text-align:right;white-space:nowrap}
 tr.sum td{font-weight:700;background:var(--tint)}
 tr.key td{font-weight:700;color:var(--red)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:700px){.two{grid-template-columns:1fr}}
+@media(max-width:700px){.two{grid-template-columns:minmax(0,1fr)}}
+.two>div{min-width:0}
+@media(max-width:520px){.doc{padding:14px 12px}.lh{flex-direction:column}.lh .brand{align-self:flex-end}td,th{padding:5px 4px;font-size:13px}td:last-child{white-space:nowrap}.buyer{min-width:0;width:100%}}
 .doc h4{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--g);margin:10px 0 2px}
 .small{font-size:11.5px;color:#444;margin:3px 0}
 .foot{display:flex;justify-content:space-between;border-top:.5px solid #cfcabd;margin-top:10px;padding-top:5px;font-size:10.5px;color:var(--mut)}
