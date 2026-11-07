@@ -75,16 +75,19 @@ tr.key td{font-weight:700;color:var(--red)}
       <h2>Dane miesiąca</h2>
       <label for="mies">Miesiąc rozliczenia</label><input id="mies" placeholder="np. listopad 2026">
       <label for="buyerIn">Nabywca na fakturze (restauracja)</label><input id="buyerIn" placeholder="nazwa, NIP – wpisz sam">
-      <label for="h" style="font-weight:700;color:#20372d">Godziny razem w miesiącu (z urlopem)</label>
-      <input id="h" type="number" step="0.5" min="0" style="font-size:20px;font-weight:700">
-      <div class="hint">To jedyne pole, które wpisujesz co miesiąc. System sam rozbije godziny i kwoty: umowa o pracę, urlop i faktura.</div>
+      <div class="row2">
+        <div><label for="h" style="font-weight:700;color:#20372d;margin-top:10px">Godziny razem (z urlopem)</label>
+        <input id="h" type="number" step="0.5" min="0" style="font-size:20px;font-weight:700"></div>
+        <div><label for="rate" style="font-weight:700;color:#20372d;margin-top:10px">Stawka za godzinę (zł)</label>
+        <input id="rate" type="number" step="0.01" min="0" style="font-size:20px;font-weight:700"></div>
+      </div>
+      <div class="hint">Co miesiąc wpisujesz godziny (stawka zwykle 50 zł, ale możesz ją zmienić). System sam rozbije godziny i kwoty: umowa o pracę, urlop i faktura.</div>
       <div class="presets"><span class="hint" style="width:100%">Przykłady z propozycji:</span>
         <button data-h="186">186 h</button><button data-h="216">216 h</button><button data-h="276">276 h</button></div>
       <details><summary>Ustawienia stałe (zwykle bez zmian)</summary>
         <label for="k">Godziny pracy na kuchni (etat)</label><input id="k" type="number" step="0.5" min="0">
         <label for="u">Płatny urlop w miesiącu (godz.)</label><input id="u" type="number" step="0.5" min="0">
         <div class="hint">Urlop wpisujesz tylko, jeśli naprawdę był wykorzystany i zatwierdzony. Godziny usług AI = godziny razem − kuchnia − urlop.</div>
-        <label for="rate">Stawka restauracji za godzinę (zł)</label><input id="rate" type="number" step="0.01" min="0">
         <label for="etat">Koszt pracodawcy – etat w tym miesiącu (zł)</label><input id="etat" type="number" step="0.01" min="0">
         <div class="hint">Z listy płac. Zmienia się, gdy zmieni się umowa lub składki.</div>
         <div class="row2"><div>
@@ -134,8 +137,10 @@ tr.key td{font-weight:700;color:var(--red)}
           <h4>4. Ile restauracja płaci naprawdę</h4>
           <table>
             <tr><td>Etat + faktura brutto (wydatek)</td><td id="o-przelew"></td></tr>
-            <tr><td>Odliczony VAT</td><td id="o-m1"></td></tr>
-            <tr><td>Niższy podatek dochodowy (<span id="o-cp"></span>)</td><td id="o-m2"></td></tr>
+            <tr><td>Koszty podatkowe (etat + faktura netto)</td><td id="o-kosz"></td></tr>
+            <tr><td>Odliczony VAT (<span id="o-vp2"></span> faktury netto)</td><td id="o-m1"></td></tr>
+            <tr><td>Niższy podatek dochodowy (<span id="o-cp"></span> kosztów)</td><td id="o-m2"></td></tr>
+            <tr><td>Razem odliczenia (VAT + podatek)</td><td id="o-odl"></td></tr>
             <tr class="sum"><td>Koszt po odliczeniach</td><td id="o-eff"></td></tr>
             <tr><td class="small" colspan="2" id="o-check"></td></tr>
           </table>
@@ -192,10 +197,10 @@ function paint(){
   set('o-cel',pln(c.cel));set('o-etat',pln(c.etat));set('o-fn',pln(c.fn));set('o-fn2',pln(c.fn));
   set('o-vp','('+pct(c.vat)+')');set('o-vat',pln(c.vatKw));set('o-fb',pln(c.fb));
   set('o-aih',c.ai>0?pln(c.aih)+' (cała faktura ÷ godziny AI)':'–');
-  set('o-check',Math.abs(c.eff-c.cel)<0.05?'✔ zgodne: '+hh(c.h)+' × '+pln(c.rate)+' = '+pln(c.cel):'Różnica względem godziny × stawka: '+pln(c.eff-c.cel));set('o-przelew',pln(c.przelew));set('o-m1','− '+pln(c.m1));set('o-m2','− '+pln(c.m2));set('o-eff',pln(c.eff));
+  set('o-check',Math.abs(c.eff-c.cel)<0.05?'✔ zgodne: '+hh(c.h)+' × '+pln(c.rate)+' = '+pln(c.cel):'Różnica względem godziny × stawka: '+pln(c.eff-c.cel));set('o-przelew',pln(c.przelew));set('o-kosz',pln(c.etat+c.fn));set('o-odl',pln(c.m1+c.m2));set('o-vp2',pct(c.vat));set('o-m1','− '+pln(c.m1));set('o-m2','− '+pln(c.m2));set('o-eff',pln(c.eff));
   set('o-cp',pct(c.cit));set('o-cp2',pct(c.cit));set('o-wp',pct(1-c.cit));
   set('o-wn',pln(c.net));set('o-wf',pln(c.wf));set('o-wt',pln(c.wt));set('o-wh',pln(c.wh));
-  set('o-date',new Date().toLocaleDateString('pl-PL'));
+  set('o-date',new Date().toLocaleDateString('pl-PL'));document.title='Dwór – rozliczenie '+(S.mies||'');
   $('warn').innerHTML=c.warn.map(function(w){return '<div class="warn">'+w.replace(/</g,'&lt;')+'</div>';}).join('');
 }
 function fill(){IDS.forEach(function(id){$(id).value=S[id];});$('buyerIn').value=S.buyer||'';$('buyerOut').value=S.buyer||'';}
