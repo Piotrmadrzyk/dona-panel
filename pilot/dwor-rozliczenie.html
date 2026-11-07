@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dwór – rozliczenie</title>
 <style>
@@ -64,7 +65,7 @@ tr.key td{font-weight:700;color:var(--red)}
 <body>
 <div class="wrap">
   <h1 class="pg">Dwór – rozliczenie</h1>
-  <p class="sub pg">Wpisz godziny z miesiąca. Po prawej od razu widzisz fakturę, przelew i to, co zostaje wykonawcy. Przycisk „Drukuj / PDF” robi jedną stronę na papierze Probatum.</p>
+  <p class="sub pg">Wpisz godziny razem w miesiącu. System sam rozbija je na umowę o pracę, urlop i fakturę, a koszt restauracji wychodzi dokładnie godziny × stawka. Przycisk „Drukuj / PDF” robi jedną stronę na papierze Probatum.</p>
   <div class="actions noprint">
     <button class="pri" id="print">Drukuj / zapisz PDF</button>
     <button id="reset">Wróć do ustawień domyślnych</button>
@@ -74,17 +75,20 @@ tr.key td{font-weight:700;color:var(--red)}
       <h2>Dane miesiąca</h2>
       <label for="mies">Miesiąc rozliczenia</label><input id="mies" placeholder="np. listopad 2026">
       <label for="buyerIn">Nabywca na fakturze (restauracja)</label><input id="buyerIn" placeholder="nazwa, NIP – wpisz sam">
-      <div class="presets"><span class="hint" style="width:100%">Szybkie przykłady z propozycji (kuchnia + urlop, godziny AI):</span>
-        <button data-ai="18">AI 18 h</button><button data-ai="48">AI 48 h</button><button data-ai="108">AI 108 h</button></div>
-      <label for="k">Godziny pracy na kuchni (etat)</label><input id="k" type="number" step="0.5" min="0">
-      <label for="ai">Godziny usług AI (z osobnego rejestru)</label><input id="ai" type="number" step="0.5" min="0">
-      <label for="u">Faktycznie wykorzystany urlop (godz.)</label><input id="u" type="number" step="0.5" min="0">
-      <div class="hint">Urlop wpisujesz tylko, jeśli naprawdę był wzięty i zatwierdzony.</div>
-      <label for="rate">Stawka restauracji za godzinę (zł)</label><input id="rate" type="number" step="0.01" min="0">
-      <label for="etat">Koszt pracodawcy – etat w tym miesiącu (zł)</label><input id="etat" type="number" step="0.01" min="0">
-      <div class="hint">Z listy płac. Zmienia się, gdy zmieni się umowa lub składki.</div>
-      <details><summary>Założenia podatkowe (zwykle bez zmian)</summary>
-        <div class="row2"><div><label for="vat">VAT %</label><input id="vat" type="number" step="0.1"></div><div><label for="cit">Podatek dochodowy %</label><input id="cit" type="number" step="0.1"></div></div>
+      <label for="h" style="font-weight:700;color:#20372d">Godziny razem w miesiącu (z urlopem)</label>
+      <input id="h" type="number" step="0.5" min="0" style="font-size:20px;font-weight:700">
+      <div class="hint">To jedyne pole, które wpisujesz co miesiąc. System sam rozbije godziny i kwoty: umowa o pracę, urlop i faktura.</div>
+      <div class="presets"><span class="hint" style="width:100%">Przykłady z propozycji:</span>
+        <button data-h="186">186 h</button><button data-h="216">216 h</button><button data-h="276">276 h</button></div>
+      <details><summary>Ustawienia stałe (zwykle bez zmian)</summary>
+        <label for="k">Godziny pracy na kuchni (etat)</label><input id="k" type="number" step="0.5" min="0">
+        <label for="u">Płatny urlop w miesiącu (godz.)</label><input id="u" type="number" step="0.5" min="0">
+        <div class="hint">Urlop wpisujesz tylko, jeśli naprawdę był wykorzystany i zatwierdzony. Godziny usług AI = godziny razem − kuchnia − urlop.</div>
+        <label for="rate">Stawka restauracji za godzinę (zł)</label><input id="rate" type="number" step="0.01" min="0">
+        <label for="etat">Koszt pracodawcy – etat w tym miesiącu (zł)</label><input id="etat" type="number" step="0.01" min="0">
+        <div class="hint">Z listy płac. Zmienia się, gdy zmieni się umowa lub składki.</div>
+        <div class="row2"><div>
+        <label for="vat">VAT %</label><input id="vat" type="number" step="0.1"></div><div><label for="cit">Podatek dochodowy %</label><input id="cit" type="number" step="0.1"></div></div>
         <label for="net">Etat netto dla wykonawcy (zł)</label><input id="net" type="number" step="0.01" min="0">
         <div class="hint">Do wyliczenia, ile wykonawca dostaje „na rękę” (bez prowizji i innych kosztów).</div>
       </details>
@@ -103,18 +107,20 @@ tr.key td{font-weight:700;color:var(--red)}
 
       <div class="two">
         <div>
-          <h4>1. Godziny</h4>
+          <h4>1. Godziny (razem × stawka)</h4>
           <table>
-            <tr><td>Praca na kuchni (etat)</td><td id="o-k"></td></tr>
-            <tr><td>Usługi AI (osobny rejestr)</td><td id="o-ai"></td></tr>
-            <tr><td>Wykorzystany urlop (etat)</td><td id="o-u"></td></tr>
-            <tr class="sum"><td>Razem godzin w rozliczeniu</td><td id="o-h"></td></tr>
+            <tr><td>Umowa o pracę – kuchnia</td><td id="o-k"></td></tr>
+            <tr><td>Płatny urlop</td><td id="o-u"></td></tr>
+            <tr><td>Faktura – usługi AI (reszta godzin)</td><td id="o-ai"></td></tr>
+            <tr class="sum"><td>Razem godzin</td><td id="o-h"></td></tr>
+            <tr class="sum"><td>Budżet: godziny × <span id="o-rate2"></span></td><td id="o-cel"></td></tr>
           </table>
-          <h4>2. Budżet restauracji</h4>
+          <h4>2. Rozbicie budżetu na koszty</h4>
           <table>
-            <tr><td>Godziny × stawka</td><td id="o-cel"></td></tr>
-            <tr><td>Koszt etatu (stały)</td><td id="o-etat"></td></tr>
-            <tr class="key"><td>Do zafakturowania za usługi AI</td><td id="o-fn"></td></tr>
+            <tr><td>Umowa o pracę – kuchnia (<span id="o-k2"></span>)</td><td id="o-ek"></td></tr>
+            <tr><td>Umowa o pracę – płatny urlop (<span id="o-u2"></span>)</td><td id="o-eu"></td></tr>
+            <tr class="sum"><td>Koszt etatu razem</td><td id="o-etat"></td></tr>
+            <tr class="key"><td>Faktura netto – usługi AI (<span id="o-ai2"></span>)</td><td id="o-fn"></td></tr>
           </table>
         </div>
         <div>
@@ -131,6 +137,7 @@ tr.key td{font-weight:700;color:var(--red)}
             <tr><td>Odliczony VAT</td><td id="o-m1"></td></tr>
             <tr><td>Niższy podatek dochodowy (<span id="o-cp"></span>)</td><td id="o-m2"></td></tr>
             <tr class="sum"><td>Koszt po odliczeniach</td><td id="o-eff"></td></tr>
+            <tr><td class="small" colspan="2" id="o-check"></td></tr>
           </table>
         </div>
       </div>
@@ -152,8 +159,8 @@ tr.key td{font-weight:700;color:var(--red)}
 <script>
 (function(){
 'use strict';
-var DEF={mies:'',buyer:'',k:152,ai:48,u:16,rate:50,etat:5790.28,vat:23,cit:19,net:3605.85};
-var KEY='dwor_rozliczenie_v1', IDS=['mies','k','ai','u','rate','etat','vat','cit','net'];
+var DEF={mies:'',buyer:'',h:216,k:152,u:16,rate:50,etat:5790.28,vat:23,cit:19,net:3605.85};
+var KEY='dwor_rozliczenie_v2', IDS=['mies','h','k','u','rate','etat','vat','cit','net'];
 function $(id){return document.getElementById(id);}
 function load(){var s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){}return Object.assign({},DEF,s);}
 function save(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
@@ -163,28 +170,29 @@ function pln(x){return x.toLocaleString('pl-PL',{minimumFractionDigits:2,maximum
 function hh(x){return (Math.round(x*100)/100).toLocaleString('pl-PL')+' h';}
 function set(id,t){var e=$(id);if(e)e.textContent=t;}
 function calc(){
-  var k=num(S.k,0),ai=num(S.ai,0),u=num(S.u,0),rate=num(S.rate,0),etat=num(S.etat,0),vat=num(S.vat,23)/100,cit=num(S.cit,19)/100,net=num(S.net,0);
-  var h=k+ai+u, cel=h*rate;
+  var h=num(S.h,0),k=num(S.k,0),u=num(S.u,0),ai=Math.max(0,Math.round((h-k-u)*100)/100),rate=num(S.rate,0),etat=num(S.etat,0),vat=num(S.vat,23)/100,cit=num(S.cit,19)/100,net=num(S.net,0);
+  var cel=h*rate, nom=k+u, ek=nom>0?etat*k/nom:0, eu=etat-ek;
   var r2=function(x){return Math.round(x*100)/100;};
   var fn=r2(cel/(1-cit)-etat), vatKw=r2(fn*vat), fb=r2(fn+vatKw), przelew=r2(etat+fb);
   var m1=vatKw, m2=r2(cit*(etat+fn)), eff=r2(przelew-m1-m2);
   var wf=r2((1-cit)*fn), wt=r2(net+wf);
   var warn=[];
   if(fn<0)warn.push('Budżet godzin jest mniejszy niż sam koszt etatu, więc faktura wychodzi na minus. Sprawdź godziny, stawkę i koszt etatu.');
-  if(ai<=0)warn.push('Brak godzin AI: faktura nie ma za co być wystawiona.');
+  if(h<k+u)warn.push('Godziny razem są mniejsze niż kuchnia + urlop ('+(k+u)+' h), więc usługi AI wychodzą 0.');
+  else if(ai<=0)warn.push('Brak godzin AI: faktura nie ma za co być wystawiona.');
   if(!isFinite(1-cit)||cit>=1)warn.push('Podatek dochodowy musi być mniejszy niż 100%.');
-  return {k:k,ai:ai,u:u,h:h,rate:rate,cel:cel,etat:etat,fn:fn,vat:vat,cit:cit,vatKw:vatKw,fb:fb,przelew:przelew,m1:m1,m2:m2,eff:eff,net:net,wf:wf,wt:wt,aih:ai>0?fn/ai:0,wh:h>0?wt/h:0,warn:warn};
+  return {ek:ek,eu:eu,k:k,ai:ai,u:u,h:h,rate:rate,cel:cel,etat:etat,fn:fn,vat:vat,cit:cit,vatKw:vatKw,fb:fb,przelew:przelew,m1:m1,m2:m2,eff:eff,net:net,wf:wf,wt:wt,aih:ai>0?fn/ai:0,wh:h>0?wt/h:0,warn:warn};
 }
 function pct(x){return (Math.round(x*1000)/10).toLocaleString('pl-PL')+'%';}
 function paint(){
   var c=calc();
   set('o-mies',S.mies||'wpisz miesiąc');
   set('o-rate',pln(c.rate));
-  set('o-k',hh(c.k));set('o-ai',hh(c.ai));set('o-u',hh(c.u));set('o-h',hh(c.h));
+  set('o-k',hh(c.k));set('o-ai',hh(c.ai));set('o-u',hh(c.u));set('o-h',hh(c.h));set('o-k2',hh(c.k));set('o-u2',hh(c.u));set('o-ai2',hh(c.ai));set('o-rate2',pln(c.rate));set('o-ek',pln(c.ek));set('o-eu',pln(c.eu));
   set('o-cel',pln(c.cel));set('o-etat',pln(c.etat));set('o-fn',pln(c.fn));set('o-fn2',pln(c.fn));
   set('o-vp','('+pct(c.vat)+')');set('o-vat',pln(c.vatKw));set('o-fb',pln(c.fb));
   set('o-aih',c.ai>0?pln(c.aih)+' (cała faktura ÷ godziny AI)':'–');
-  set('o-przelew',pln(c.przelew));set('o-m1','− '+pln(c.m1));set('o-m2','− '+pln(c.m2));set('o-eff',pln(c.eff));
+  set('o-check',Math.abs(c.eff-c.cel)<0.05?'✔ zgodne: '+hh(c.h)+' × '+pln(c.rate)+' = '+pln(c.cel):'Różnica względem godziny × stawka: '+pln(c.eff-c.cel));set('o-przelew',pln(c.przelew));set('o-m1','− '+pln(c.m1));set('o-m2','− '+pln(c.m2));set('o-eff',pln(c.eff));
   set('o-cp',pct(c.cit));set('o-cp2',pct(c.cit));set('o-wp',pct(1-c.cit));
   set('o-wn',pln(c.net));set('o-wf',pln(c.wf));set('o-wt',pln(c.wt));set('o-wh',pln(c.wh));
   set('o-date',new Date().toLocaleDateString('pl-PL'));
@@ -195,7 +203,7 @@ IDS.forEach(function(id){$(id).addEventListener('input',function(){S[id]=this.va
 function buyer(v){S.buyer=v;save(S);$('buyerIn').value=v;$('buyerOut').value=v;}
 $('buyerIn').addEventListener('input',function(){buyer(this.value);});
 $('buyerOut').addEventListener('input',function(){buyer(this.value);});
-Array.prototype.forEach.call(document.querySelectorAll('[data-ai]'),function(b){b.addEventListener('click',function(){S.ai=b.getAttribute('data-ai');$('ai').value=S.ai;save(S);paint();});});
+Array.prototype.forEach.call(document.querySelectorAll('[data-h]'),function(b){b.addEventListener('click',function(){S.h=b.getAttribute('data-h');$('h').value=S.h;save(S);paint();});});
 $('print').addEventListener('click',function(){window.print();});
 $('reset').addEventListener('click',function(){var b=S.buyer,m=S.mies;S=Object.assign({},DEF,{buyer:b,mies:m});save(S);fill();paint();});
 fill();paint();
